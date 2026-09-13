@@ -339,6 +339,10 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 .lg.nts{display:grid;place-items:center;font:700 14px/1 'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink-dim);}
 .lg.nts::before{content:"*";}
 
+.buildstamp{
+  font-size:10.5px;color:var(--ink-dim);text-align:center;
+  padding:2px 0 6px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
   background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:9px;
@@ -719,6 +723,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <h2>Legend</h2>
       <div class="legend-grid" id="legend-grid"></div>
     </div>
+
+    <div class="buildstamp" id="buildstamp">Build 2026-09-13</div>
   </aside>
 </div>
 
@@ -1503,7 +1509,14 @@ function wantFree(evt){ return state.freePlace !== !!(evt && evt.altKey); }
 /* A fingertip is blunter than a cursor and hides what it's aiming at, so on a
    touch screen every snap reaches further. Same numbers, more forgiving. */
 var COARSE_POINTER = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
-function snapTol(px){ return (COARSE_POINTER ? px*1.6 : px) / state.pxPerFoot; }
+/* Capped in feet as well as pixels. Zoomed out on a phone, a 13px reach is
+   over two feet of pull — enough to quietly turn a 20' run into 18' on a
+   drawing someone signs. Past that point the snap stops helping and starts
+   inventing dimensions, so it lets go instead. */
+var SNAP_REACH_MAX_FT = 1.25;
+function snapTol(px){
+  return Math.min((COARSE_POINTER ? px*1.6 : px) / state.pxPerFoot, SNAP_REACH_MAX_FT);
+}
 
 /* Tools that drop or drag out an object: these land on real geometry — the
    end of a fence run, a house corner — not just the grid. Select and the
@@ -4923,31 +4936,27 @@ canvas.addEventListener("pointerdown", function(e){
   }
 
   if(state.tool==="line" || state.tool==="gate" || state.tool==="wall"){
+    /* Nothing is decided on the way down. Press and drag draws the run and
+       finishes on release; press and let go without moving keeps tapping
+       corner to corner. Committing here instead — which is what it used to
+       do once a corner was already pinned — meant a drag could never
+       finish a run, because the run was already made before the finger
+       moved. On a phone that state is one stray tap away and there's no
+       Esc to get out of it. */
     var hardSnap = (state.snapPoint || state.snapEdge) ? {x:sx, y:sy} : null;
-    if(!state.draft.length){
-      var first = e.shiftKey ? {x:sx,y:sy} : drawAlign(f, null, e, hardSnap);
-      state.draft = [first];
-      // Press and drag draws the run in one go and finishes on release,
-      // which is the only thing that feels right with a finger. Let go
-      // without moving and it falls back to tapping corner to corner.
-      dragging = {kind:"seg-draw", start:{x:first.x, y:first.y}};
+    var chainFrom = state.draft.length ? state.draft[0] : null;
+    var pressed, tapEnd = null;
+    if(chainFrom){
+      pressed = e.shiftKey ? axisLock(chainFrom, {x:sx, y:sy})
+                           : drawAlign(f, chainFrom, e, hardSnap);
+      tapEnd = pressed;                  // a tap closes the run onto here
     } else {
-      var p1 = state.draft[0], p2 = {x:sx,y:sy};
-      if(e.shiftKey) p2 = axisLock(p1, p2);
-      else p2 = drawAlign(f, p1, e, hardSnap);
-      if(p1.x!==p2.x || p1.y!==p2.y){
-        snapshot();
-        var type = state.tool==="gate" ? "gate" : (state.tool==="wall" ? "wall" : "line");
-        var seg = addSegment(type, p1, p2);
-        if(state.tool==="gate"){
-          setSel([{kind:"segment", id:seg.id}]);
-          state.draft = [];
-        } else {
-          state.draft = [{x:p2.x, y:p2.y}];
-        }
-        renderSelection(); renderSummary(); saveLocal();
-      }
+      pressed = e.shiftKey ? {x:sx, y:sy} : drawAlign(f, null, e, hardSnap);
     }
+    // a drag starts from where the finger landed, whatever was pinned before
+    state.draft = [pressed];
+    dragging = {kind:"seg-draw", start:{x:pressed.x, y:pressed.y},
+                chainFrom:chainFrom, tapEnd:tapEnd};
     draw();
     return;
   }
@@ -5210,7 +5219,7 @@ canvas.addEventListener("pointermove", function(e){
   var el;
   switch(dragging.kind){
     case "seg-draw":
-      var sdA = state.draft[0] || dragging.start;
+      var sdA = dragging.start;
       var sdTo = e.shiftKey ? axisLock(sdA, {x:sx, y:sy})
                             : drawAlign(f, sdA, e, (state.snapPoint || state.snapEdge) ? {x:sx,y:sy} : null);
       state.draftPreview = sdTo;
@@ -5418,25 +5427,39 @@ function endDrag(e){
     return;
   }
   if(dragging.kind==="seg-draw"){
-    var sdStart = state.draft[0] || dragging.start;
+    var sdType = state.tool==="gate" ? "gate" : (state.tool==="wall" ? "wall" : "line");
+    var sdStart = dragging.start;
     var sdEnd = state.draftPreview;
+    var sdChain = dragging.chainFrom;
     // far enough to have been a deliberate drag? then the run is finished
     var moved = sdEnd && dist(sdStart.x, sdStart.y, sdEnd.x, sdEnd.y) > 10/state.pxPerFoot;
+    state.draftPreview = null;
+    dragging = null;
+    state.snapEdge = null; state.snapPoint = null; state.guides = null;
+
     if(moved){
       snapshot();
-      var sdType = state.tool==="gate" ? "gate" : (state.tool==="wall" ? "wall" : "line");
       var sdSeg = addSegment(sdType, sdStart, sdEnd);
       setSel([{kind:"segment", id:sdSeg.id}]);
-      state.draft = [];
-      state.draftPreview = null;
-      dragging = null;
-      state.snapEdge = null; state.snapPoint = null; state.guides = null;
+      state.draft = [];            // released, so this run is done
       refresh();
       return;
     }
-    // a tap: leave the start pinned so the next tap closes the run
-    state.draftPreview = null;
-    dragging = null;
+
+    // a tap. If a corner was already pinned, this closes that run and
+    // carries on from here; otherwise it just pins the first corner.
+    if(sdChain && (sdChain.x !== sdStart.x || sdChain.y !== sdStart.y)){
+      snapshot();
+      var sdSeg2 = addSegment(sdType, sdChain, sdStart);
+      if(sdType === "gate"){
+        setSel([{kind:"segment", id:sdSeg2.id}]);
+        state.draft = [];
+      } else {
+        state.draft = [{x:sdStart.x, y:sdStart.y}];
+      }
+      refresh();
+      return;
+    }
     draw();
     return;
   }

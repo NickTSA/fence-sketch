@@ -10,8 +10,8 @@ You don't need the command line for any of this.
 1. Go to **github.com/new**. Name it `fence-sketch`, leave it **Public**, tick
    nothing else, and click **Create repository**.
 2. On the next screen click **uploading an existing file**.
-3. Drag in everything from this folder — `index.html`, `sw.js`,
-   `manifest.webmanifest`, both `icon-*.png` files and this README — then click
+3. Open this folder, select the files *inside* it and drag them in — not the
+   folder itself, or everything lands one level too deep. Click
    **Commit changes**.
 4. Go to **Settings → Pages**. Under *Build and deployment* set **Source** to
    *Deploy from a branch*, **Branch** to `main` and the folder to `/ (root)`.
@@ -19,15 +19,18 @@ You don't need the command line for any of this.
 5. Wait a minute, then reload that Settings page. It will show the address,
    something like `https://YOURNAME.github.io/fence-sketch/`.
 
-To update it later, open `index.html` in the repo, click the pencil icon,
-delete the contents, paste in the new file and commit. Or drag the new file in
-through **Add file → Upload files** — same name replaces the old one.
+To update it later, drag the new files in through **Add file → Upload files**
+— same names replace the old ones.
 
 ## Putting it on your phone
 
 Open the address in Safari (iPhone) or Chrome (Android), then use
 **Share → Add to Home Screen**. It gets its own icon and opens without any
 browser chrome, like an app.
+
+Do your sketching in the icon version rather than the browser tab. iOS keeps
+them as separate apps with separate saved data — and unlike a browser tab, a
+home screen app's saved work isn't wiped after a week of not opening it.
 
 ## Working offline
 
@@ -42,9 +45,8 @@ uploaded anywhere, which is why this can be a public repo without exposing any
 client details — the repo holds the app, never the jobs.
 
 The flip side: each address and each device keeps its own separate copy. A job
-drawn on your phone won't appear on your Mac, and jobs saved from a local copy
-of the file won't appear here. To move a sketch between devices, export the PDF,
-or draw it where you intend to keep it.
+drawn on your phone won't appear on your Mac. To move a sketch between devices,
+export the PDF.
 
 ## Files
 

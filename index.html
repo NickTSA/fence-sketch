@@ -2703,28 +2703,39 @@ function renderPlan(c, pal, ppf, k, opts){
     var col = sel ? pal.accent : colorOf(post, pal.ink, pal);
     var poly = postPoly(post).map(function(q){ return P(q.x,q.y); });
 
-    // below a few pixels a true-to-scale post vanishes, so draw a marker
+    /* A 4" post at a zoom that fits a back yard is two pixels across —
+       visible only if you know it's there, and hopeless to aim at. On
+       screen it gets drawn out to a minimum size, keeping its shape and
+       rotation so it still reads as a post rather than a dot. Print stays
+       true to scale. */
     var wPx = dist(poly[0].x,poly[0].y,poly[1].x,poly[1].y);
     var hPx = dist(poly[1].x,poly[1].y,poly[2].x,poly[2].y);
-    if(Math.min(wPx,hPx) < 4*k){
-      var m = 2.6*k;
-      c.fillStyle = col;
-      c.fillRect(p.x-m, p.y-m, m*2, m*2);
-    } else {
-      c.beginPath();
-      poly.forEach(function(q,i){ i ? c.lineTo(q.x,q.y) : c.moveTo(q.x,q.y); });
-      c.closePath();
-      c.fillStyle = col; c.fill();
-      c.strokeStyle = pal.surface; c.lineWidth = 1.2*k;
-      c.stroke();
+    var floorPx = pal.print ? 0 : (COARSE_POINTER ? 13 : 10)*k;
+    var tiny = Math.min(wPx,hPx) < floorPx;
+    var dpoly = poly;
+    if(tiny && Math.min(wPx,hPx) > 0.01){
+      var grow = Math.min(8, floorPx/Math.min(wPx,hPx));
+      dpoly = poly.map(function(q){
+        return {x: p.x + (q.x-p.x)*grow, y: p.y + (q.y-p.y)*grow};
+      });
     }
+    c.beginPath();
+    dpoly.forEach(function(q,i){ i ? c.lineTo(q.x,q.y) : c.moveTo(q.x,q.y); });
+    c.closePath();
+    c.fillStyle = col; c.fill();
+    c.strokeStyle = pal.surface; c.lineWidth = 1.2*k;
+    c.stroke();
 
     // outside-face dimensions, off by default so a run of posts stays clean
     if(post.dims === true){
       var pNts = postIsNTS(post);
       if(pNts){
         // a hand-typed label isn't two witnessed measurements, just one tag
-        chip(postDisplayLabel(post)+" *", (poly[0].x+poly[1].x)/2, (poly[0].y+poly[1].y)/2 - 9*k, col);
+        chip(postDisplayLabel(post)+" *", (dpoly[0].x+dpoly[1].x)/2, (dpoly[0].y+dpoly[1].y)/2 - 9*k, col);
+      } else if(tiny){
+        // drawn oversize to stay visible, so a witnessed dimension line
+        // here would be measuring the marker, not the post
+        chip(inchText(postWIn(post)), (dpoly[0].x+dpoly[1].x)/2, (dpoly[0].y+dpoly[1].y)/2 - 9*k, col);
       } else if(state.showDims){
         var w = postWIn(post)/12, h = postHIn(post)/12;
         dimension(poly[0], poly[1], feetInches(w), col, -1, 13);
@@ -2747,8 +2758,9 @@ function renderPlan(c, pal, ppf, k, opts){
         });
       } else {
         // too small to grab by a corner — ring it and say so in the panel
+        var ringW = dist(dpoly[0].x,dpoly[0].y,dpoly[2].x,dpoly[2].y);
         c.beginPath();
-        c.arc(p.x, p.y, Math.max(9*k, Math.hypot(wPx,hPx)/2 + 5*k), 0, Math.PI*2);
+        c.arc(p.x, p.y, Math.max(10*k, ringW/2 + 5*k), 0, Math.PI*2);
         c.strokeStyle = pal.accent; c.lineWidth = 1.2*k;
         c.setLineDash([2*k,3*k]); c.stroke(); c.setLineDash([]);
       }
@@ -2900,10 +2912,10 @@ function renderPlan(c, pal, ppf, k, opts){
     var label = t.label || "";
     if(state.showPrices && tagTotal(t) > 0) label += (label ? "  " : "") + money(tagTotal(t));
 
-    c.font = "700 "+(11*k)+"px 'IBM Plex Sans', sans-serif";
+    c.font = "700 "+(8.5*k)+"px 'IBM Plex Sans', sans-serif";
     var tw = label ? c.measureText(label).width : 0;
-    var rBadge = 9*k;
-    var boxW = rBadge*2 + (label ? tw + 10*k : 0);
+    var rBadge = 7*k;
+    var boxW = rBadge*2 + (label ? tw + 8*k : 0);
     var boxH = rBadge*2;
     var bx = ap.x - rBadge, by = ap.y - rBadge;
 
@@ -2923,12 +2935,12 @@ function renderPlan(c, pal, ppf, k, opts){
 
     c.fillStyle = "#ffffff";
     c.textAlign = "center"; c.textBaseline = "middle";
-    c.font = "700 "+(11*k)+"px 'IBM Plex Sans', sans-serif";
+    c.font = "700 "+(8.5*k)+"px 'IBM Plex Sans', sans-serif";
     c.fillText(num, ap.x, ap.y + 0.5*k);
     c.textAlign = "left";
     if(label){
       c.fillStyle = pal.ink;
-      c.fillText(label, ap.x + rBadge + 5*k, ap.y + 0.5*k);
+      c.fillText(label, ap.x + rBadge + 4*k, ap.y + 0.5*k);
     }
     c.textBaseline = "alphabetic";
   });
@@ -3029,6 +3041,18 @@ function renderPlan(c, pal, ppf, k, opts){
     }
     if(state.postGhost){
       var gpoly = postPoly(state.postGhost).map(function(q){ return P(q.x,q.y); });
+      // grown to the same floor as a placed post, so what you aim with is
+      // what you get
+      var gc = P(state.postGhost.x, state.postGhost.y);
+      var gMin = Math.min(dist(gpoly[0].x,gpoly[0].y,gpoly[1].x,gpoly[1].y),
+                          dist(gpoly[1].x,gpoly[1].y,gpoly[2].x,gpoly[2].y));
+      var gFloor = (COARSE_POINTER ? 13 : 10)*k;
+      if(gMin > 0.01 && gMin < gFloor){
+        var gGrow = Math.min(8, gFloor/gMin);
+        gpoly = gpoly.map(function(q){
+          return {x: gc.x + (q.x-gc.x)*gGrow, y: gc.y + (q.y-gc.y)*gGrow};
+        });
+      }
       c.strokeStyle = pal.accent; c.lineWidth = 1.6*k;
       c.beginPath();
       gpoly.forEach(function(q,i){ i ? c.lineTo(q.x,q.y) : c.moveTo(q.x,q.y); });
@@ -3301,10 +3325,9 @@ function addSegment(type,p1,p2){
   if(type==="gate"){ seg.hinge="a"; seg.swingSide=1; seg.gateType=state.gateType; }
   if(type==="wall"){ seg.thickness = state.wallThickIn; }
   state.elements.segments.push(seg);
-  if(type==="gate"){
-    ensurePost(p1.x,p1.y, Math.max(6, state.postSizeIn), Math.max(6, state.postDepthIn));
-    ensurePost(p2.x,p2.y, Math.max(6, state.postSizeIn), Math.max(6, state.postDepthIn));
-  } else if(type==="line" && state.autoPost){
+  // A gate gets no posts of its own: the run it interrupts usually already
+  // has them, and doubling up was making them awkward to select.
+  if(type==="line" && state.autoPost){
     ensurePost(p1.x,p1.y, state.postSizeIn, state.postDepthIn);
     ensurePost(p2.x,p2.y, state.postSizeIn, state.postDepthIn);
   }
@@ -3950,6 +3973,34 @@ function checkRow(container, labelText, checked, onChange){
   container.appendChild(lab);
 }
 
+/* ---- dimensions on the selection, in one tap ----
+   Segments and structures show theirs unless told not to; a post is the
+   other way round, since a run of them would be a thicket of numbers. */
+function dimsShown(kind, el){
+  return kind === "post" ? el.dims === true : el.dims !== false;
+}
+/** True when anything in the selection is currently showing a dimension. */
+function anyDimsShown(items){
+  return items.some(function(s){ return dimsShown(s.kind, s.el); });
+}
+function canDim(kind){
+  return kind === "segment" || kind === "post" || kind === "structure";
+}
+/** One tap flips the lot: all off if any were on, otherwise all on. */
+function addDimAction(container, items){
+  var able = items.filter(function(s){ return canDim(s.kind); });
+  if(!able.length) return;
+  var on = anyDimsShown(able);
+  addAction(container, on ? "Hide measurement" : "Show measurement", function(){
+    snapshot();
+    able.forEach(function(s){ s.el.dims = !on; });
+    refresh();
+  });
+  // put it first: it's the one you reach for most, and it keeps Delete
+  // from sitting in the middle of the row
+  container.insertBefore(container.lastChild, container.firstChild);
+}
+
 function addAction(container,label,fn,danger){
   var b = document.createElement("button");
   b.className = "btn sm" + (danger?" danger":"");
@@ -4253,6 +4304,7 @@ function renderSelection(){
     addAction(actionsEl,"Delete",del,true);
   }
 
+  addDimAction(actionsEl, [{kind:kind, id:el.id, el:el}]);
   addAction(actionsEl, "Duplicate", duplicateSelection);
   addTagActions(actionsEl, [{kind:kind, id:el.id, el:el}]);
 }
@@ -4390,6 +4442,7 @@ function renderMultiSelection(titleEl, lenEl, bodyEl, actionsEl){
     refresh();
   });
 
+  addDimAction(actionsEl, items);
   addAction(actionsEl, "Duplicate", duplicateSelection);
   addTagActions(actionsEl, items);
 
@@ -4779,6 +4832,21 @@ window.addEventListener("keydown", function(e){
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="a"){
     e.preventDefault(); selectAll(); return;
   }
+  // D flips the measurement on whatever is selected
+  if(e.key.toLowerCase()==="d" && !e.ctrlKey && !e.metaKey && !e.altKey && state.sel.length){
+    var dimItems = state.sel.map(function(x){
+      return {kind:x.kind, id:x.id, el:findEl(x.kind, x.id)};
+    }).filter(function(x){ return x.el && canDim(x.kind); });
+    if(dimItems.length){
+      e.preventDefault();
+      snapshot();
+      var turnOn = !anyDimsShown(dimItems);
+      dimItems.forEach(function(x){ x.el.dims = turnOn; });
+      refresh();
+      toast(turnOn ? "Measurement shown" : "Measurement hidden");
+    }
+    return;
+  }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); undo(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="d"){ e.preventDefault(); duplicateSelection(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="c"){ e.preventDefault(); copySelection(); return; }
@@ -4859,6 +4927,10 @@ canvas.addEventListener("pointerdown", function(e){
     if(!state.draft.length){
       var first = e.shiftKey ? {x:sx,y:sy} : drawAlign(f, null, e, hardSnap);
       state.draft = [first];
+      // Press and drag draws the run in one go and finishes on release,
+      // which is the only thing that feels right with a finger. Let go
+      // without moving and it falls back to tapping corner to corner.
+      dragging = {kind:"seg-draw", start:{x:first.x, y:first.y}};
     } else {
       var p1 = state.draft[0], p2 = {x:sx,y:sy};
       if(e.shiftKey) p2 = axisLock(p1, p2);
@@ -5137,6 +5209,12 @@ canvas.addEventListener("pointermove", function(e){
 
   var el;
   switch(dragging.kind){
+    case "seg-draw":
+      var sdA = state.draft[0] || dragging.start;
+      var sdTo = e.shiftKey ? axisLock(sdA, {x:sx, y:sy})
+                            : drawAlign(f, sdA, e, (state.snapPoint || state.snapEdge) ? {x:sx,y:sy} : null);
+      state.draftPreview = sdTo;
+      break;
     case "struct-draw":
       state.structDraft.x1 = sx; state.structDraft.y1 = sy;
       if(e.shiftKey){
@@ -5337,6 +5415,29 @@ function endDrag(e){
     state.marquee = null;
     dragging = null;
     renderSelection(); draw();
+    return;
+  }
+  if(dragging.kind==="seg-draw"){
+    var sdStart = state.draft[0] || dragging.start;
+    var sdEnd = state.draftPreview;
+    // far enough to have been a deliberate drag? then the run is finished
+    var moved = sdEnd && dist(sdStart.x, sdStart.y, sdEnd.x, sdEnd.y) > 10/state.pxPerFoot;
+    if(moved){
+      snapshot();
+      var sdType = state.tool==="gate" ? "gate" : (state.tool==="wall" ? "wall" : "line");
+      var sdSeg = addSegment(sdType, sdStart, sdEnd);
+      setSel([{kind:"segment", id:sdSeg.id}]);
+      state.draft = [];
+      state.draftPreview = null;
+      dragging = null;
+      state.snapEdge = null; state.snapPoint = null; state.guides = null;
+      refresh();
+      return;
+    }
+    // a tap: leave the start pinned so the next tap closes the run
+    state.draftPreview = null;
+    dragging = null;
+    draw();
     return;
   }
   if(dragging.kind==="struct-draw" && state.structDraft){
@@ -6205,9 +6306,9 @@ function exportPDF(){
   });
   var PW = landscape ? 792 : 612;
   var PH = landscape ? 612 : 792;
-  var M = 24;
-  var COL = landscape ? 218 : 196;      // title block column
-  var GAP = 12;
+  var M = 20;
+  var COL = landscape ? 188 : 166;      // title block column
+  var GAP = 10;
 
   var t = totals();
   var tags = state.elements.tags;

@@ -1,5 +1,5 @@
-/* Fence Sketch offline cache - built be16927698 */
-var CACHE = "fence-sketch-be16927698";
+/* Fence Sketch offline cache - built 0999184b89 */
+var CACHE = "fence-sketch-0999184b89";
 var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", function(e){

@@ -1,13 +1,13 @@
 {
-  "name": "Fence Sketch",
+  "name": "LA Fence Craft Sketch",
   "short_name": "Fence Sketch",
-  "description": "Fence layout sketches for client contracts.",
+  "description": "Fence layout sketches, proposals and contracts for LA Fence Craft.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#eef0f3",
-  "theme_color": "#0a7cff",
+  "background_color": "#ffffff",
+  "theme_color": "#1f3a5f",
   "icons": [
     {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
     {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},

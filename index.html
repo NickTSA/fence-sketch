@@ -777,7 +777,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <div class="legend-grid" id="legend-grid"></div>
     </div>
 
-    <div class="buildstamp" id="buildstamp">Build 2026-09-24.2</div>
+    <div class="buildstamp" id="buildstamp">Build 2026-09-24.3</div>
   </aside>
 </div>
 
@@ -1510,6 +1510,10 @@ function loadLocal(){
   state.objectSnap = p.objectSnap !== undefined ? !!p.objectSnap : true;
   state.showDims = p.showDims !== undefined ? !!p.showDims : true;
   state.measureFrom = p.measureFrom || "center";
+  // sizes typed before they remembered their datum were typed in this one
+  ((p.elements && p.elements.segments) || []).forEach(function(sg){
+    if(sg.statedLen != null && !sg.statedFrom) sg.statedFrom = sg.measureFrom || state.measureFrom;
+  });
   state.color = p.color !== undefined ? p.color : null;
   state.nextId = p.nextId || state.nextId;
 
@@ -1566,7 +1570,24 @@ function loadLocal(){
   state.elements.structures.forEach(function(o){
     if(o.hatch === undefined) o.hatch = true;
   });
-  if(migratedPosts) saveLocal();
+  /* Earlier builds let a run or gate catch the corner of a post square,
+     leaving it an inch or two off the post's middle and slightly skewed.
+     An end sitting exactly on a post's corner or face midpoint was put
+     there by that snapping, so move it to the middle where it belongs. */
+  var repaired = false;
+  state.elements.structures.forEach(function(ps){
+    if(!isPostShape(ps)) return;
+    var cx = ps.x + ps.w/2, cy = ps.y + ps.h/2;
+    var marks = structCorners(ps).concat(structEdgeHandles(ps));
+    state.elements.segments.forEach(function(sg){
+      [["x1","y1"],["x2","y2"]].forEach(function(e){
+        if(marks.some(function(m){ return dist(m.x, m.y, sg[e[0]], sg[e[1]]) < 0.02; })){
+          sg[e[0]] = cx; sg[e[1]] = cy; repaired = true;
+        }
+      });
+    });
+  });
+  if(migratedPosts || repaired) saveLocal();
 }
 
 /* ========================= Geometry ========================= */
@@ -1911,6 +1932,11 @@ function snapPoints(skip){
   });
   state.elements.structures.forEach(function(st){
     if(skipped("structure",st.id)) return;
+    /* A post is a point, not a shape: offer only its middle, as strongly as
+       a run end. Its corners are an inch or two off the middle, and a gate
+       or run that caught one came out skewed and mismeasured. The faces are
+       what the inside/outside measuring is for. */
+    if(isPostShape(st)){ add({x:st.x+st.w/2, y:st.y+st.h/2}, 0); return; }
     structPoly(st).forEach(function(q){ add(q, 1); });
     structCorners(st).forEach(function(q){ add(q, 1); });
     structEdgeHandles(st).forEach(function(q){ add(q, 2); });
@@ -2683,6 +2709,65 @@ function renderPlan(c, pal, ppf, k, opts){
     });
   }
 
+  /**
+   * A shape's name, kept inside the shape: along its length, turned to run
+   * up a tall narrow one, wrapped onto two lines if that fits better, and
+   * set smaller if it has to be. It turns with the shape but always reads
+   * the right way up.
+   */
+  function shapeLabel(s, cen, text, col){
+    var base = (pal.print ? 7.8 : 10.5)*k, minFs = (pal.print ? 3.6 : 6.5)*k;
+    var weight = pal.print ? 400 : 500;
+    var wpx = s.w*ppf, hpx = s.h*ppf;
+    var inset = s.kind === "ellipse" ? 0.68 : 0.88;       // an oval narrows off-centre
+    setFont(base, weight);
+    var oneW = mw(text);
+    var words = text.split(/\s+/), two = null;
+    if(words.length > 1){
+      // the split that makes the longer line shortest
+      for(var i=1; i<words.length; i++){
+        var l1 = words.slice(0,i).join(" "), l2 = words.slice(i).join(" ");
+        var ww = Math.max(mw(l1), mw(l2));
+        if(!two || ww < two.w) two = {lines:[l1,l2], w:ww};
+      }
+    }
+    function fit(availW, availH){
+      var best = {fs: Math.min(base, base*availW/Math.max(1,oneW), availH*0.8), lines:[text], w:oneW};
+      if(two){
+        var f2 = Math.min(base, base*availW/Math.max(1,two.w), availH/2.5);
+        if(f2 > best.fs*1.15) best = {fs:f2, lines:two.lines, w:two.w};
+      }
+      return best;
+    }
+    var along = fit(wpx*inset, hpx*inset), across = fit(hpx*inset, wpx*inset);
+    // A clearly tall rectangle reads up its length, as a drawing would label
+    // it; otherwise turn only when that's clearly the better fit.
+    var tall = s.kind !== "ellipse" && hpx > wpx*1.6;
+    var turned = tall ? across.fs >= along.fs*0.95 : across.fs > along.fs*1.25;
+    var pick = turned ? across : along;
+    var fs = Math.max(minFs, pick.fs);
+    var ang = (s.rot || 0)*Math.PI/180 + (turned ? -Math.PI/2 : 0);
+    // keep it reading upright
+    while(ang > Math.PI/2 + 1e-6) ang -= Math.PI;
+    while(ang <= -Math.PI/2 - 1e-6) ang += Math.PI;
+    var lh = fs*1.18, n = pick.lines.length;
+    setFont(fs, weight);
+    var maxW = 0;
+    pick.lines.forEach(function(ln){ maxW = Math.max(maxW, mw(ln)); });
+    c.save();
+    c.translate(cen.x, cen.y);
+    c.rotate(ang);
+    c.fillStyle = col;
+    c.textBaseline = "alphabetic";
+    pick.lines.forEach(function(ln, li){
+      var y0 = (li - (n-1)/2)*lh + fs*0.36;
+      c.fillText(ln, -mw(ln)/2, y0);
+    });
+    c.restore();
+    // let figures drawn later step around the name
+    placed.push(boxAt(cen.x, cen.y, ang, -maxW/2, -n*lh/2, maxW/2, n*lh/2));
+  }
+
   /* Rotated label box -> screen AABB, for keeping figures off each other. */
   function boxAt(ox, oy, ang, x0, y0, x1, y1){
     var ca = Math.cos(ang), sa = Math.sin(ang);
@@ -3000,18 +3085,7 @@ function renderPlan(c, pal, ppf, k, opts){
 
     // label at the centre
     var cen = P(s.x + s.w/2, s.y + s.h/2);
-    if(s.label){
-      var slfs = (pal.print ? 7.8 : 10.5)*k;
-      setFont(slfs, pal.print ? 400 : 500);
-      c.textAlign = "center";
-      c.fillStyle = col;
-      var slt = String(s.label).toUpperCase();
-      c.fillText(slt, cen.x, cen.y + slfs*0.36);
-      // let figures drawn later step around the name
-      var slw = mw(slt);
-      placed.push({x0:cen.x - slw/2, y0:cen.y - slfs*0.5, x1:cen.x + slw/2, y1:cen.y + slfs*0.5});
-      c.textAlign = "left";
-    }
+    if(s.label) shapeLabel(s, cen, String(s.label).toUpperCase(), col);
 
     // dimension callouts along the top and left of the bounding box
     if(s.dims !== false){
@@ -4497,8 +4571,8 @@ function postTouching(x, y, other){
  * The number and the witness lines both come from here, so they can never
  * disagree.
  */
-function segDatum(seg){
-  var mode = segMeasureFrom(seg);
+function segDatum(seg, modeOverride){
+  var mode = modeOverride || segMeasureFrom(seg);
   var L = segGeomLen(seg);
   var d = {L:L, ux:0, uy:0, tA:0, tB:L};
   if(L < 1e-6 || segIsCurved(seg)) return d;
@@ -4529,8 +4603,9 @@ function segDatum(seg){
   return d;
 }
 
-function segEndAdjust(seg){
-  var d = segDatum(seg);
+function segEndAdjust(seg){ return segEndAdjustFor(seg, null); }
+function segEndAdjustFor(seg, mode){
+  var d = segDatum(seg, mode);
   return (d.tB - d.tA) - d.L;
 }
 
@@ -4590,12 +4665,23 @@ function dimIsNTS(d){
  * not-to-scale annotation.
  */
 function segLenOf(seg){
-  if(seg.statedLen != null && isFinite(seg.statedLen)) return seg.statedLen;
+  if(seg.statedLen != null && isFinite(seg.statedLen)) return Math.max(0, segStatedNow(seg));
   return Math.max(0, segGeomLen(seg) + segEndAdjust(seg));
+}
+/**
+ * A typed size belongs to the way it was measured when it was typed. A gate
+ * stated as a 4' clear opening (inside faces) is 4' plus both posts measured
+ * outside to outside -- so switching the datum carries the stated figure
+ * across by exactly what the posts add or take away, instead of leaving a
+ * number that no longer means what it says.
+ */
+function segStatedNow(seg){
+  var from = seg.statedFrom || segMeasureFrom(seg);
+  return seg.statedLen + segEndAdjust(seg) - segEndAdjustFor(seg, from);
 }
 function segIsNTS(seg){
   return seg.statedLen != null &&
-         Math.abs(seg.statedLen - (segGeomLen(seg)+segEndAdjust(seg))) > 0.02;
+         Math.abs(segStatedNow(seg) - (segGeomLen(seg)+segEndAdjust(seg))) > 0.02;
 }
 
 function colorRow(container, current, onPick, noAuto){
@@ -4868,15 +4954,16 @@ function renderSelection(){
       el.y2 = el.y1 + Math.sin(a)*v;
       refresh();
     });
-    lenRow(bodyEl, "Stated length (label only)",
-      el.statedLen != null ? el.statedLen : segGeomLen(el), 0.02, 800, function(v){
-        snapshot(); el.statedLen = v; refresh();
+    lenRow(bodyEl, "Stated length (label only)", segLenOf(el), 0.02, 800, function(v){
+        // typed in whatever the run is measured from right now
+        snapshot(); el.statedLen = v; el.statedFrom = segMeasureFrom(el); refresh();
       });
     if(el.statedLen != null){
       var ntsNote = document.createElement("div");
       ntsNote.style.cssText = "font-size:11px;color:var(--ink-dim);";
       ntsNote.textContent = segIsNTS(el)
-        ? "Labelled " + feetInches(el.statedLen) + " — drawn " + feetInches(segGeomLen(el)) + ", marked * as not to scale."
+        ? "Labelled " + feetInches(segLenOf(el)) + " — drawn " + feetInches(segGeomLen(el) + segEndAdjust(el))
+          + " (" + measureMode(segMeasureFrom(el)).short + "), marked * as not to scale."
         : "Stated size matches the drawing.";
       bodyEl.appendChild(ntsNote);
     }
@@ -4935,7 +5022,7 @@ function renderSelection(){
     }
     if(el.statedLen != null){
       addAction(actionsEl,"Match label to drawing",function(){
-        snapshot(); el.statedLen = null; refresh();
+        snapshot(); el.statedLen = null; delete el.statedFrom; refresh();
       });
     }
     addAction(actionsEl,"Delete",del,true);

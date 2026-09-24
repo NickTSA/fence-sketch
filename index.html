@@ -114,6 +114,21 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 .iconbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round;}
 .iconbtn.plain{color:var(--ink-dim);}
+.jobmenu-wrap{position:relative;flex:none;}
+.jobmenu{
+  position:absolute;right:0;top:calc(100% + 6px);z-index:70;min-width:236px;
+  background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 10px 30px rgba(0,0,0,.16);padding:5px;display:flex;flex-direction:column;
+}
+.jobmenu[hidden]{display:none;}
+.jobmenu button{
+  display:flex;gap:10px;align-items:flex-start;text-align:left;border:none;background:transparent;
+  color:var(--ink);font-size:13.5px;font-weight:600;padding:9px 10px;border-radius:7px;cursor:pointer;
+}
+.jobmenu button:hover{background:var(--surface-2);}
+.jobmenu button svg{width:18px;height:18px;flex:none;margin-top:1px;stroke:var(--ink-dim);fill:none;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.jobmenu small{display:block;font-size:11.5px;font-weight:400;color:var(--ink-dim);margin-top:1px;}
 .pill{
   border:1.5px solid var(--accent);background:transparent;color:var(--accent);
   border-radius:8px;padding:6px 15px;font-size:13px;font-weight:600;cursor:pointer;
@@ -145,6 +160,11 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   background:var(--accent);border-radius:0 3px 3px 0;
 }
 .rail-sep{height:1px;background:var(--line);margin:7px 14px;flex:none;}
+/* a short laptop screen still shows every tool without scrolling */
+@media (pointer:fine) and (max-height:900px){
+  .tool-btn{padding:6px 2px 5px;gap:2px;}
+  .rail-sep{margin:4px 14px;}
+}
 
 /* ============ canvas ============ */
 .canvas-wrap{grid-area:canvas;position:relative;overflow:hidden;background:var(--bg);min-height:440px;}
@@ -293,6 +313,10 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 .sw.auto{background:linear-gradient(135deg,#fff 0 50%,#333 50% 100%);}
 
 .check{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;}
+.pay-hint{font-size:11px;color:var(--ink-dim);line-height:1.35;margin:2px 0 4px;}
+.pay-methods{display:flex;flex-direction:column;gap:2px;margin-top:-2px;}
+#card-pay .inline{margin-bottom:6px;}
+#f-pay-balance.auto{background:var(--surface-2, rgba(0,0,0,.03));color:var(--ink-dim);}
 .check input{accent-color:var(--accent);}
 .inline{display:flex;gap:6px;align-items:center;}
 .inline input{flex:1;min-width:0;}
@@ -346,6 +370,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   font-size:10.5px;color:var(--ink-dim);text-align:center;
   padding:2px 0 6px;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
+.buildstamp.tappable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
+.buildstamp.tappable:active{color:var(--ink);}
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
   background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:9px;
@@ -565,9 +591,17 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
       <span class="dot"></span>
     </button>
-    <button class="iconbtn plain" id="btn-new" title="New project">
-      <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
-    </button>
+    <div class="jobmenu-wrap">
+      <button class="iconbtn plain" id="btn-job" title="Save, open or start a job" aria-haspopup="true" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+      </button>
+      <div class="jobmenu" id="job-menu" hidden>
+        <button id="btn-save"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span>Save job file<small>Keep it to open and edit later</small></span></button>
+        <button id="btn-open"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H3Z"/><path d="M3 10h18l-2 9H5Z"/></svg><span>Open job&hellip;<small>A .fence.json, or a PDF from this app</small></span></button>
+        <button id="btn-new"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg><span>New job<small>Clears the sketch on screen</small></span></button>
+      </div>
+      <input type="file" id="job-file" accept=".json,.pdf,application/json,application/pdf" style="display:none">
+    </div>
     <span class="divider"></span>
     <button class="pill" id="btn-export">Export PDF</button>
   </header>
@@ -592,14 +626,6 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
         <input type="text" id="in-shapew" value="10'" aria-label="Shape width">
         <span class="optlabel">x</span>
         <input type="text" id="in-shapeh" value="8'" aria-label="Shape depth">
-      </div>
-      <div class="optgroup" data-opt="post">
-        <span class="optlabel">Post</span>
-        <div class="chips" id="post-presets"></div>
-        <input type="text" id="in-postsize" value="4" aria-label="Post width in inches">
-        <span class="optlabel">x</span>
-        <input type="text" id="in-postdepth" value="4" aria-label="Post depth in inches">
-        <label class="check"><input type="checkbox" id="chk-autopost" checked> at corners</label>
       </div>
       <div class="optgroup" data-opt="tree">
         <span class="optlabel">Spread</span>
@@ -655,17 +681,18 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
     <button class="tool-btn" data-tool="line"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.7"/><circle cx="19" cy="5" r="1.7"/><path d="M6.3 17.7 17.7 6.3"/></svg><span>Fence</span></button>
     <button class="tool-btn" data-tool="wall"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/><path d="M4 8v8M9 8v8M14 8v8M19 8v8"/></svg><span>Wall</span></button>
     <button class="tool-btn" data-tool="gate"><svg viewBox="0 0 24 24"><path d="M5 20V6h9"/><path d="M14 6a10 10 0 0 1 5 10"/><path d="M5 20h14"/></svg><span>Gate</span></button>
-    <button class="tool-btn" data-tool="post"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="8" height="8"/></svg><span>Post</span></button>
     <div class="rail-sep"></div>
     <button class="tool-btn" data-tool="house"><svg viewBox="0 0 24 24"><path d="M4 4h9v7h7v9H4V4Z"/></svg><span>Building</span></button>
     <button class="tool-btn" data-tool="shape"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="10" height="8"/><circle cx="16" cy="15" r="5"/></svg><span>Shape</span></button>
     <button class="tool-btn" data-tool="tree"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M12 15v6"/></svg><span>Tree</span></button>
+    <button class="tool-btn" data-tool="detail"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" stroke-dasharray="3 2"/><path d="M7 16V9M12 16V9M17 16V9M6 11h12"/></svg><span>Detail</span></button>
     <div class="rail-sep"></div>
     <button class="tool-btn" data-tool="curve"><svg viewBox="0 0 24 24"><path d="M4 18c0-8 16-8 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span>Curve</span></button>
     <button class="tool-btn" data-tool="tape"><svg viewBox="0 0 24 24"><path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg><span>Tape</span></button>
     <button class="tool-btn" data-tool="note"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5Z"/></svg><span>Note</span></button>
     <button class="tool-btn" id="btn-photo" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="m5 17 4.5-5 3.5 4 2.5-3 4.5 5"/></svg><span>Photo</span></button>
     <input type="file" id="photo-file" accept="image/*" style="display:none">
+    <button class="tool-btn" data-tool="rotate"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span>Rotate</span></button>
     <button class="tool-btn" data-tool="eraser"><svg viewBox="0 0 24 24"><path d="m7 21-4-4a2 2 0 0 1 0-2.8L13.6 3.6a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8L10 21H7Z"/><path d="M13 8 17 12"/></svg><span>Erase</span></button>
   </nav>
 
@@ -696,18 +723,32 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       </div>
     </div>
 
+    <div class="card" id="card-pay">
+      <h2>Payment</h2>
+      <div class="inline">
+        <div class="form-field" style="flex:1"><label for="f-pay-total">Contract price</label><input id="f-pay-total" inputmode="decimal" placeholder="$"></div>
+        <div class="form-field" style="flex:1"><label for="f-pay-deposit">Deposit</label><input id="f-pay-deposit" inputmode="decimal" placeholder="$"></div>
+      </div>
+      <div class="inline">
+        <div class="form-field" style="flex:1"><label for="f-pay-progress">Progress payment</label><input id="f-pay-progress" inputmode="decimal" placeholder="$"></div>
+        <div class="form-field" style="flex:1"><label for="f-pay-balance">Remaining balance</label><input id="f-pay-balance" inputmode="decimal" placeholder="$"></div>
+      </div>
+      <div class="pay-hint" id="pay-hint">Fill in the contract price and the balance works itself out. Anything left blank prints as a line to write on.</div>
+      <div class="form-field"><label>Accepted payment</label></div>
+      <div class="pay-methods" id="pay-methods"></div>
+      <label class="check"><input type="checkbox" id="chk-pay" checked> Print payment section on the PDF</label>
+    </div>
+
     <div class="card">
       <h2>Job summary</h2>
       <div class="stat-grid">
         <div class="stat"><div class="n mono" id="stat-fence">0'</div><div class="l">Fence run</div></div>
         <div class="stat"><div class="n mono" id="stat-wall">0'</div><div class="l">Block wall</div></div>
-        <div class="stat"><div class="n mono" id="stat-posts">0</div><div class="l">Posts</div></div>
         <div class="stat"><div class="n mono" id="stat-gates">0</div><div class="l">Gates</div></div>
         <div class="stat"><div class="n mono" id="stat-trees">0</div><div class="l">Trees</div></div>
         <div class="stat"><div class="n mono" id="stat-structs">0</div><div class="l">Structures</div></div>
         <div class="stat"><div class="n mono" id="stat-shapes">0</div><div class="l">Shapes</div></div>
       </div>
-      <div class="rows" id="post-breakdown"></div>
       <div class="rows" id="gate-list"></div>
     </div>
 
@@ -736,7 +777,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <div class="legend-grid" id="legend-grid"></div>
     </div>
 
-    <div class="buildstamp" id="buildstamp">Build 2026-09-20</div>
+    <div class="buildstamp" id="buildstamp">Build 2026-09-24.2</div>
   </aside>
 </div>
 
@@ -1206,21 +1247,24 @@ function shapeSpec(v){
 
 var TOOL_HINTS = {
   select: "Click to select · shift-click adds · drag a box to catch several · Ctrl+A all · Ctrl+D duplicates · drag a handle to resize.",
-  line:   "Tap each corner to run fence \u2014 ends snap to other runs, posts and house corners. Hold Shift to lock to 0/45/90\u00b0. Esc or double-tap ends the run.",
+  line:   "Tap each corner to run fence \u2014 ends snap to other runs, shapes and house corners. Hold Shift to lock to 0/45/90\u00b0. Esc or double-tap ends the run.",
   wall:   "Click each corner to run block wall. Hold Shift to lock the angle. Esc ends the run.",
   gate:   "Click the two gate posts. Draw it big enough to read, then set a Stated length to label its true size.",
-  shape:  "Drag out a shape, or tap once to place it at the size set above \u2014 hold Shift for a perfect square or circle. Corners land on runs and house corners. Name it in the panel (Pool, Patio, Deck\u2026).",
+  shape:  "Drag out a shape, or tap to drop one at the size set above, centred where you tap \u2014 set 5\" x 5\" and tap each run end for posts. Hold Shift for a perfect square or circle. Name it in the panel (Pool, Patio, Deck\u2026).",
   post:   "Tap to drop a post, or drag to draw one any size. It lands on the end of a run, a corner or another post \u2014 turn on Free to place it anywhere.",
   tree:   "Click to drop a tree. Drag its edge handle later to resize the canopy.",
   note:   "Click where the note should point. Type the text in the box that opens.",
   eraser: "Click any item to delete it.",
   house:  "Drag out the footprint. Name it in the panel, and cut back any corner there to make an L or a U.",
   curve:  "Drag out a curved run, then drag the dot in the middle to set how much it bends. The figure is the length along the curve.",
+  rotate: "Press on anything and drag around it to turn it \u2014 it turns about its own middle in 5\u00b0 steps. Hold Shift for 15\u00b0 steps, or switch on Free for any angle. Select several things first to turn them together.",
+  detail: "Drag out a frame for a side view \u2014 a panel, a gate, a post cap. Draw inside it with Fence and Shape as usual: nothing inside a detail frame counts toward footage or quantities. Drag the frame and its contents come with it.",
   tape:   "Drag across anything to measure it. The figure stays on the plan and prints with it \u2014 it isn't fence, so it never reaches the quantities."
 };
 
 var STRUCT_DEFAULTS = {
-  house:  {w:40, h:30, label:"HOUSE",  kind:"rect",   hatch:true}
+  house:  {w:40, h:30, label:"HOUSE",  kind:"rect",   hatch:true},
+  detail: {w:16, h:10, label:"PANEL DETAIL", kind:"detail", hatch:false}
 };
 
 /* LA Fence Craft mark, carried in the file so it prints with no signal.
@@ -1237,6 +1281,33 @@ var COMPANY = {
   crew:    "No sub-contractors — in-house employees"
 };
 
+/* How clients can pay. The card fee and the Zelle account print exactly as
+   written here, on the sketch page and in the app. */
+var PAY_METHODS = [
+  {k:"credit", label:"Credit card", note:"2.75% fee"},
+  {k:"check",  label:"Check",       note:""},
+  {k:"cash",   label:"Cash",        note:""},
+  {k:"zelle",  label:"Zelle",       note:"Mher S. 818-399-9701"}
+];
+function payState(){
+  var p = state.project.pay;
+  if(!p || typeof p !== "object") p = state.project.pay = {};
+  if(!p.methods) p.methods = {credit:true, check:true, cash:true, zelle:true};
+  if(p.print === undefined) p.print = true;
+  return p;
+}
+function payNum(v){
+  if(v == null || v === "") return null;
+  var n = parseFloat(String(v).replace(/[$,\s]/g, ""));
+  return isFinite(n) ? n : null;
+}
+/** Balance is worked out whenever there's a contract price to work from. */
+function payBalance(){
+  var p = payState(), tot = payNum(p.total);
+  if(tot == null) return payNum(p.balance);
+  return tot - (payNum(p.deposit) || 0) - (payNum(p.progress) || 0);
+}
+
 var PAD_BASE = 40;
 var HISTORY_MAX = 60;
 var STORAGE_KEY = "fence-layout-board.v2";
@@ -1250,7 +1321,7 @@ function todayISO(){
 
 var state = {
   project:{client:"",address:"",date:todayISO(),fenceType:"",notes:"",
-           rep:"",phone:"",warrantyYears:5,terms:true,logo:null},
+           rep:"",phone:"",warrantyYears:5,terms:true,logo:null,pay:null},
   areaFeetW:120, areaFeetH:80,
   pxPerFoot:16,
   snapIn:12,
@@ -1307,8 +1378,12 @@ function uid(){ return state.nextId++; }
 /* ========================= Persistence ========================= */
 
 function saveLocal(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(stateSnapshot())); }catch(e){}
+}
+
+/** Everything a job is, as plain data. */
+function stateSnapshot(){
+  return {
       project:state.project, areaFeetW:state.areaFeetW, areaFeetH:state.areaFeetH,
       pxPerFoot:state.pxPerFoot, pan:state.pan, snapIn:state.snapIn, autoPost:state.autoPost,
       postSizeIn:state.postSizeIn, postDepthIn:state.postDepthIn,
@@ -1318,11 +1393,95 @@ function saveLocal(){
       wallThickIn:state.wallThickIn, freePlace:state.freePlace, objectSnap:state.objectSnap,
       showDims:state.showDims, measureFrom:state.measureFrom,
       nextId:state.nextId, elements:state.elements
-    }));
-  }catch(e){}
+  };
+}
+
+/* ---------- job files ----------
+   A job saved to a file is the same data the browser keeps, wrapped with a
+   label so the app can tell its own files from any other JSON. The PDF
+   carries a copy too, attached inside it, so the contract you sent can be
+   opened back up and edited. ---------- */
+var JOB_APP = "la-fence-sketch";
+
+function jobPayload(forPdf){
+  var job = JSON.parse(JSON.stringify(stateSnapshot()));
+  job.project = job.project || {};
+  if(forPdf){
+    // the copy riding inside a client's PDF holds nothing the page doesn't show
+    if(!state.showPrices){
+      (job.elements.tags || []).forEach(function(t){ t.price = 0; });
+    }
+    var pp = job.project.pay;
+    if(pp && pp.print === false){ delete pp.total; delete pp.deposit; delete pp.progress; delete pp.balance; }
+    job.project.logo = null;             // the page already carries it
+  }
+  return {app: JOB_APP, format: 1, saved: new Date().toISOString(), job: job};
+}
+
+/** "Kathy Nguyen - 8712 Joy Ave - 2026-09-24", safe for any file system. */
+function jobBaseName(){
+  var p = state.project || {};
+  var s = [p.client, p.address, p.date].filter(function(v){ return v && String(v).trim(); }).join(" - ");
+  s = s.replace(/[\\/:*?"<>|#%\u0000-\u001f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 90);
+  return s || "fence-sketch";
+}
+
+/** Bytes as a string of 0-255 char codes -- what jsPDF writes out verbatim. */
+function utf8Binary(str){ return unescape(encodeURIComponent(str)); }
+
+/** Pull a job out of whatever was opened: our JSON, a bare state, or a PDF. */
+function readJobText(text){
+  var o;
+  try{ o = JSON.parse(text); }catch(e){ return null; }
+  if(o && o.app === JOB_APP && o.job && o.job.elements) return o.job;
+  if(o && o.elements && o.elements.segments) return o;          // a bare saved state
+  return null;
+}
+function readJobFromPdf(bytes){
+  // scan as Latin-1 so byte offsets and string offsets line up
+  var s = "";
+  for(var i=0; i<bytes.length; i+=8192){
+    s += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(bytes.length, i+8192)));
+  }
+  var at = s.indexOf('{"app":"' + JOB_APP + '"');
+  if(at < 0) return null;
+  var end = s.indexOf("endstream", at);
+  if(end < 0) return null;
+  var raw = s.slice(at, end).replace(/\s+$/, "");
+  try{ raw = decodeURIComponent(escape(raw)); }catch(e){}
+  return readJobText(raw);
+}
+
+/** Attach the job to the PDF as a real embedded file (it shows as an
+    attachment in Acrobat and Preview), and mark the catalog to point at it. */
+function embedJob(doc){
+  var data = utf8Binary(JSON.stringify(jobPayload(true)));
+  var name = jobBaseName() + ".fence.json";
+  // PDF name strings aren't Unicode here: keep the attachment name plain ASCII
+  var pdfName = name.replace(/[()\\]/g, "").replace(/[^\x20-\x7e]/g, "-");
+  var ev = doc.internal.events, namesId = null;
+  ev.subscribe("postPutResources", function(){
+    var fileId = doc.internal.newObject();
+    doc.internal.write("<< /Type /EmbeddedFile /Subtype /application#2Fjson /Length " + data.length + " >>");
+    doc.internal.write("stream");
+    doc.internal.write(data);
+    doc.internal.write("endstream");
+    doc.internal.write("endobj");
+    var specId = doc.internal.newObject();
+    doc.internal.write("<< /Type /Filespec /F (" + pdfName + ") /UF (" + pdfName + ")"
+      + " /Desc (Editable sketch - open with LA Fence Craft Sketch) /EF << /F " + fileId + " 0 R >> >>");
+    doc.internal.write("endobj");
+    namesId = doc.internal.newObject();
+    doc.internal.write("<< /Names [(" + pdfName + ") " + specId + " 0 R] >>");
+    doc.internal.write("endobj");
+  });
+  ev.subscribe("putCatalog", function(){
+    if(namesId) doc.internal.write("/Names << /EmbeddedFiles " + namesId + " 0 R >>");
+  });
 }
 
 function loadLocal(){
+  var migratedPosts = false;
   var raw;
   try{ raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("fence-layout-board.v1"); }
   catch(e){ return; }
@@ -1374,6 +1533,26 @@ function loadLocal(){
     if(o.hIn == null) o.hIn = o.sizeIn;
     if(o.rot == null) o.rot = 0;
   });
+  /* Posts are drawn with the Shape tool now. Anything placed with the old
+     Post tool becomes a small rectangle of the same size in the same spot.
+     It keeps its id, so a line item that listed it still finds it. */
+  if(state.elements.posts.length){
+    state.elements.posts.forEach(function(o){
+      var wFt = (o.wIn || 4)/12, hFt = (o.hIn || 4)/12;
+      state.elements.structures.push({
+        id:o.id, kind:"rect", tool:"shape", shapeKind:"rect",
+        x:o.x - wFt/2, y:o.y - hFt/2, w:wFt, h:hFt, rot:o.rot || 0,
+        label:"", color:o.color == null ? null : o.color,
+        hatch:false, locked:false, dims:false
+      });
+    });
+    state.elements.tags.forEach(function(t){
+      (t.members || []).forEach(function(m){ if(m.kind === "post") m.kind = "structure"; });
+    });
+    state.elements.posts = [];
+    migratedPosts = true;
+  }
+  state.autoPost = false;
   var TREE_MAP = {small:8, medium:15, large:25};
   state.elements.trees.forEach(function(o){
     if(o.diaFt == null) o.diaFt = TREE_MAP[o.size] || 15;
@@ -1387,6 +1566,7 @@ function loadLocal(){
   state.elements.structures.forEach(function(o){
     if(o.hatch === undefined) o.hatch = true;
   });
+  if(migratedPosts) saveLocal();
 }
 
 /* ========================= Geometry ========================= */
@@ -2152,6 +2332,30 @@ function structPoly(s){
   });
 }
 
+/* ---------- detail frames ----------
+   A side view of a panel or a gate is drawn with the same Fence and Shape
+   tools as the plan, so the only way to keep it out of the footage is by
+   where it sits: anything whose middle is inside a detail frame is part of
+   the illustration, not the job. ---------- */
+function isDetail(s){ return !!s && s.kind === "detail"; }
+function detailFrames(){ return state.elements.structures.filter(isDetail); }
+function inDetailAt(x, y){
+  var fr = state.elements.structures;
+  for(var i=0; i<fr.length; i++){
+    if(isDetail(fr[i]) && pointInPoly(x, y, structPoly(fr[i]))) return fr[i];
+  }
+  return null;
+}
+/** The detail frame an element belongs to, judged by its middle. */
+function detailOf(kind, el){
+  if(!el || !state.elements.structures.some(isDetail)) return null;
+  if(kind === "structure" && isDetail(el)) return null;
+  if(kind === "segment" || kind === "dim") return inDetailAt((el.x1+el.x2)/2, (el.y1+el.y2)/2);
+  if(kind === "structure") return inDetailAt(el.x + el.w/2, el.y + el.h/2);
+  if(el.x != null) return inDetailAt(el.x, el.y);
+  return null;
+}
+
 function structCorners(s){
   var cx = s.x + s.w/2, cy = s.y + s.h/2;
   var local = [{u:0,v:0},{u:1,v:0},{u:1,v:1},{u:0,v:1}];
@@ -2316,11 +2520,14 @@ var ctx = canvas.getContext("2d");
 /** Feet per drawn grid square — coarsens automatically when squares get tight. */
 function gridStepFor(ppf,k){ return ppf < 7*k ? 5 : 1; }
 
+/* On paper the plan needs no ruler gutter: the crop already leaves room
+   for every dimension, so a hair of padding is all it takes. */
+var PRINT_PAD = 5;
 function planWidth(ppf,k,b){
-  return Math.round(PAD_BASE*k + (b ? (b.x1-b.x0) : state.areaFeetW)*ppf + 24*k);
+  return Math.round(PRINT_PAD*2*k + (b ? (b.x1-b.x0) : state.areaFeetW)*ppf);
 }
 function planHeight(ppf,k,b){
-  return Math.round(PAD_BASE*k + (b ? (b.y1-b.y0) : state.areaFeetH)*ppf + 24*k);
+  return Math.round(PRINT_PAD*2*k + (b ? (b.y1-b.y0) : state.areaFeetH)*ppf);
 }
 
 /**
@@ -2329,7 +2536,7 @@ function planHeight(ppf,k,b){
  */
 function renderPlan(c, pal, ppf, k, opts){
   opts = opts || {};
-  var PAD = PAD_BASE*k;
+  var PAD = (opts.bounds ? PRINT_PAD : PAD_BASE)*k;
   var OX = opts.originX !== undefined ? opts.originX : PAD;
   var OY = opts.originY !== undefined ? opts.originY : PAD;
   var B = opts.bounds;
@@ -2370,7 +2577,7 @@ function renderPlan(c, pal, ppf, k, opts){
     c.lineTo(Math.round(b.x)+0.5, b.y);
     c.strokeStyle = major ? pal.gridMajor : pal.gridMinor;
     c.stroke();
-    if(!opts.rulers && major && Math.round(x)%10===0){
+    if(!opts.rulers && !opts.bounds && major && Math.round(x)%10===0){
       c.fillStyle = pal.inkDim;
       c.fillText(Math.round(x)+"'", a.x-8*k, P(bx0,by0).y-10*k);
     }
@@ -2383,7 +2590,7 @@ function renderPlan(c, pal, ppf, k, opts){
     c.lineTo(q.x, Math.round(q.y)+0.5);
     c.strokeStyle = majorY ? pal.gridMajor : pal.gridMinor;
     c.stroke();
-    if(!opts.rulers && majorY && Math.round(y)%10===0){
+    if(!opts.rulers && !opts.bounds && majorY && Math.round(y)%10===0){
       c.fillStyle = pal.inkDim;
       c.fillText(Math.round(y)+"'", P(bx0,by0).x-30*k, p.y+3*k);
     }
@@ -2396,11 +2603,6 @@ function renderPlan(c, pal, ppf, k, opts){
     c.strokeRect(o0.x+0.5, o0.y+0.5, o1.x-o0.x, o1.y-o0.y);
   }
 
-  /**
-   * A drafting dimension: witness lines out from each end, a dimension line
-   * between them with 45-degree ticks, and the measurement in a small box.
-   * a,b are canvas points; `side` picks which way it offsets.
-   */
   /** Trace a run: a straight line, or the arc it was bent into. */
   function runPath(seg){
     var pts = segPath(seg, 28).map(function(q){ return P(q.x,q.y); });
@@ -2409,70 +2611,206 @@ function renderPlan(c, pal, ppf, k, opts){
     return pts;
   }
 
+  /* ---------- lettering ----------
+     Paper wants a drafting hand: fine lines, small upright lettering and
+     fractions set small, so 15'-8 1/4" takes the room of 15'-8". LW thins
+     every stroke on the sheet; the screen keeps a little more weight so a
+     line is still easy to see and hit with a finger. */
+  var LW = pal.print ? 0.5 : 0.85;
+  var DIM_FS = (pal.print ? 7.4 : 10)*k;            // dimension figures
+  var LBL_FS = (pal.print ? 7.6 : 10)*k;            // chips and labels
+  var SANS = "Helvetica, Arial, sans-serif";
+  var placed = [];                                   // label boxes already on the sheet
+
+  /* "15' 8 1/4"" -> pieces: 15'-8, then 1/4 set small, then the inch mark.
+     Anything that isn't a length (a name, "WALL", a star) passes through. */
+  function dimPieces(text){
+    var out = [];
+    var m = /^(.*?)(\d+)'(?: (\d+))?(?: (\d+)\/(\d+))?"(.*)$/.exec(text);
+    var mi = m ? null : /^(.*?)(?:(\d+) )?(\d+)\/(\d+)"(.*)$/.exec(text);
+    if(m){
+      var pre = m[1], ft = m[2], inch = m[3], fn = m[4], fd = m[5], post = m[6];
+      // under a foot reads as inches alone: 9", not 0'-9"
+      if(ft === "0" && (inch || fn)) out.push({t: pre + (inch || "")});
+      else out.push({t: pre + ft + "'-" + (inch || "0")});
+      if(fn) out.push({num: fn, den: fd});
+      out.push({t: '"' + post});
+    } else if(mi){
+      out.push({t: mi[1] + (mi[2] || "")});
+      out.push({num: mi[3], den: mi[4]});
+      out.push({t: '"' + mi[5]});
+    } else {
+      out.push({t: text});
+    }
+    return out.filter(function(p){ return p.num || p.t; });
+  }
+  /* jsPDF's canvas shim floors every font size to a whole point and
+     reports text 4/3 wider than it draws it (it assumes 96 dpi). Set the
+     exact size straight on the document, and scale measurements back, so a
+     6.3pt figure is 6.3pt and a fraction lands right against its inches. */
+  var VEC = !!(opts.vector && c.pdf && c.pdf.setFontSize);
+  function setFont(sz, weight){
+    c.font = (weight || 400) + " " + sz + "px " + SANS;
+    if(VEC) c.pdf.setFontSize(sz);
+  }
+  function mw(str){ return c.measureText(str).width * (VEC ? 0.75 : 1); }
+  function piecesWidth(pcs, fs){
+    var w = 0;
+    pcs.forEach(function(p){
+      if(p.num){
+        w += fs*0.1;                                   // hair space before it
+        setFont(fs*0.64); w += mw(p.num) + mw(p.den);
+        setFont(fs*0.8);  w += mw("/")*0.7;
+      } else { setFont(fs); w += mw(p.t); }
+    });
+    return w;
+  }
+  /* Draw at the current transform, left edge at x, on baseline y. */
+  function drawPieces(pcs, fs, x, y){
+    pcs.forEach(function(p){
+      if(p.num){
+        x += fs*0.1;
+        setFont(fs*0.64);
+        c.fillText(p.num, x, y - fs*0.34); x += mw(p.num);
+        setFont(fs*0.8);
+        var sw = mw("/");
+        c.fillText("/", x - sw*0.15, y); x += sw*0.7;
+        setFont(fs*0.64);
+        c.fillText(p.den, x, y); x += mw(p.den);
+      } else {
+        setFont(fs); c.fillText(p.t, x, y); x += mw(p.t);
+      }
+    });
+  }
+
+  /* Rotated label box -> screen AABB, for keeping figures off each other. */
+  function boxAt(ox, oy, ang, x0, y0, x1, y1){
+    var ca = Math.cos(ang), sa = Math.sin(ang);
+    var xs = [], ys = [];
+    [[x0,y0],[x1,y0],[x1,y1],[x0,y1]].forEach(function(q){
+      xs.push(ox + q[0]*ca - q[1]*sa); ys.push(oy + q[0]*sa + q[1]*ca);
+    });
+    return {x0:Math.min.apply(null,xs), y0:Math.min.apply(null,ys),
+            x1:Math.max.apply(null,xs), y1:Math.max.apply(null,ys)};
+  }
+  function clashes(b){
+    var pad = 1.5*k;
+    return placed.some(function(q){
+      return b.x0 < q.x1+pad && b.x1 > q.x0-pad && b.y0 < q.y1+pad && b.y1 > q.y0-pad;
+    });
+  }
+
+  /**
+   * A drafting dimension: witness lines out from each end, an unbroken
+   * dimension line between them with 45-degree ticks, and the figure sitting
+   * just off the line on its outer side. A span too short to hold its figure
+   * still gets one: the line runs on past the tick and the figure sits there.
+   * a,b are canvas points; `side` picks which way it offsets.
+   */
   function dimension(a, b, text, color, side, gap){
     var dx = b.x-a.x, dy = b.y-a.y;
     var L = Math.hypot(dx,dy);
-    if(L < 26*k) return;                 // too short to letter cleanly
+    if(L < 0.5) return;                    // a point has nothing to dimension
     var ux = dx/L, uy = dy/L;
     var nx = -uy*(side||1), ny = ux*(side||1);
-    var off = (gap === undefined ? 16 : gap)*k;
-    var ext = 5*k;
+    var off = (gap === undefined ? 16 : gap)*k*(pal.print ? 0.72 : 1);
+    var ext = 3.5*k;
 
     var a1 = {x:a.x + nx*off, y:a.y + ny*off};
     var b1 = {x:b.x + nx*off, y:b.y + ny*off};
+    var lineCol = mix(color, pal.surface, pal.print ? 0.62 : 0.5);
 
-    c.strokeStyle = mix(color, pal.surface, 0.5);
-    c.lineWidth = 0.6*k;
+    // figure placement first, so the line can run on under an outside figure
+    var ang = Math.atan2(dy,dx);
+    if(ang > Math.PI/2 || ang < -Math.PI/2) ang += Math.PI;   // keep text readable
+    var ca = Math.cos(ang), sa = Math.sin(ang);
+    // local +x along the line as read, local -y is "up" on the page
+    var upOut = (sa*nx - ca*ny) >= 0;      // is "up" the outer side?
+    var pcs = dimPieces(text);
+    var fs = DIM_FS;
+    var tw = piecesWidth(pcs, fs);
+    var asc = fs*0.74, gapT = (pal.print ? 1.5 : 2.2)*k;
+    var mx = (a1.x+b1.x)/2, my = (a1.y+b1.y)/2;
+    var half = L/2, tick = 3.2*k;
+    var fits = tw + 2*(tick + 1.5*k) <= L;
+
+    var tries = [];
+    function yFor(outer){ return (outer === upOut) ? -gapT : gapT + asc; }
+    if(fits){
+      tries.push({cx:0, y:yFor(true)});
+      tries.push({cx:0, y:yFor(false)});
+      tries.push({cx: half*0.5, y:yFor(true)});
+      tries.push({cx:-half*0.5, y:yFor(true)});
+    }
+    var outR = half + tick + 2*k + tw/2;
+    tries.push({cx: outR, y:yFor(true), lead:1});
+    tries.push({cx:-outR, y:yFor(true), lead:-1});
+    tries.push({cx: outR, y:yFor(false), lead:1});
+    tries.push({cx:-outR, y:yFor(false), lead:-1});
+
+    var pick = null, pickBox = null;
+    for(var i=0; i<tries.length; i++){
+      var tr = tries[i];
+      var bx = boxAt(mx, my, ang, tr.cx - tw/2 - 1*k, tr.y - asc - 0.5*k, tr.cx + tw/2 + 1*k, tr.y + fs*0.2);
+      if(!clashes(bx)){ pick = tr; pickBox = bx; break; }
+    }
+    if(!pick){ pick = tries[0]; pickBox = boxAt(mx, my, ang, pick.cx - tw/2, pick.y - asc, pick.cx + tw/2, pick.y); }
+    placed.push(pickBox);
+
     c.setLineDash([]);
+    c.strokeStyle = lineCol;
+    c.lineWidth = 0.6*k*LW;
     c.beginPath();
     // witness lines, held off the geometry a touch
-    c.moveTo(a.x + nx*ext*0.7, a.y + ny*ext*0.7);
+    c.moveTo(a.x + nx*ext*0.6, a.y + ny*ext*0.6);
     c.lineTo(a1.x + nx*ext,    a1.y + ny*ext);
-    c.moveTo(b.x + nx*ext*0.7, b.y + ny*ext*0.7);
+    c.moveTo(b.x + nx*ext*0.6, b.y + ny*ext*0.6);
     c.lineTo(b1.x + nx*ext,    b1.y + ny*ext);
-    // the dimension line itself
+    // the dimension line itself, unbroken
     c.moveTo(a1.x, a1.y);
     c.lineTo(b1.x, b1.y);
+    if(pick.lead){
+      // carry the line on past the tick to sit under an outside figure
+      var reach = Math.abs(pick.cx) + tw/2 + 1*k;
+      var dir = pick.lead * (ca*ux + sa*uy >= 0 ? 1 : -1);  // local x -> run direction
+      var from = dir > 0 ? b1 : a1;
+      var to = {x: mx + ux*dir*reach, y: my + uy*dir*reach};
+      c.moveTo(from.x, from.y); c.lineTo(to.x, to.y);
+    }
     c.stroke();
 
     // 45-degree slash ticks at each end
-    var t = 4*k;
     var tx = (ux + nx)/Math.SQRT2, ty = (uy + ny)/Math.SQRT2;
     c.beginPath();
-    c.moveTo(a1.x - tx*t, a1.y - ty*t); c.lineTo(a1.x + tx*t, a1.y + ty*t);
-    c.moveTo(b1.x - tx*t, b1.y - ty*t); c.lineTo(b1.x + tx*t, b1.y + ty*t);
-    c.strokeStyle = mix(color, pal.surface, 0.72);
-    c.lineWidth = 0.85*k;
+    c.moveTo(a1.x - tx*tick, a1.y - ty*tick); c.lineTo(a1.x + tx*tick, a1.y + ty*tick);
+    c.moveTo(b1.x - tx*tick, b1.y - ty*tick); c.lineTo(b1.x + tx*tick, b1.y + ty*tick);
+    c.strokeStyle = mix(color, pal.surface, pal.print ? 0.8 : 0.72);
+    c.lineWidth = 0.9*k*LW;
     c.stroke();
 
-    // the measurement, upright, on a clear patch of the dimension line
-    var mx = (a1.x+b1.x)/2, my = (a1.y+b1.y)/2;
-    var ang = Math.atan2(dy,dx);
-    if(ang > Math.PI/2 || ang < -Math.PI/2) ang += Math.PI;   // keep text readable
+    // the figure, upright, just off the line
     c.save();
-    c.translate(mx,my);
+    c.translate(mx, my);
     c.rotate(ang);
-    c.font = "400 "+(9.6*k)+"px 'IBM Plex Mono', ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
-    var w = c.measureText(text).width;
-    c.fillStyle = pal.surface;
-    c.fillRect(-w/2-3.5*k, -7*k, w+7*k, 14*k);
     c.fillStyle = mix(color, pal.ink, 0.35);
-    c.textBaseline = "middle";
-    c.fillText(text, -w/2, 0);
     c.textBaseline = "alphabetic";
+    drawPieces(pcs, fs, pick.cx - tw/2, pick.y);
     c.restore();
   }
 
-  /* --- shared label chip --- */
+  /* --- shared label chip: small lettering on a clear patch --- */
   function chip(text, cx, cy, color){
-    c.font = "400 "+(9.8*k)+"px 'IBM Plex Mono', ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
-    var w = c.measureText(text).width;
+    var pcs = dimPieces(text), fs = LBL_FS;
+    var w = piecesWidth(pcs, fs);
+    var bx = {x0:cx-w/2-2*k, y0:cy-fs*0.75, x1:cx+w/2+2*k, y1:cy+fs*0.35};
+    // nudge down a line at a time if something is already sitting there
+    for(var n=0; n<4 && clashes(bx); n++){ bx.y0 += fs*1.25; bx.y1 += fs*1.25; cy += fs*1.25; }
+    placed.push(bx);
     c.fillStyle = pal.surface;
-    c.fillRect(cx-w/2-4*k, cy-9*k, w+8*k, 16*k);
+    c.fillRect(bx.x0, bx.y0, bx.x1-bx.x0, bx.y1-bx.y0);
     c.fillStyle = color;
-    c.textBaseline = "middle";
-    c.fillText(text, cx-w/2, cy-1*k);
     c.textBaseline = "alphabetic";
+    drawPieces(pcs, fs, cx-w/2, cy + fs*0.3 - 1*k);
   }
 
   /* Push dimensions away from the centre of the sheet so they sit outside
@@ -2502,7 +2840,7 @@ function renderPlan(c, pal, ppf, k, opts){
   /* --- line-item halos: a soft colour wash under every member object --- */
   state.elements.tags.forEach(function(t){
     var active = opts.selection && state.activeTag === t.id;
-    var halo = mix(t.color, pal.surface, active ? 0.45 : 0.28);
+    var halo = mix(t.color, pal.surface, active ? 0.45 : (pal.print ? 0.2 : 0.26));
     c.strokeStyle = halo;
     c.fillStyle = halo;
     c.lineCap = "round";
@@ -2510,7 +2848,8 @@ function renderPlan(c, pal, ppf, k, opts){
     t.members.forEach(function(m){
       var el = findEl(m.kind, m.id);
       if(!el) return;
-      var w = (active ? 15 : 12)*k;
+      // on paper a narrow wash is enough to say which option a run belongs to
+      var w = (pal.print ? 6 : (active ? 14 : 11))*k;
       if(m.kind==="segment"){
         var a = P(el.x1,el.y1), b = P(el.x2,el.y2);
         c.lineWidth = w;
@@ -2535,13 +2874,57 @@ function renderPlan(c, pal, ppf, k, opts){
   });
 
   /* --- structures (drawn beneath everything) --- */
-  state.elements.structures.forEach(function(s){
+  // detail frames go down first so whatever is drawn in them sits on top
+  state.elements.structures.slice().sort(function(a, b){
+    return (isDetail(b) ? 1 : 0) - (isDetail(a) ? 1 : 0);
+  }).forEach(function(s){
     var sel = isSel("structure", s.id);
     var col = sel ? pal.accent : colorOf(s, pal.struct, pal);
     var poly = structPoly(s).map(function(pt){ return P(pt.x,pt.y); });
     var cor = structCorners(s).map(function(pt){ return P(pt.x,pt.y); });
+    /* A 5" post is a pixel wide when zoomed out. On screen only, hold it at
+       a size you can see and tap; paper always gets the true size. */
+    if(!pal.print && s.kind !== "photo"){
+      var spx = Math.max(s.w, s.h)*ppf, sfloor = (COARSE_POINTER ? 9 : 7)*k;
+      if(spx > 0 && spx < sfloor){
+        var sg = Math.min(4, sfloor/spx), sc = P(s.x + s.w/2, s.y + s.h/2);
+        var grow = function(pt){ return {x:sc.x + (pt.x-sc.x)*sg, y:sc.y + (pt.y-sc.y)*sg}; };
+        poly = poly.map(grow); cor = cor.map(grow);
+      }
+    }
 
-    if(s.kind === "photo"){
+    if(isDetail(s)){
+      /* An inset box on the sheet: on paper it blanks the grid so the side
+         view reads as its own little drawing; on screen the grid stays, to
+         draw against. */
+      var dcol = sel ? pal.accent : mix(pal.ink, pal.surface, 0.62);
+      c.beginPath();
+      poly.forEach(function(pt,i){ i ? c.lineTo(pt.x,pt.y) : c.moveTo(pt.x,pt.y); });
+      c.closePath();
+      if(pal.print){ c.fillStyle = pal.surface; c.fill(); }
+      c.setLineDash([6*k, 3*k]);
+      c.strokeStyle = dcol; c.lineWidth = (sel ? 1.6 : 1)*k*LW;
+      c.stroke();
+      c.setLineDash([]);
+      var ttl = String(s.label || "DETAIL").toUpperCase();
+      var tfs = (pal.print ? 7 : 9.5)*k;
+      var ta = Math.atan2(cor[1].y-cor[0].y, cor[1].x-cor[0].x);
+      c.save();
+      c.translate(cor[0].x, cor[0].y);
+      c.rotate(ta);
+      setFont(tfs, 700);
+      c.fillStyle = mix(pal.ink, pal.surface, 0.88);
+      c.textBaseline = "alphabetic";
+      c.fillText(ttl, 5*k, 5*k + tfs);
+      var tw0 = mw(ttl);
+      c.beginPath(); c.moveTo(5*k, 7*k + tfs); c.lineTo(5*k + tw0, 7*k + tfs);
+      c.strokeStyle = c.fillStyle; c.lineWidth = 0.8*k*LW; c.stroke();
+      setFont(tfs*0.8, 400);
+      c.fillStyle = mix(pal.ink, pal.surface, 0.55);
+      c.fillText(s.nts ? "NOT TO SCALE \u00b7 NOT IN QUANTITIES" : "NOT IN QUANTITIES",
+                 5*k, 9*k + tfs*1.95);
+      c.restore();
+    } else if(s.kind === "photo"){
       var img = photoImage(s);
       c.save();
       c.beginPath();
@@ -2570,7 +2953,7 @@ function renderPlan(c, pal, ppf, k, opts){
       poly.forEach(function(pt,i){ i ? c.lineTo(pt.x,pt.y) : c.moveTo(pt.x,pt.y); });
       c.closePath();
       c.strokeStyle = sel ? pal.accent : mix(pal.struct, pal.surface, 0.2);
-      c.lineWidth = (sel ? 3 : 1.5)*k;
+      c.lineWidth = (sel ? 3 : 1.5)*k*LW;
       c.lineJoin = "round";
       c.stroke();
 
@@ -2602,7 +2985,7 @@ function renderPlan(c, pal, ppf, k, opts){
         c.lineTo(seg[1].x, seg[1].y);
       });
       c.strokeStyle = mix(col, pal.surface, 0.5);
-      c.lineWidth = 0.5*k;
+      c.lineWidth = 0.5*k*LW;
       c.stroke();
     }
 
@@ -2611,17 +2994,22 @@ function renderPlan(c, pal, ppf, k, opts){
     poly.forEach(function(pt,i){ i ? c.lineTo(pt.x,pt.y) : c.moveTo(pt.x,pt.y); });
     c.closePath();
     c.strokeStyle = col;
-    c.lineWidth = (sel ? 2.2 : 1.15)*k;
+    c.lineWidth = (sel ? 2.2 : 1.15)*k*LW;
     c.lineJoin = "round";
     c.stroke();
 
     // label at the centre
     var cen = P(s.x + s.w/2, s.y + s.h/2);
     if(s.label){
-      c.font = "500 "+(10.5*k)+"px system-ui, -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif";
+      var slfs = (pal.print ? 7.8 : 10.5)*k;
+      setFont(slfs, pal.print ? 400 : 500);
       c.textAlign = "center";
       c.fillStyle = col;
-      c.fillText(String(s.label).toUpperCase(), cen.x, cen.y + 4*k);
+      var slt = String(s.label).toUpperCase();
+      c.fillText(slt, cen.x, cen.y + slfs*0.36);
+      // let figures drawn later step around the name
+      var slw = mw(slt);
+      placed.push({x0:cen.x - slw/2, y0:cen.y - slfs*0.5, x1:cen.x + slw/2, y1:cen.y + slfs*0.5});
       c.textAlign = "left";
     }
 
@@ -2641,14 +3029,22 @@ function renderPlan(c, pal, ppf, k, opts){
     }
     }
 
-    if(sel){
+    var smallSel = sel && Math.max(s.w, s.h)*ppf < 30;
+    if(smallSel){
+      // handles would bury it: ring it instead
+      var rc = P(s.x + s.w/2, s.y + s.h/2);
+      var rr = Math.max(9*k, Math.hypot(poly[0].x-rc.x, poly[0].y-rc.y) + 5*k);
+      c.beginPath(); c.arc(rc.x, rc.y, rr, 0, Math.PI*2);
+      c.strokeStyle = pal.accent; c.lineWidth = 1.4*k*LW; c.stroke();
+    }
+    if(sel && !smallSel){
       cor.forEach(function(pt){ handle(pt.x, pt.y, pal.accent); });
       structEdgeHandles(s).forEach(function(pt){
         var q = P(pt.x, pt.y);
         c.beginPath();
         c.arc(q.x, q.y, 4*k, 0, Math.PI*2);
         c.fillStyle = pal.accent; c.fill();
-        c.strokeStyle = pal.surface; c.lineWidth = 1.4*k; c.stroke();
+        c.strokeStyle = pal.surface; c.lineWidth = 1.4*k*LW; c.stroke();
       });
       var rh = structRotHandle(s, ppf);
       var rp = P(rh.x, rh.y);
@@ -2656,13 +3052,13 @@ function renderPlan(c, pal, ppf, k, opts){
       c.beginPath();
       c.setLineDash([3*k,3*k]);
       c.moveTo(cenPt.x, cenPt.y); c.lineTo(rp.x, rp.y);
-      c.strokeStyle = pal.accent; c.lineWidth = 1*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 1*k*LW;
       c.stroke();
       c.setLineDash([]);
       c.beginPath();
       c.arc(rp.x, rp.y, 5*k, 0, Math.PI*2);
       c.fillStyle = pal.accent; c.fill();
-      c.strokeStyle = pal.surface; c.lineWidth = 1.4*k; c.stroke();
+      c.strokeStyle = pal.surface; c.lineWidth = 1.4*k*LW; c.stroke();
     }
   });
 
@@ -2699,14 +3095,14 @@ function renderPlan(c, pal, ppf, k, opts){
 
         c.beginPath();                       // the leaf, standing open
         c.moveTo(hinge.x, hinge.y); c.lineTo(ox, oy);
-        c.strokeStyle = col; c.lineWidth = (sel?2:1.2)*k;
+        c.strokeStyle = col; c.lineWidth = (sel?2:1.2)*k*LW;
         c.lineCap = "butt";
         c.stroke();
 
         c.beginPath();                       // its sweep
         c.arc(hinge.x, hinge.y, r, aOpen, aClosed, side>0);
         c.strokeStyle = mix(col, pal.surface, 0.62);
-        c.lineWidth = 1.1*k;
+        c.lineWidth = 1.1*k*LW;
         c.stroke();
       }
 
@@ -2716,7 +3112,7 @@ function renderPlan(c, pal, ppf, k, opts){
         c.moveTo(q.x + gnx*5*k, q.y + gny*5*k);
         c.lineTo(q.x - gnx*5*k, q.y - gny*5*k);
       });
-      c.strokeStyle = col; c.lineWidth = 1.1*k;
+      c.strokeStyle = col; c.lineWidth = 1.1*k*LW;
       c.stroke();
 
       if(gt==="double"){
@@ -2732,14 +3128,14 @@ function renderPlan(c, pal, ppf, k, opts){
         var q1 = {x:B.x + gnx*off, y:B.y + gny*off};
         c.beginPath();
         c.moveTo(q0.x,q0.y); c.lineTo(q1.x,q1.y);
-        c.strokeStyle = col; c.lineWidth = (sel?2.4:1.5)*k;
+        c.strokeStyle = col; c.lineWidth = (sel?2.4:1.5)*k*LW;
         c.stroke();
         // travel arrow
         var m0 = {x:(A.x+B.x)/2 + gnx*off*2.4, y:(A.y+B.y)/2 + gny*off*2.4};
         var m1 = {x:m0.x + gux*dir*gLpx*0.34, y:m0.y + guy*dir*gLpx*0.34};
         c.beginPath();
         c.moveTo(m0.x,m0.y); c.lineTo(m1.x,m1.y);
-        c.lineWidth = 1.3*k; c.strokeStyle = col;
+        c.lineWidth = 1.3*k*LW; c.strokeStyle = col;
         c.stroke();
         var aa = Math.atan2(m1.y-m0.y, m1.x-m0.x), hh = 7*k;
         c.beginPath();
@@ -2762,13 +3158,13 @@ function renderPlan(c, pal, ppf, k, opts){
       var wa = Math.atan2(B.y-A.y, B.x-A.x);
       var nx = -Math.sin(wa), ny = Math.cos(wa);
       var off = Math.max(2.4*k, wallHalfFt(seg)*ppf);
-      c.strokeStyle = wcol; c.lineWidth = (sel?2.2:1.25)*k;
+      c.strokeStyle = wcol; c.lineWidth = (sel?2.2:1.25)*k*LW;
       c.beginPath();
       c.moveTo(A.x+nx*off, A.y+ny*off); c.lineTo(B.x+nx*off, B.y+ny*off);
       c.moveTo(A.x-nx*off, A.y-ny*off); c.lineTo(B.x-nx*off, B.y-ny*off);
       c.stroke();
       var wlen = dist(A.x,A.y,B.x,B.y), tick = Math.max(7*k, off*1.6);
-      c.lineWidth = 1*k;
+      c.lineWidth = 1*k*LW;
       c.beginPath();
       for(var t=tick; t<wlen; t+=tick){
         var tx = A.x+(B.x-A.x)*(t/wlen), ty = A.y+(B.y-A.y)*(t/wlen);
@@ -2782,7 +3178,7 @@ function renderPlan(c, pal, ppf, k, opts){
     } else {
       var fcol = sel ? pal.accent : colorOf(seg, pal.fence, pal);
       runPath(seg);
-      c.strokeStyle = fcol; c.lineWidth = (sel?3.2:1.9)*k; c.lineCap = "round";
+      c.strokeStyle = fcol; c.lineWidth = (sel?3.2:1.9)*k*LW; c.lineCap = "round";
       c.stroke();
       c.lineCap = "butt";
       if(seg.dims !== false){
@@ -2808,7 +3204,7 @@ function renderPlan(c, pal, ppf, k, opts){
         c.beginPath();
         c.arc(bp.x, bp.y, 5*k, 0, Math.PI*2);
         c.fillStyle = pal.surface; c.fill();
-        c.strokeStyle = pal.accent; c.lineWidth = 1.6*k; c.stroke();
+        c.strokeStyle = pal.accent; c.lineWidth = 1.6*k*LW; c.stroke();
       }
     }
   });
@@ -2840,7 +3236,7 @@ function renderPlan(c, pal, ppf, k, opts){
     dpoly.forEach(function(q,i){ i ? c.lineTo(q.x,q.y) : c.moveTo(q.x,q.y); });
     c.closePath();
     c.fillStyle = col; c.fill();
-    c.strokeStyle = pal.surface; c.lineWidth = 1.2*k;
+    c.strokeStyle = pal.surface; c.lineWidth = 1.2*k*LW;
     c.stroke();
 
     // outside-face dimensions, off by default so a run of posts stays clean
@@ -2871,14 +3267,14 @@ function renderPlan(c, pal, ppf, k, opts){
           c.beginPath();
           c.arc(e.x, e.y, 4*k, 0, Math.PI*2);
           c.fillStyle = pal.accent; c.fill();
-          c.strokeStyle = pal.surface; c.lineWidth = 1.4*k; c.stroke();
+          c.strokeStyle = pal.surface; c.lineWidth = 1.4*k*LW; c.stroke();
         });
       } else {
         // too small to grab by a corner — ring it and say so in the panel
         var ringW = dist(dpoly[0].x,dpoly[0].y,dpoly[2].x,dpoly[2].y);
         c.beginPath();
         c.arc(p.x, p.y, Math.max(10*k, ringW/2 + 5*k), 0, Math.PI*2);
-        c.strokeStyle = pal.accent; c.lineWidth = 1.2*k;
+        c.strokeStyle = pal.accent; c.lineWidth = 1.2*k*LW;
         c.setLineDash([2*k,3*k]); c.stroke(); c.setLineDash([]);
       }
       var prh = postRotHandle(post, ppf);
@@ -2886,12 +3282,12 @@ function renderPlan(c, pal, ppf, k, opts){
       c.beginPath();
       c.setLineDash([3*k,3*k]);
       c.moveTo(p.x,p.y); c.lineTo(rp.x,rp.y);
-      c.strokeStyle = pal.accent; c.lineWidth = 1*k; c.stroke();
+      c.strokeStyle = pal.accent; c.lineWidth = 1*k*LW; c.stroke();
       c.setLineDash([]);
       c.beginPath();
       c.arc(rp.x, rp.y, 5*k, 0, Math.PI*2);
       c.fillStyle = pal.accent; c.fill();
-      c.strokeStyle = pal.surface; c.lineWidth = 1.4*k; c.stroke();
+      c.strokeStyle = pal.surface; c.lineWidth = 1.4*k*LW; c.stroke();
     }
   });
 
@@ -2911,7 +3307,7 @@ function renderPlan(c, pal, ppf, k, opts){
     }
     c.closePath();
     c.fillStyle = mix(col, pal.surface, 0.26); c.fill();
-    c.strokeStyle = col; c.lineWidth = (sel?2:1.1)*k; c.stroke();
+    c.strokeStyle = col; c.lineWidth = (sel?2:1.1)*k*LW; c.stroke();
     c.beginPath();
     c.arc(p.x,p.y,2.4*k,0,Math.PI*2);
     c.fillStyle = col; c.fill();
@@ -2924,19 +3320,20 @@ function renderPlan(c, pal, ppf, k, opts){
     var sel = isSel("note", note.id);
     var col = sel ? pal.accent : colorOf(note, pal.note, pal);
     var lines = String(note.text||"").split("\n");
-    c.font = "400 "+(10.5*k)+"px 'IBM Plex Sans', sans-serif";
+    var nfs = (pal.print ? 8 : 10.5)*k;
+    setFont(nfs);
     var wMax = 0;
-    lines.forEach(function(ln){ wMax = Math.max(wMax, c.measureText(ln).width); });
-    var lh = 14*k, boxH = lines.length*lh + 8*k, boxW = wMax + 12*k;
+    lines.forEach(function(ln){ wMax = Math.max(wMax, mw(ln)); });
+    var lh = nfs*1.33, boxH = lines.length*lh + 6*k, boxW = wMax + 10*k;
     var bx = p.x + 9*k, by = p.y - boxH/2;
 
     c.beginPath();
     c.moveTo(p.x, p.y); c.lineTo(bx, p.y);
-    c.strokeStyle = col; c.lineWidth = 1*k; c.stroke();
+    c.strokeStyle = col; c.lineWidth = 1*k*LW; c.stroke();
 
     c.fillStyle = pal.surface;
     c.fillRect(bx, by, boxW, boxH);
-    c.strokeStyle = col; c.lineWidth = (sel?1.8:1)*k;
+    c.strokeStyle = col; c.lineWidth = (sel?1.8:1)*k*LW;
     c.strokeRect(bx, by, boxW, boxH);
 
     c.fillStyle = pal.ink;
@@ -3024,7 +3421,7 @@ function renderPlan(c, pal, ppf, k, opts){
     if(active){
       c.setLineDash([3*k,3*k]);
       c.strokeStyle = mix(t.color, pal.surface, 0.6);
-      c.lineWidth = 1*k;
+      c.lineWidth = 1*k*LW;
       c.beginPath();
       t.members.forEach(function(m){
         var ctr = elCenter(m.kind, m.id);
@@ -3040,38 +3437,58 @@ function renderPlan(c, pal, ppf, k, opts){
     var label = t.label || "";
     if(state.showPrices && tagTotal(t) > 0) label += (label ? "  " : "") + money(tagTotal(t));
 
-    c.font = "700 "+(8.5*k)+"px 'IBM Plex Sans', sans-serif";
-    var tw = label ? c.measureText(label).width : 0;
-    var rBadge = 7*k;
-    var boxW = rBadge*2 + (label ? tw + 8*k : 0);
+    var bfs = (pal.print ? 7 : 8.5)*k;
+    setFont(bfs, pal.print ? 600 : 700);
+    var tw = label ? mw(label) : 0;
+    var rBadge = (pal.print ? 4.6 : 7)*k;
+    var boxW = rBadge*2 + (label ? tw + (pal.print ? 5 : 8)*k : 0);
     var boxH = rBadge*2;
     var bx = ap.x - rBadge, by = ap.y - rBadge;
 
     if(label){
+      // a clear patch to letter on; on paper no frame, just the number disc
       c.fillStyle = pal.surface;
       c.fillRect(bx, by, boxW, boxH);
-      c.strokeStyle = t.color; c.lineWidth = 1.2*k;
-      c.strokeRect(bx, by, boxW, boxH);
+      if(!pal.print){
+        c.strokeStyle = t.color; c.lineWidth = 1.2*k*LW;
+        c.strokeRect(bx, by, boxW, boxH);
+      }
     }
     c.beginPath();
     c.arc(ap.x, ap.y, rBadge, 0, Math.PI*2);
     c.fillStyle = t.color; c.fill();
     if(active){
-      c.strokeStyle = pal.accent; c.lineWidth = 2*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 2*k*LW;
       c.beginPath(); c.arc(ap.x, ap.y, rBadge+3*k, 0, Math.PI*2); c.stroke();
     }
 
     c.fillStyle = "#ffffff";
     c.textAlign = "center"; c.textBaseline = "middle";
-    c.font = "700 "+(8.5*k)+"px 'IBM Plex Sans', sans-serif";
+    setFont((pal.print ? 6.2 : 8.5)*k, 700);
     c.fillText(num, ap.x, ap.y + 0.5*k);
     c.textAlign = "left";
     if(label){
       c.fillStyle = pal.ink;
-      c.fillText(label, ap.x + rBadge + 4*k, ap.y + 0.5*k);
+      setFont(bfs, pal.print ? 600 : 700);
+      c.fillText(label, ap.x + rBadge + (pal.print ? 3 : 4)*k, ap.y + 0.5*k);
     }
     c.textBaseline = "alphabetic";
   });
+
+  /* --- the Rotate tool's pivot and angle --- */
+  if(opts.selection && state.rotUI){
+    var rpv = P(state.rotUI.pivot.x, state.rotUI.pivot.y), rat = P(state.rotUI.at.x, state.rotUI.at.y);
+    c.setLineDash([4*k, 3*k]);
+    c.strokeStyle = pal.accent; c.lineWidth = 1*k;
+    c.beginPath(); c.moveTo(rpv.x, rpv.y); c.lineTo(rat.x, rat.y); c.stroke();
+    c.setLineDash([]);
+    c.beginPath(); c.arc(rpv.x, rpv.y, 4*k, 0, Math.PI*2);
+    c.fillStyle = pal.accent; c.fill();
+    var rd = Math.round(state.rotUI.deg*10)/10;
+    var rtxt = (rd > 0 ? "+" : "") + rd + "\u00b0"
+             + (state.rotUI.heading != null ? "  (" + Math.round(state.rotUI.heading*10)/10 + "\u00b0)" : "");
+    chip(rtxt, rat.x, rat.y - 16*k, pal.accent);
+  }
 
   /* --- in-progress draft --- */
   if(opts.draft){
@@ -3083,7 +3500,7 @@ function renderPlan(c, pal, ppf, k, opts){
         var d1 = P(state.draftPreview.x, state.draftPreview.y);
         c.beginPath(); c.setLineDash([5*k,4*k]);
         c.moveTo(d0.x,d0.y); c.lineTo(d1.x,d1.y);
-        c.strokeStyle = pal.accent; c.lineWidth = 2*k; c.stroke();
+        c.strokeStyle = pal.accent; c.lineWidth = 2*k*LW; c.stroke();
         c.setLineDash([]);
         chip(feetInches(dist(state.draft[0].x,state.draft[0].y,state.draftPreview.x,state.draftPreview.y)),
              (d0.x+d1.x)/2, (d0.y+d1.y)/2-10*k, pal.accent);
@@ -3095,7 +3512,7 @@ function renderPlan(c, pal, ppf, k, opts){
       var eb = P(state.snapEdge.b.x, state.snapEdge.b.y);
       c.beginPath();
       c.moveTo(ea.x,ea.y); c.lineTo(eb.x,eb.y);
-      c.strokeStyle = pal.accent; c.lineWidth = 2.5*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 2.5*k*LW;
       c.globalAlpha = 1;
       c.setLineDash([6*k,4*k]);
       c.stroke();
@@ -3104,7 +3521,7 @@ function renderPlan(c, pal, ppf, k, opts){
     if(state.guides && state.guides.length){
       c.setLineDash([5*k,4*k]);
       c.strokeStyle = "#f0347a";
-      c.lineWidth = 1*k;
+      c.lineWidth = 1*k*LW;
       c.beginPath();
       var equals = [];
       state.guides.forEach(function(g){
@@ -3124,7 +3541,7 @@ function renderPlan(c, pal, ppf, k, opts){
       equals.forEach(function(g){
         c.setLineDash([4*k,3*k]);
         c.strokeStyle = "#f0347a";
-        c.lineWidth = 1.2*k;
+        c.lineWidth = 1.2*k*LW;
         c.beginPath();
         g.equal.forEach(function(pair){
           var a = P(pair[0].x, pair[0].y), b = P(pair[1].x, pair[1].y);
@@ -3140,7 +3557,7 @@ function renderPlan(c, pal, ppf, k, opts){
           c.beginPath();
           c.moveTo(mx + Math.cos(ang)*4*k, my + Math.sin(ang)*4*k);
           c.lineTo(mx - Math.cos(ang)*4*k, my - Math.sin(ang)*4*k);
-          c.strokeStyle = "#f0347a"; c.lineWidth = 1.6*k;
+          c.strokeStyle = "#f0347a"; c.lineWidth = 1.6*k*LW;
           c.stroke();
         });
         var last = g.equal[g.equal.length-1];
@@ -3158,7 +3575,7 @@ function renderPlan(c, pal, ppf, k, opts){
     }
     if(state.snapPoint){
       var spp = P(state.snapPoint.x, state.snapPoint.y);
-      c.strokeStyle = pal.accent; c.lineWidth = 1.8*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 1.8*k*LW;
       c.beginPath();
       c.moveTo(spp.x-6*k, spp.y-6*k); c.lineTo(spp.x+6*k, spp.y+6*k);
       c.moveTo(spp.x+6*k, spp.y-6*k); c.lineTo(spp.x-6*k, spp.y+6*k);
@@ -3181,7 +3598,7 @@ function renderPlan(c, pal, ppf, k, opts){
           return {x: gc.x + (q.x-gc.x)*gGrow, y: gc.y + (q.y-gc.y)*gGrow};
         });
       }
-      c.strokeStyle = pal.accent; c.lineWidth = 1.6*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 1.6*k*LW;
       c.beginPath();
       gpoly.forEach(function(q,i){ i ? c.lineTo(q.x,q.y) : c.moveTo(q.x,q.y); });
       c.closePath();
@@ -3192,7 +3609,7 @@ function renderPlan(c, pal, ppf, k, opts){
       var pr0 = P(Math.min(pd.x0,pd.x1), Math.min(pd.y0,pd.y1));
       var pr1 = P(Math.max(pd.x0,pd.x1), Math.max(pd.y0,pd.y1));
       c.setLineDash([5*k,4*k]);
-      c.strokeStyle = pal.accent; c.lineWidth = 2*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 2*k*LW;
       c.strokeRect(pr0.x, pr0.y, pr1.x-pr0.x, pr1.y-pr0.y);
       c.setLineDash([]);
       var pdW = Math.abs(pd.x1-pd.x0)*12, pdH = Math.abs(pd.y1-pd.y0)*12;
@@ -3207,7 +3624,7 @@ function renderPlan(c, pal, ppf, k, opts){
       c.fillStyle = mix(pal.accent, pal.surface, 0.10);
       c.fillRect(m0.x, m0.y, m1.x-m0.x, m1.y-m0.y);
       c.setLineDash([4*k,3*k]);
-      c.strokeStyle = pal.accent; c.lineWidth = 1*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 1*k*LW;
       c.strokeRect(m0.x, m0.y, m1.x-m0.x, m1.y-m0.y);
       c.setLineDash([]);
     }
@@ -3216,7 +3633,7 @@ function renderPlan(c, pal, ppf, k, opts){
       var r0 = P(Math.min(s.x0,s.x1), Math.min(s.y0,s.y1));
       var r1 = P(Math.max(s.x0,s.x1), Math.max(s.y0,s.y1));
       c.setLineDash([5*k,4*k]);
-      c.strokeStyle = pal.accent; c.lineWidth = 2*k;
+      c.strokeStyle = pal.accent; c.lineWidth = 2*k*LW;
       c.strokeRect(r0.x, r0.y, r1.x-r0.x, r1.y-r0.y);
       c.setLineDash([]);
       chip(feetInches(Math.abs(s.x1-s.x0))+" x "+feetInches(Math.abs(s.y1-s.y0)),
@@ -3453,12 +3870,6 @@ function addSegment(type,p1,p2){
   if(type==="gate"){ seg.hinge="a"; seg.swingSide=1; seg.gateType=state.gateType; }
   if(type==="wall"){ seg.thickness = state.wallThickIn; }
   state.elements.segments.push(seg);
-  // A gate gets no posts of its own: the run it interrupts usually already
-  // has them, and doubling up was making them awkward to select.
-  if(type==="line" && state.autoPost){
-    ensurePost(p1.x,p1.y, state.postSizeIn, state.postDepthIn);
-    ensurePost(p2.x,p2.y, state.postSizeIn, state.postDepthIn);
-  }
   return seg;
 }
 
@@ -3476,8 +3887,9 @@ function addStructure(tool, x, y, w, h){
     s = {
       id:uid(), kind:def.kind, tool:tool,
       x:x, y:y, w:w, h:h, rot:0,
-      label:def.label, color:state.color, hatch:true, locked:false
+      label:def.label, color:state.color, hatch:def.hatch !== false, locked:false
     };
+    if(def.kind === "detail"){ s.dims = false; s.color = null; }
     if(def.kind==="corner"){ s.notch = 0.45; s.cornerIdx = 0; }
   }
   state.elements.structures.push(s);
@@ -3532,6 +3944,8 @@ function tagQty(t){
   t.members.forEach(function(m){
     var el = findEl(m.kind, m.id);
     if(!el) return;
+    if(detailOf(m.kind, el)) return;       // drawn in a detail: illustration only
+    if(m.kind === "structure" && isDetail(el)) return;
     if(m.kind==="segment"){
       var L = segLenOf(el);
       if(el.type==="gate"){ q.gateFt += L; q.gates++; }
@@ -3768,14 +4182,19 @@ function hitTest(fx,fy){
     } else if(sel.kind==="structure"){
       var st = findEl("structure", sel.id);
       if(st){
+        var stSmall0 = Math.max(st.w, st.h)*ppf < 30;
         var rh = structRotHandle(st, ppf);
-        if(dist(fx,fy,rh.x,rh.y) < hr) return {kind:"struct-rot", id:st.id};
-        var cor = structCorners(st);
-        for(var ci=0; ci<4; ci++){
+        if(!stSmall0 && dist(fx,fy,rh.x,rh.y) < hr) return {kind:"struct-rot", id:st.id};
+        /* On a post-sized square every corner handle is within a finger of
+           the middle, so a press meant to move it resized it instead. Small
+           shapes are moved by dragging and sized from the panel. */
+        var stSmall = Math.max(st.w, st.h)*ppf < 30;
+        var cor = stSmall ? [] : structCorners(st);
+        for(var ci=0; ci<cor.length; ci++){
           if(dist(fx,fy,cor[ci].x,cor[ci].y) < hr) return {kind:"struct-handle", id:st.id, corner:ci};
         }
-        var eh = structEdgeHandles(st);
-        for(var ei=0; ei<4; ei++){
+        var eh = stSmall ? [] : structEdgeHandles(st);
+        for(var ei=0; ei<eh.length; ei++){
           if(dist(fx,fy,eh[ei].x,eh[ei].y) < hr) return {kind:"struct-edge", id:st.id, side:ei};
         }
       }
@@ -3814,6 +4233,22 @@ function hitTest(fx,fy){
       return {kind:"dim", id:dm.id};
     }
   }
+  /* A post drawn as a small rectangle sits right on the end of a run, so
+     testing runs first handed you the fence every time. Small shapes get a
+     generous target of their own and are tried before any run. */
+  var smallReach = (COARSE ? 16 : 9)/ppf;
+  var smallBest = null;
+  for(i=state.elements.structures.length-1;i>=0;i--){
+    var ss = state.elements.structures[i];
+    if(ss.kind === "photo") continue;
+    if(Math.max(ss.w, ss.h)*ppf > 44) continue;          // big enough to hit normally
+    var scx = ss.x + ss.w/2, scy = ss.y + ss.h/2;
+    var sdist = dist(fx,fy,scx,scy);
+    var sreach = Math.max(smallReach, Math.hypot(ss.w, ss.h)/2 + 2/ppf);
+    if(sdist < sreach && (!smallBest || sdist < smallBest.d)) smallBest = {d:sdist, s:ss};
+  }
+  if(smallBest) return {kind:"structure", id:smallBest.s.id};
+
   /* A gate lives inside the run it interrupts, so picking purely by
      distance hands you the fence every time. Gather everything in reach
      and let the gate win. */
@@ -3832,7 +4267,24 @@ function hitTest(fx,fy){
   }
   for(i=state.elements.structures.length-1;i>=0;i--){
     var st2 = state.elements.structures[i];
+    if(isDetail(st2)) continue;
     if(pointInPoly(fx,fy,structPoly(st2))) return {kind:"structure", id:st2.id};
+  }
+  /* A detail frame holds a drawing, so clicking inside it must still reach
+     empty paper (for a box-select) — it answers only on its border and its
+     title. */
+  for(i=state.elements.structures.length-1;i>=0;i--){
+    var df = state.elements.structures[i];
+    if(!isDetail(df)) continue;
+    var dp = structPoly(df), edge = (COARSE ? 14 : 8)/ppf;
+    for(var dj=0; dj<dp.length; dj++){
+      var dq = dp[(dj+1) % dp.length];
+      if(distToSegment(fx,fy,dp[dj].x,dp[dj].y,dq.x,dq.y) < edge) return {kind:"structure", id:df.id};
+    }
+    var dc = structCorners(df)[0];
+    if(fx >= dc.x && fx <= dc.x + Math.min(df.w, 150/ppf) && fy >= dc.y && fy <= dc.y + 30/ppf){
+      return {kind:"structure", id:df.id};
+    }
   }
   return null;
 }
@@ -3983,39 +4435,103 @@ function measureNote(){
   return "as dimensioned";
 }
 
-/** The post sitting on a given end of a run, if there is one. */
-function postAt(x,y){
+/** A shape small enough to be a post rather than a patio or a shed. */
+var POST_MAX_FT = 2;
+function isPostShape(s){
+  return s && s.kind === "rect" && s.hatch === false
+      && Math.max(s.w, s.h) <= POST_MAX_FT;
+}
+
+/** The post-sized rectangle sitting on a given end of a run, if any. */
+function postShapeAt(x,y){
   var tol = Math.max(0.6, snapFt());
   var best = null;
-  state.elements.posts.forEach(function(p){
-    var d = dist(p.x,p.y,x,y);
-    if(d <= tol && (!best || d < best.d)) best = {d:d, p:p};
+  state.elements.structures.forEach(function(s){
+    if(!isPostShape(s)) return;
+    var d = dist(s.x + s.w/2, s.y + s.h/2, x, y);
+    if(d <= tol && (!best || d < best.d)) best = {d:d, s:s};
   });
-  return best ? best.p : null;
+  return best ? best.s : null;
+}
+
+/** The same, in the terms the datum maths was written for: a centre, a
+    width and depth in inches, and a turn. */
+function postAt(x,y){
+  var s = postShapeAt(x,y);
+  if(!s) return null;
+  return {x:s.x + s.w/2, y:s.y + s.h/2, wIn:s.w*12, hIn:s.h*12, rot:s.rot || 0};
 }
 
 /**
- * Runs are drawn centre-to-centre, so reporting from post faces means
- * shrinking or growing by half a post at each end. Everything about the
- * chosen datum comes from here, so the number and the dimension line that
- * carries it can never disagree.
+ * The post a run end is touching: the end sits inside the square, or on
+ * (or a whisker off) one of its faces. Where on the post the line lands
+ * doesn't matter -- centre, a face, off to one side.
+ */
+function postTouching(x, y, other){
+  var tol = Math.max(0.13, 3/state.pxPerFoot);      // about 1 1/2"
+  var best = null;
+  state.elements.structures.forEach(function(s){
+    if(!isPostShape(s)) return;
+    var poly = structPoly(s), d;
+    if(pointInPoly(x, y, poly)) d = 0;
+    else {
+      d = Infinity;
+      for(var i=0; i<poly.length; i++){
+        var q = poly[(i+1) % poly.length];
+        d = Math.min(d, distToSegment(x, y, poly[i].x, poly[i].y, q.x, q.y));
+      }
+    }
+    if(d > tol) return;
+    var dc = dist(x, y, s.x + s.w/2, s.y + s.h/2);
+    if(!best || d < best.d - 1e-9 || (Math.abs(d - best.d) < 1e-9 && dc < best.dc)) best = {d:d, dc:dc, s:s};
+  });
+  return best && best.s !== other ? best.s : null;
+}
+
+/**
+ * Where along the run the dimension is taken from, as distances from the
+ * start: tA at the first end, tB at the far end. Every corner of a touching
+ * post is projected onto the run, so the outside face is simply the post's
+ * furthest point along the line and the inside face its nearest -- exact
+ * whether the line hits the middle of the post, a face or one side of it.
+ * The number and the witness lines both come from here, so they can never
+ * disagree.
  */
 function segDatum(seg){
   var mode = segMeasureFrom(seg);
   var L = segGeomLen(seg);
-  var d = {L:L, ux:0, uy:0, ha:0, hb:0, sign:0};
-  if(mode === "center" || L < 1e-6) return d;
+  var d = {L:L, ux:0, uy:0, tA:0, tB:L};
+  if(L < 1e-6 || segIsCurved(seg)) return d;
   d.ux = (seg.x2-seg.x1)/L; d.uy = (seg.y2-seg.y1)/L;
-  var a = postAt(seg.x1,seg.y1), b = postAt(seg.x2,seg.y2);
-  d.ha = a ? postHalfAlong(a, d.ux, d.uy) : 0;
-  d.hb = b ? postHalfAlong(b, d.ux, d.uy) : 0;
-  d.sign = mode === "inside" ? -1 : 1;
+  function span(s){
+    var lo = Infinity, hi = -Infinity;
+    structPoly(s).forEach(function(p){
+      var t = (p.x-seg.x1)*d.ux + (p.y-seg.y1)*d.uy;
+      if(t < lo) lo = t; if(t > hi) hi = t;
+    });
+    var c = (s.x + s.w/2 - seg.x1)*d.ux + (s.y + s.h/2 - seg.y1)*d.uy;
+    return {lo:lo, hi:hi, c:c};
+  }
+  var pa = postTouching(seg.x1, seg.y1, null);
+  var pb = postTouching(seg.x2, seg.y2, pa);
+  var a = pa ? span(pa) : null, b = pb ? span(pb) : null;
+  if(mode === "outside"){
+    if(a) d.tA = a.lo;
+    if(b) d.tB = b.hi;
+  } else if(mode === "inside"){
+    if(a) d.tA = a.hi;
+    if(b) d.tB = b.lo;
+  } else {
+    // centres: a line drawn to a post's face still measures centre to centre
+    if(a) d.tA = a.c;
+    if(b) d.tB = b.c;
+  }
   return d;
 }
 
 function segEndAdjust(seg){
   var d = segDatum(seg);
-  return d.sign * (d.ha + d.hb);
+  return (d.tB - d.tA) - d.L;
 }
 
 /**
@@ -4026,8 +4542,8 @@ function segEndAdjust(seg){
 function segDatumEnds(seg){
   var d = segDatum(seg);
   return {
-    a: {x: seg.x1 - d.ux*d.ha*d.sign, y: seg.y1 - d.uy*d.ha*d.sign},
-    b: {x: seg.x2 + d.ux*d.hb*d.sign, y: seg.y2 + d.uy*d.hb*d.sign}
+    a: {x: seg.x1 + d.ux*d.tA, y: seg.y1 + d.uy*d.tA},
+    b: {x: seg.x1 + d.ux*d.tB, y: seg.y1 + d.uy*d.tB}
   };
 }
 
@@ -4551,6 +5067,18 @@ function renderSelection(){
     });
     addAction(actionsEl,"Delete",del,true);
 
+  } else if(kind==="structure" && isDetail(el)){
+    titleEl.textContent = el.label || "Detail";
+    lenEl.textContent = feetInches(el.w)+" x "+feetInches(el.h);
+    var dnote = document.createElement("p");
+    dnote.style.cssText = "margin:0 0 8px;font-size:12px;color:var(--ink-dim);line-height:1.4;";
+    dnote.textContent = "A side view. Anything drawn inside this frame prints on the sketch but is left out of footage, quantities and line-item totals.";
+    bodyEl.appendChild(dnote);
+    textRow(bodyEl, "Title", el.label, function(v){ el.label = v; saveLocal(); draw(); });
+    lenRow(bodyEl, "Width", el.w, 1, 500, function(v){ snapshot(); el.w = v; refresh(); });
+    lenRow(bodyEl, "Height", el.h, 1, 500, function(v){ snapshot(); el.h = v; refresh(); });
+    checkRow(bodyEl, "Mark not to scale", !!el.nts, function(v){ snapshot(); el.nts = v; refresh(); });
+    addAction(actionsEl,"Delete frame",del,true);
   } else if(kind==="structure"){
     var isShape = el.hatch === false;
     titleEl.textContent = el.label || (isShape ? shapeSpec(el.shapeKind||"rect").label : "Building");
@@ -4647,6 +5175,7 @@ function renderSelection(){
 function totals(){
   var t = {fence:0, wall:0, gate:0, gates:[], posts:{}, structs:[], shapes:[]};
   state.elements.segments.forEach(function(seg){
+    if(detailOf("segment", seg)) return;   // part of an illustration
     var len = segLenOf(seg);
     if(seg.type==="gate"){ t.gate += len; t.gates.push({len:len, type:seg.gateType||"single"}); }
     else if(seg.type==="wall"){ t.wall += len; }
@@ -4658,6 +5187,7 @@ function totals(){
   });
   state.elements.structures.forEach(function(s){
     if(s.kind==="photo") return;   // a reference image isn't a material to count
+    if(isDetail(s) || detailOf("structure", s)) return;
     var entry = {
       label: s.label || (s.hatch===false ? shapeSpec(s.shapeKind||"rect").label : "Structure"),
       w:s.w, h:s.h, round: s.kind==="ellipse" && Math.abs(s.w-s.h)<0.01
@@ -4668,6 +5198,8 @@ function totals(){
 }
 
 function sizeText(e){
+  // a post-sized square reads in inches: 5"×5", not 0' 5"×0' 5"
+  if(!e.round && Math.max(e.w, e.h) < 2) return inchText(e.w*12)+"×"+inchText(e.h*12);
   return e.round ? "Ø "+feetInches(e.w) : feetInches(e.w)+"×"+feetInches(e.h);
 }
 
@@ -4952,20 +5484,10 @@ function renderSummary(){
   var t = totals();
   document.getElementById("stat-fence").textContent = feetInches(t.fence);
   document.getElementById("stat-wall").textContent = feetInches(t.wall);
-  document.getElementById("stat-posts").textContent = state.elements.posts.length;
   document.getElementById("stat-gates").textContent = t.gates.length;
   document.getElementById("stat-trees").textContent = state.elements.trees.length;
   document.getElementById("stat-structs").textContent = t.structs.length;
   document.getElementById("stat-shapes").textContent = t.shapes.length;
-
-  var pb = document.getElementById("post-breakdown");
-  pb.innerHTML = "";
-  Object.keys(t.posts).sort().forEach(function(k){
-    var row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = "<span>"+postLabel(k)+"</span><span class='mono'>&times;"+t.posts[k]+"</span>";
-    pb.appendChild(row);
-  });
 
   var gl = document.getElementById("gate-list");
   gl.innerHTML = "";
@@ -5037,17 +5559,18 @@ function setTool(tool){
 /* Only show the settings that belong to the tool in hand. */
 var OPT_FOR = {
   select:["always"],
-  line:  ["color","post","always"],
+  line:  ["color","always"],
   wall:  ["color","wall","always"],
   gate:  ["color","gate","always"],
-  post:  ["color","post","always"],
   tree:  ["color","tree","always"],
   note:  ["color","always"],
   eraser:["always"],
   house: ["color","always"],
+  detail:["always"],
+  rotate:["always"],
   shape: ["color","shape","always"],
   tape:  ["color","always"],
-  curve: ["color","post","always"]
+  curve: ["color","always"]
 };
 function updateOptBar(){
   var want = OPT_FOR[state.tool] || ["always"];
@@ -5147,7 +5670,7 @@ function placePhoto(img, file){
   }
 })();
 
-var KEYMAP = {v:"select", f:"line", w:"wall", g:"gate", p:"post", t:"tree", n:"note", e:"eraser", h:"house", s:"shape", m:"tape", u:"curve"};
+var KEYMAP = {v:"select", f:"line", w:"wall", g:"gate", t:"tree", d:"detail", r:"rotate", n:"note", e:"eraser", h:"house", s:"shape", m:"tape", u:"curve"};
 
 window.addEventListener("keydown", function(e){
   if(!modal.hidden) return;
@@ -5196,7 +5719,7 @@ window.addEventListener("keydown", function(e){
 
 /* ========================= Pointer ========================= */
 
-var STRUCT_TOOLS = {house:1, shape:1};
+var STRUCT_TOOLS = {house:1, shape:1, detail:1};
 
 canvas.addEventListener("pointerdown", function(e){
   if(e.pointerType === "touch" && window.touchNav){
@@ -5283,6 +5806,11 @@ canvas.addEventListener("pointerdown", function(e){
     dragging = {kind:"seg-draw", start:{x:pressed.x, y:pressed.y},
                 chainFrom:chainFrom, tapEnd:tapEnd};
     draw();
+    return;
+  }
+
+  if(state.tool==="rotate"){
+    startRotate(f, e);
     return;
   }
 
@@ -5378,9 +5906,9 @@ function selectionFor(hit){
     var seg = findEl("segment", hit.id);
     if(seg && seg.type === "gate"){
       [[seg.x1,seg.y1],[seg.x2,seg.y2]].forEach(function(pt){
-        var p = postAt(pt[0], pt[1]);
-        if(p && !picked.some(function(q){ return q.kind==="post" && q.id===p.id; })){
-          picked.push({kind:"post", id:p.id});
+        var p = postShapeAt(pt[0], pt[1]);
+        if(p && !picked.some(function(q){ return q.kind==="structure" && q.id===p.id; })){
+          picked.push({kind:"structure", id:p.id});
         }
       });
     }
@@ -5392,16 +5920,40 @@ function selectionFor(hit){
 function makeGroupDrag(f, evt){
   var items = selElements().map(function(s){
     var e = s.el;
-    var base = s.kind==="segment"
+    var base = (s.kind==="segment" || s.kind==="dim")
       ? {x1:e.x1, y1:e.y1, x2:e.x2, y2:e.y2}
       : {x:e.x, y:e.y};
     return {kind:s.kind, id:s.id, base:base};
   });
+  /* A lone detail frame carries its drawing: add everything inside it to
+     the move (but not to the selection, so the panel still shows the frame). */
+  if(items.length === 1 && items[0].kind === "structure"){
+    var fr0 = findEl("structure", items[0].id);
+    if(isDetail(fr0)){
+      var taken = {};
+      ["segments","structures","trees","notes","dims"].forEach(function(key){
+        var kd = {segments:"segment",structures:"structure",trees:"tree",notes:"note",dims:"dim"}[key];
+        state.elements[key].forEach(function(e2){
+          if(kd === "structure" && e2.id === fr0.id) return;
+          if(detailOf(kd, e2) !== fr0 || taken[kd+e2.id]) return;
+          taken[kd+e2.id] = 1;
+          var b2 = (kd === "segment" || kd === "dim")
+            ? {x1:e2.x1, y1:e2.y1, x2:e2.x2, y2:e2.y2} : {x:e2.x, y:e2.y};
+          items.push({kind:kd, id:e2.id, base:b2});
+        });
+      });
+    }
+  }
   var g = {kind:"group", startX:f.x, startY:f.y, items:items, free:wantFree(evt)};
   if(items.length === 1){
     var b = items[0].base;
-    g.grabDX = f.x - (b.x !== undefined ? b.x : b.x1);
-    g.grabDY = f.y - (b.y !== undefined ? b.y : b.y1);
+    /* A post-sized square is placed by its middle: that's the point that
+       belongs on the end of a run or on a grid line, not its corner. */
+    var e1 = items[0].kind === "structure" ? findEl("structure", items[0].id) : null;
+    g.refDX = (e1 && isPostShape(e1)) ? e1.w/2 : 0;
+    g.refDY = (e1 && isPostShape(e1)) ? e1.h/2 : 0;
+    g.grabDX = f.x - ((b.x !== undefined ? b.x : b.x1) + g.refDX);
+    g.grabDY = f.y - ((b.y !== undefined ? b.y : b.y1) + g.refDY);
   }
   return g;
 }
@@ -5414,8 +5966,8 @@ function applyGroupDrag(f, evt){
   if(items.length === 1 && dragging.grabDX !== undefined){
     // a lone object lands on the grid itself
     var b0 = items[0].base;
-    var ox = b0.x !== undefined ? b0.x : b0.x1;
-    var oy = b0.y !== undefined ? b0.y : b0.y1;
+    var ox = (b0.x !== undefined ? b0.x : b0.x1) + (dragging.refDX || 0);
+    var oy = (b0.y !== undefined ? b0.y : b0.y1) + (dragging.refDY || 0);
     dx = (dragging.free ? (f.x - dragging.grabDX) : snapVal(f.x - dragging.grabDX)) - ox;
     dy = (dragging.free ? (f.y - dragging.grabDY) : snapVal(f.y - dragging.grabDY)) - oy;
   } else {
@@ -5445,8 +5997,8 @@ function applyGroupDrag(f, evt){
       {x:f.x - dragging.grabDX, y:f.y - dragging.grabDY}, [it0], null);
     var e0 = findEl(it0.kind, it0.id);
     if(e0 && (state.snapPoint || state.snapEdge)){
-      var ddx = target.x - (it0.base.x !== undefined ? it0.base.x : it0.base.x1);
-      var ddy = target.y - (it0.base.y !== undefined ? it0.base.y : it0.base.y1);
+      var ddx = target.x - ((it0.base.x !== undefined ? it0.base.x : it0.base.x1) + (dragging.refDX || 0));
+      var ddy = target.y - ((it0.base.y !== undefined ? it0.base.y : it0.base.y1) + (dragging.refDY || 0));
       if(it0.kind === "segment"){
         e0.x1 = it0.base.x1+ddx; e0.y1 = it0.base.y1+ddy;
         e0.x2 = it0.base.x2+ddx; e0.y2 = it0.base.y2+ddy;
@@ -5470,7 +6022,7 @@ function applyGroupDrag(f, evt){
   items.forEach(function(it){
     var e = findEl(it.kind, it.id);
     if(!e) return;
-    if(it.kind === "segment"){
+    if(it.kind === "segment" || it.kind === "dim"){
       e.x1 = it.base.x1+dx; e.y1 = it.base.y1+dy;
       e.x2 = it.base.x2+dx; e.y2 = it.base.y2+dy;
     } else {
@@ -5511,6 +6063,12 @@ function elementsInRect(r){
   state.elements.trees.forEach(function(t){ if(inside(t.x,t.y)) out.push({kind:"tree", id:t.id}); });
   state.elements.notes.forEach(function(n){ if(inside(n.x,n.y)) out.push({kind:"note", id:n.id}); });
   state.elements.structures.forEach(function(st){
+    // a detail frame only joins a box-select that swallows it whole, so
+    // boxing a few lines inside one doesn't pick up the frame as well
+    if(isDetail(st)){
+      if(structPoly(st).every(function(p){ return inside(p.x,p.y); })) out.push({kind:"structure", id:st.id});
+      return;
+    }
     if(inside(st.x+st.w/2, st.y+st.h/2) || structPoly(st).some(function(p){ return inside(p.x,p.y); })){
       out.push({kind:"structure", id:st.id});
     }
@@ -5680,6 +6238,9 @@ canvas.addEventListener("pointermove", function(e){
         resizeStructureEdge(el, dragging.side, q_struct_edge.x, q_struct_edge.y);
       }
       break;
+    case "rotate":
+      applyRotate(f, e);
+      break;
     case "struct-rot":
       el = findEl("structure", dragging.id);
       if(el){
@@ -5692,6 +6253,89 @@ canvas.addEventListener("pointermove", function(e){
   }
   draw();
 });
+
+/* ---------- Rotate tool ----------
+   Press on anything and drag round it. One object turns about its own
+   middle; a selection turns as one about the middle of the lot. A detail
+   frame brings its drawing round with it. ---------- */
+var ROT_OWNER = {
+  "segment":"segment", "seg-handle":"segment", "seg-bow":"segment",
+  "structure":"structure", "struct-handle":"structure", "struct-edge":"structure", "struct-rot":"structure",
+  "dim":"dim", "dim-move":"dim", "dim-handle":"dim",
+  "tree":"tree", "tree-size":"tree", "note":"note"
+};
+function startRotate(f, e){
+  var hit = hitTest(f.x, f.y);
+  var kind = hit && ROT_OWNER[hit.kind];
+  if(kind){
+    // turning something inside a bigger selection turns the whole selection
+    if(!(state.sel.length > 1 && isSelected(kind, hit.id))) setSel(selectionFor({kind:kind, id:hit.id}));
+  } else if(!state.sel.length){
+    toast("Press on the thing you want to turn");
+    return;
+  }
+  var items = makeGroupDrag(f, e).items;
+  if(!items.length) return;
+  items.forEach(function(it){
+    var el = findEl(it.kind, it.id);
+    if(el && it.kind === "structure"){ it.w = el.w; it.h = el.h; it.rot0 = el.rot || 0; }
+  });
+  // pivot: an object's own middle, or the middle of everything selected
+  var pivot;
+  if(items.length === 1){
+    var b = items[0].base;
+    pivot = b.x1 !== undefined ? {x:(b.x1+b.x2)/2, y:(b.y1+b.y2)/2}
+          : items[0].kind === "structure" ? {x:b.x + items[0].w/2, y:b.y + items[0].h/2}
+          : {x:b.x, y:b.y};
+  } else {
+    var bb = itemsBBox(items);
+    pivot = {x:(bb.minX+bb.maxX)/2, y:(bb.minY+bb.maxY)/2};
+  }
+  // what gets snapped: a lone shape snaps its own heading, a lone run its
+  // direction, a group just the amount it has turned
+  var ref = 0;
+  if(items.length === 1){
+    var b1 = items[0].base;
+    if(items[0].kind === "structure") ref = items[0].rot0;
+    else if(b1.x1 !== undefined) ref = Math.atan2(b1.y2-b1.y1, b1.x2-b1.x1)*180/Math.PI;
+  }
+  snapshot();
+  dragging = {kind:"rotate", items:items, pivot:pivot, ref:ref,
+              start:Math.atan2(f.y-pivot.y, f.x-pivot.x)};
+  state.rotUI = {pivot:pivot, at:{x:f.x, y:f.y}, deg:0};
+  renderSelection(); draw();
+}
+function applyRotate(f, e){
+  var d = dragging, pv = d.pivot;
+  if(dist(f.x, f.y, pv.x, pv.y) < 0.05) return;     // too close to read an angle
+  var raw = (Math.atan2(f.y-pv.y, f.x-pv.x) - d.start)*180/Math.PI;
+  raw = ((raw + 540) % 360) - 180;
+  var step = state.freePlace ? 0 : (e && e.shiftKey ? 15 : 5);
+  var deg = raw;
+  if(step){
+    var single = d.items.length === 1 && (d.items[0].kind === "structure" || d.items[0].base.x1 !== undefined);
+    deg = single ? Math.round((d.ref + raw)/step)*step - d.ref : Math.round(raw/step)*step;
+  }
+  var a = deg*Math.PI/180, ca = Math.cos(a), sa = Math.sin(a);
+  function turn(x, y){ var dx = x-pv.x, dy = y-pv.y; return {x:pv.x + dx*ca - dy*sa, y:pv.y + dx*sa + dy*ca}; }
+  d.items.forEach(function(it){
+    var el = findEl(it.kind, it.id), b = it.base;
+    if(!el) return;
+    if(b.x1 !== undefined){
+      var p1 = turn(b.x1, b.y1), p2 = turn(b.x2, b.y2);
+      el.x1 = p1.x; el.y1 = p1.y; el.x2 = p2.x; el.y2 = p2.y;
+    } else if(it.kind === "structure"){
+      var c = turn(b.x + it.w/2, b.y + it.h/2);
+      el.x = c.x - it.w/2; el.y = c.y - it.h/2;
+      el.rot = ((it.rot0 + deg + 180) % 360 + 360) % 360 - 180;
+    } else {
+      var q = turn(b.x, b.y);
+      el.x = q.x; el.y = q.y;
+    }
+  });
+  state.rotUI = {pivot:pv, at:{x:f.x, y:f.y}, deg:deg,
+                 heading: d.items.length === 1 ? ((d.ref + deg + 540) % 360) - 180 : null};
+}
 
 function resizeStructure(s, cornerIdx, px, py){
   var unit = [{u:0,v:0},{u:1,v:0},{u:1,v:1},{u:0,v:1}];
@@ -5871,17 +6515,25 @@ function endDrag(e){
     // foot", which at phone zoom is a few pixels — so a deliberately small
     // patio was being replaced by a big default on release.
     var dragPx = Math.max(w, h) * state.pxPerFoot;
-    if(dragPx < 8){
+    var tapped = dragPx < 8;
+    var sx0 = Math.min(d.x0,d.x1), sy0 = Math.min(d.y0,d.y1);
+    if(tapped){
+      // A tap drops the typed size centred where you tapped, so tapping the
+      // end of a run puts a post square on it.
       w = def.w; h = def.h;
+      sx0 = d.x0 - w/2; sy0 = d.y0 - h/2;
     } else {
       w = Math.max(w, 0.25); h = Math.max(h, 0.25);
     }
     snapshot();
-    var s = addStructure(d.tool, Math.min(d.x0,d.x1), Math.min(d.y0,d.y1), w, h);
+    var s = addStructure(d.tool, sx0, sy0, w, h);
     s.locked = !!d.locked;
+    // a post-sized square would be buried under its own two dimensions
+    if(isPostShape(s)) s.dims = false;
     state.structDraft = null;
     setSel([{kind:"structure", id:s.id}]);
-    setTool("select");
+    // keep tapping to drop more of the same; a drawn shape usually wants a name
+    if(!(tapped && d.tool === "shape")) setTool("select");
     refresh();
     dragging = null;
     return;
@@ -5913,6 +6565,7 @@ function endDrag(e){
   state.snapEdge = null;
   state.snapPoint = null;
   state.guides = null;
+  state.rotUI = null;
   refresh();
   if(wasTap && e && e.pointerType === "touch" && state.tool === "select" && state.sel.length){
     openSheet(true);
@@ -5999,22 +6652,6 @@ function buildSnapOptions(){
 }
 
 function buildPresets(){
-  var pp = document.getElementById("post-presets");
-  pp.innerHTML = "";
-  POST_PRESETS.forEach(function(q){
-    var b = document.createElement("button");
-    b.className = "chip" + (state.postSizeIn===q.w && state.postDepthIn===q.h ? " on" : "");
-    b.textContent = q.label;
-    b.addEventListener("click", function(){
-      state.postSizeIn = q.w;
-      state.postDepthIn = q.h;
-      document.getElementById("in-postsize").value = inchText(q.w, false);
-      document.getElementById("in-postdepth").value = inchText(q.h, false);
-      saveLocal(); buildPresets(); draw();
-    });
-    pp.appendChild(b);
-  });
-
   var tp = document.getElementById("tree-presets");
   tp.innerHTML = "";
   TREE_PRESETS.forEach(function(ft){
@@ -6062,18 +6699,6 @@ function buildPresets(){
   if(document.activeElement !== shEl) shEl.value = feetInches(state.shapeHFt);
 }
 
-document.getElementById("in-postsize").addEventListener("change", function(e){
-  var v = parseInches(e.target.value, state.postSizeIn);
-  state.postSizeIn = Math.max(0.5, Math.min(48, v));
-  e.target.value = inchText(state.postSizeIn, false);
-  saveLocal(); buildPresets();
-});
-document.getElementById("in-postdepth").addEventListener("change", function(e){
-  var v = parseInches(e.target.value, state.postDepthIn);
-  state.postDepthIn = Math.max(0.5, Math.min(48, v));
-  e.target.value = inchText(state.postDepthIn, false);
-  saveLocal(); buildPresets();
-});
 document.getElementById("in-treesize").addEventListener("change", function(e){
   var v = parseFloat(e.target.value);
   if(!isNaN(v)){ state.treeDiaFt = Math.max(2, Math.min(80, v)); saveLocal(); buildPresets(); }
@@ -6089,9 +6714,6 @@ document.getElementById("in-shapeh").addEventListener("change", function(e){
   state.shapeHFt = Math.max(0.25, Math.min(500, v));
   e.target.value = feetInches(state.shapeHFt);
   saveLocal();
-});
-document.getElementById("chk-autopost").addEventListener("change", function(e){
-  state.autoPost = e.target.checked; saveLocal();
 });
 /* round toggles in the canvas corner */
 function bindToggle(id, get, set){
@@ -6395,14 +7017,18 @@ document.getElementById("btn-undo").addEventListener("click", undo);
 document.getElementById("btn-new").addEventListener("click", function(){
   openDialog({
     title:"Start a new project?",
-    message:"This clears the current sketch and the client info. Undo will not bring it back.",
+    message:"This clears the current sketch and the client info. Undo will not bring it back \u2014 use Save job file first if you want to keep it.",
     mode:"confirm", okLabel:"Clear everything"
   }).then(function(ok){
     if(!ok) return;
     history = [];
     state.elements = {segments:[],posts:[],trees:[],notes:[],structures:[],dims:[],tags:[]};
     clearSel(); state.activeTag = null;
-    state.project = {client:"",address:"",date:todayISO(),fenceType:"",notes:""};
+    var keep = state.project;
+    state.project = {client:"",address:"",date:todayISO(),fenceType:"",notes:"",
+                     rep:keep.rep||"", phone:"", warrantyYears:keep.warrantyYears,
+                     terms:keep.terms, logo:keep.logo||null,
+                     pay:{methods:Object.assign({}, payState().methods), print:payState().print}};
     syncProjectFields();
     refresh();
     toast("New project started");
@@ -6421,6 +7047,44 @@ bindField("f-date","date");
 bindField("f-type","fenceType");
 bindField("f-notes","notes");
 bindField("f-rep","rep");
+
+/* ---------- payment ---------- */
+function renderPay(){
+  var p = payState();
+  ["total","deposit","progress"].forEach(function(key){
+    var el = document.getElementById("f-pay-"+key);
+    if(document.activeElement !== el) el.value = p[key] != null && p[key] !== "" ? p[key] : "";
+  });
+  var bal = document.getElementById("f-pay-balance");
+  var auto = payNum(p.total) != null;
+  bal.classList.toggle("auto", auto);
+  bal.readOnly = auto;
+  if(auto) bal.value = money(payBalance()).replace("$","");
+  else if(document.activeElement !== bal) bal.value = p.balance != null ? p.balance : "";
+  var box = document.getElementById("pay-methods");
+  box.innerHTML = "";
+  PAY_METHODS.forEach(function(m){
+    var lab = document.createElement("label");
+    lab.className = "check";
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = p.methods[m.k] !== false;
+    cb.addEventListener("change", function(){ p.methods[m.k] = cb.checked; saveLocal(); });
+    lab.appendChild(cb);
+    lab.appendChild(document.createTextNode(" " + m.label + (m.note ? " \u2014 " + m.note : "")));
+    box.appendChild(lab);
+  });
+  document.getElementById("chk-pay").checked = p.print !== false;
+}
+["total","deposit","progress","balance"].forEach(function(key){
+  document.getElementById("f-pay-"+key).addEventListener("input", function(e){
+    payState()[key] = e.target.value.trim();
+    saveLocal();
+    if(key !== "balance") renderPay();
+  });
+});
+document.getElementById("chk-pay").addEventListener("change", function(e){
+  payState().print = e.target.checked; saveLocal();
+});
 
 document.getElementById("f-warranty").addEventListener("input", function(e){
   var n = parseInt(e.target.value, 10);
@@ -6460,6 +7124,7 @@ document.getElementById("btn-logo-reset").addEventListener("click", function(){
   state.project.logo = null; saveLocal(); toast("Back to the default logo");
 });
 
+
 function syncProjectFields(){
   document.getElementById("f-client").value = state.project.client||"";
   document.getElementById("f-address").value = state.project.address||"";
@@ -6470,6 +7135,7 @@ function syncProjectFields(){
   document.getElementById("f-warranty").value =
     state.project.warrantyYears == null ? 5 : state.project.warrantyYears;
   document.getElementById("chk-terms").checked = state.project.terms !== false;
+  renderPay();
 }
 
 /* ========================= Legend ========================= */
@@ -6480,7 +7146,6 @@ function buildLegend(){
     {c:"wall",   t:"Block wall"},
     {c:"gate",   t:"Gate (arc = swing)"},
     {c:"gate",   t:"Sliding gate (arrow)"},
-    {c:"post",   t:"Post (to scale)"},
     {c:"tree",   t:"Tree / shrub"},
     {c:"struct", t:"Structure (hatched)"},
     {c:"shape",  t:"Shape"},
@@ -6532,7 +7197,7 @@ function fitPrintScale(bounds, bw, bh){
   var k = PRINT_K;
   var w = Math.max(0.5, bounds.x1-bounds.x0);
   var h = Math.max(0.5, bounds.y1-bounds.y0);
-  var chrome = PAD_BASE*k + 24*k;
+  var chrome = PRINT_PAD*2*k;
   var sx = (bw - chrome) / w;
   var sy = (bh - chrome) / h;
   return Math.max(PRINT_PPF_MIN, Math.min(PRINT_PPF_MAX, Math.min(sx, sy)));
@@ -6591,8 +7256,24 @@ function contentBounds(ppf, k){
   }
   function ft(pts){ return pts*k/ppf; }          // annotation points -> feet
 
+  // the sheet centre decides which side a run's dimension hangs on (as drawn)
+  var sheetCx = state.areaFeetW/2, sheetCy = state.areaFeetH/2;
   state.elements.segments.forEach(function(sg){
     add(sg.x1,sg.y1); add(sg.x2,sg.y2);
+    // room for its dimension: the standoff, the figure, and a figure that
+    // moved outside a short span
+    var Ld = segGeomLen(sg);
+    if(sg.dims !== false && Ld > 1e-6){
+      var ux = (sg.x2-sg.x1)/Ld, uy = (sg.y2-sg.y1)/Ld, nx = -uy, ny = ux;
+      var mxF = (sg.x1+sg.x2)/2, myF = (sg.y1+sg.y2)/2;
+      var side = ((mxF-sheetCx)*nx + (myF-sheetCy)*ny) >= 0 ? 1 : -1;
+      var gapU = segIsCurved(sg) ? 14 : (sg.type === "gate" ? 17 : 34);
+      var reach = ft(gapU*0.72 + 12);
+      var past = ft(Ld*ppf/k < 60 ? 36 : 4);
+      [[sg.x1,sg.y1,-1],[sg.x2,sg.y2,1]].forEach(function(e){
+        add(e[0] + nx*side*reach + ux*e[2]*past, e[1] + ny*side*reach + uy*e[2]*past);
+      });
+    }
     // a bowed run reaches past its own ends
     if(segIsCurved(sg)) segPath(sg, 16).forEach(function(q){ add(q.x,q.y); });
     if(sg.type==="wall"){
@@ -6631,6 +7312,11 @@ function contentBounds(ppf, k){
   });
   state.elements.structures.forEach(function(st){
     structPoly(st).forEach(function(q){ add(q.x,q.y); });
+    // width and depth dimensions ride above and to the left
+    if(st.dims !== false && st.kind !== "photo" && !isDetail(st)){
+      var r = ft(15*0.72 + 12);
+      structCorners(st).forEach(function(q){ add(q.x - r, q.y - r); });
+    }
   });
   state.elements.dims.forEach(function(d){
     // the figure sits off to one side, so allow for the standoff
@@ -6657,8 +7343,8 @@ function contentBounds(ppf, k){
 
   if(!any) return {x0:0, y0:0, x1:state.areaFeetW, y1:state.areaFeetH};
 
-  // room for the dimension lines and their text, which hang off the geometry
-  var margin = ft(26);
+  // every annotation is accounted for above; this is just a breath of paper
+  var margin = ft(4);
   var minSpan = ft(90);
   var w = Math.max(mxX-mnX, minSpan), h = Math.max(mxY-mnY, minSpan);
   var cx = (mnX+mxX)/2, cy = (mnY+mxY)/2;
@@ -6893,9 +7579,9 @@ function exportPDF(){
   });
   var PW = landscape ? 792 : 612;
   var PH = landscape ? 612 : 792;
-  var M = 14;                           // sheet border inset
-  var COL = landscape ? 152 : 150;      // title block column
-  var GAP = 9;
+  var M = 10;                           // sheet border inset
+  var COL = landscape ? 186 : 180;      // title block column
+  var GAP = 4;
 
   var t = totals();
   var tags = state.elements.tags;
@@ -6961,8 +7647,8 @@ function exportPDF(){
     doc.line(X, yy, R, yy);
   }
   function sectionHead(label){
-    y += 13;
-    doc.setFont("helvetica","bold"); doc.setFontSize(7);
+    y += 12;
+    doc.setFont("helvetica","bold"); doc.setFontSize(6.7);
     doc.setTextColor(120);
     doc.text(label, tx, y);
     doc.setTextColor(0);
@@ -6971,21 +7657,35 @@ function exportPDF(){
     y += 3;
   }
   function field(label, value){
-    y += 11;
-    doc.setFont("helvetica","bold"); doc.setFontSize(6.5);
+    y += 10.5;
+    doc.setFont("helvetica","bold"); doc.setFontSize(6.3);
     doc.setTextColor(125);
     doc.text(label, tx, y);
     doc.setTextColor(0);
-    doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.4);
     var lines = doc.splitTextToSize(String(value || "—"), tw);
-    y += 11;
+    y += 10;
     doc.text(lines.slice(0,2), tx, y);
-    y += (Math.min(lines.length,2) - 1) * 10;
-    y += 3;
+    y += (Math.min(lines.length,2) - 1) * 9;
+    y += 2;
+  }
+  /* two short fields side by side — date and rep don't need a line each */
+  function field2(la, va, lb, vb){
+    var half = tw/2;
+    y += 10.5;
+    doc.setFont("helvetica","bold"); doc.setFontSize(6.3);
+    doc.setTextColor(125);
+    doc.text(la, tx, y); doc.text(lb, tx + half, y);
+    doc.setTextColor(0);
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.4);
+    y += 10;
+    doc.text(doc.splitTextToSize(String(va || "—"), half - 4)[0], tx, y);
+    doc.text(doc.splitTextToSize(String(vb || "—"), half)[0], tx + half, y);
+    y += 2;
   }
   function stat(label, value){
-    y += 11.5;
-    doc.setFont("helvetica","normal"); doc.setFontSize(8);
+    y += 10.8;
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
     doc.setTextColor(105);
     doc.text(label, tx, y);
     doc.setTextColor(0);
@@ -6997,13 +7697,13 @@ function exportPDF(){
   var logoSrc = state.project.logo || LOGO_DEFAULT;
   var logoH = 0;
   try{
-    var lw = tw, lh = lw * 411/760;          // the mark's own proportions
+    var lw = tw*0.74, lh = lw * 411/760;     // the mark's own proportions
     doc.addImage(logoSrc, "PNG", tx, y + 8, lw, lh);
     logoH = lh;
   }catch(err){ logoH = 0; }
   y += 8 + (logoH || 10);
 
-  doc.setFont("helvetica","normal"); doc.setFontSize(6.2);
+  doc.setFont("helvetica","normal"); doc.setFontSize(6.7);
   doc.setTextColor(110);
   y += 9;  doc.text(COMPANY.address, tx, y, {maxWidth: tw});
   y += 7.5; doc.text(COMPANY.phones, tx, y, {maxWidth: tw});
@@ -7012,7 +7712,7 @@ function exportPDF(){
   y += 12;
   doc.setTextColor(0);
 
-  doc.setFont("helvetica","normal"); doc.setFontSize(9.5);
+  doc.setFont("helvetica","normal"); doc.setFontSize(9.4);
   doc.setCharSpace(0.9);
   doc.text("PROPOSAL & CONTRACT", tx, y);
   doc.setCharSpace(0);
@@ -7021,15 +7721,13 @@ function exportPDF(){
 
   field("CLIENT", state.project.client);
   field("JOB ADDRESS", state.project.address);
-  field("DATE", state.project.date);
+  field2("DATE", state.project.date, "REP", state.project.rep);
   field("FENCE SPEC", state.project.fenceType);
-  if(state.project.rep) field("REP", state.project.rep);
 
   sectionHead("QUANTITIES");
   stat("Fence run", feetInches(t.fence));
   if(t.wall) stat("Block wall", feetInches(t.wall));
   stat("Gates", t.gates.length + (t.gates.length ? " ("+feetInches(t.gate)+")" : ""));
-  stat("Posts", state.elements.posts.length);
   if(state.elements.trees.length) stat("Trees", state.elements.trees.length);
   if(t.structs.length) stat("Structures", t.structs.length);
   y += 4;
@@ -7038,7 +7736,7 @@ function exportPDF(){
     .map(function(k){ return t.posts[k]+"× "+postLabel(k); }).join(", ");
   if(postText){
     y += 10;
-    doc.setFont("helvetica","normal"); doc.setFontSize(7);
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
     doc.setTextColor(105);
     var pl = doc.splitTextToSize(postText, tw);
     doc.text(pl.slice(0,3), tx, y);
@@ -7047,8 +7745,26 @@ function exportPDF(){
   }
 
   /* ---- line items: what's in the job, then the alternates ---- */
-  var sigBlock = 88;                    // room for all three rules and their labels
-  var notesBlock = state.project.notes ? 44 : 0;
+  var sigBlock = 80;                    // room for all three rules and their labels
+  // notes take the lines they need (up to three), not a fixed slab
+  var notesLines = 0;
+  if(state.project.notes){
+    doc.setFont("helvetica","italic"); doc.setFontSize(7.3);
+    notesLines = Math.min(3, doc.splitTextToSize(state.project.notes, COL - 18).length);
+  }
+  var notesBlock = notesLines ? 16 + notesLines*8.7 : 0;
+  var pay = payState();
+  var payMethods = PAY_METHODS.filter(function(m){ return pay.methods[m.k] !== false; });
+  // exact height of what the payment section draws, heading to last box
+  // card and Zelle carry a note so they get a line each; the plain ones share
+  var payLines = 0;
+  for(var pl0=0; pl0<payMethods.length; pl0++){
+    payLines++;
+    if(!payMethods[pl0].note && payMethods[pl0+1] && !payMethods[pl0+1].note) pl0++;
+  }
+  var payBlock = pay.print !== false ? 8 + 7 + 4*10.2 + (payMethods.length ? 10 + payLines*9 : 0) + 6 : 0;
+  // the one-line "alternates" footnote under the options needs its room too
+  var optNote = (state.showPrices && optionTags().length && !includedTags().length) ? 12 : 0;
   var overflow = 0;
   var included = includedTags(), options = optionTags();
   var printed = 0;
@@ -7062,20 +7778,20 @@ function exportPDF(){
       // a note wraps to a couple of lines, so reserve room for it too before
       // deciding whether this row still fits
       var noteLines = tg.note ? doc.splitTextToSize(tg.note, tw-9) : [];
-      var rowH = 20 + Math.min(noteLines.length, 3) * 8;
-      var room = (PH - M - sigBlock - notesBlock) - y;
+      var rowH = 18 + Math.min(noteLines.length, 3) * 7;
+      var room = (PH - M - sigBlock - notesBlock - payBlock - optNote) - y;
       if(room < rowH){ overflow = (included.length + options.length) - printed; return; }
       var num = tags.indexOf(tg) + 1;
       printed++;
-      y += 11;
+      y += 10;
       doc.setFont("helvetica","normal"); doc.setFontSize(8);
-      var nm = doc.splitTextToSize(num+".  "+(tg.label||"Untitled"), state.showPrices ? tw-56 : tw);
+      var nm = doc.splitTextToSize(num+".  "+(tg.label||"Untitled"), state.showPrices ? tw-50 : tw);
       doc.text(nm[0], tx, y);
       if(state.showPrices){
         doc.text(money(tagTotal(tg)), R - PADX, y, {align:"right"});
       }
-      y += 9;
-      doc.setFont("helvetica","normal"); doc.setFontSize(6.8);
+      y += 8;
+      doc.setFont("helvetica","normal"); doc.setFontSize(6.7);
       doc.setTextColor(115);
       var q = doc.splitTextToSize(tagQtyText(tg), tw);
       doc.text(q.slice(0,2), tx+9, y);
@@ -7083,7 +7799,7 @@ function exportPDF(){
       doc.setTextColor(0);
       if(noteLines.length){
         y += 8;
-        doc.setFont("helvetica","italic"); doc.setFontSize(6.8);
+        doc.setFont("helvetica","italic"); doc.setFontSize(6.7);
         doc.setTextColor(105);
         doc.text(noteLines.slice(0,3), tx+9, y);
         y += (Math.min(noteLines.length,3)-1)*7;
@@ -7101,55 +7817,102 @@ function exportPDF(){
 
     if(overflow){
       y += 10;
-      doc.setFont("helvetica","italic"); doc.setFontSize(7);
+      doc.setFont("helvetica","italic"); doc.setFontSize(7.5);
       doc.text("+"+overflow+" more on page 2", tx, y);
     }
     if(state.showPrices && included.length){
       y += 15;
       rule(y-9, "strong");
-      doc.setFont("helvetica","bold"); doc.setFontSize(10);
+      doc.setFont("helvetica","bold"); doc.setFontSize(10.5);
       doc.text("TOTAL", tx, y);
       doc.text(money(tagsTotal()), R - PADX, y, {align:"right"});
       if(options.length){
         y += 10;
-        doc.setFont("helvetica","italic"); doc.setFontSize(6.6);
+        doc.setFont("helvetica","italic"); doc.setFontSize(7.1);
         doc.setTextColor(120);
         doc.text("Options are priced separately and are not in the total.", tx, y, {maxWidth:tw});
         doc.setTextColor(0);
       }
     } else if(state.showPrices && options.length){
-      y += 13;
-      doc.setFont("helvetica","italic"); doc.setFontSize(6.8);
+      y += 9;
+      doc.setFont("helvetica","italic"); doc.setFontSize(6.5);
       doc.setTextColor(120);
-      doc.text("Each option is priced on its own \u2014 these are alternates, not a total.",
-               tx, y, {maxWidth:tw});
+      doc.text("Options are alternates, each priced on its own.", tx, y, {maxWidth:tw});
       doc.setTextColor(0);
     }
   }
 
-  /* ---- notes and signatures, pinned to the bottom of the column ---- */
+  /* ---- payment, notes and signatures, pinned to the bottom of the column ---- */
   var by = PH - M - sigBlock;
+  if(payBlock){
+    var py0 = by - notesBlock - payBlock;
+    y = py0 - 4;                         // sectionHead adds its own 12pt lead
+    sectionHead("PAYMENT");
+    var bal = payBalance();
+    [["Contract price", payNum(pay.total)],
+     ["Deposit", payNum(pay.deposit)],
+     ["Progress payment", payNum(pay.progress)],
+     ["Balance due on completion", bal]].forEach(function(row){
+      y += 10.2;
+      doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
+      doc.setTextColor(105); doc.text(row[0], tx, y); doc.setTextColor(0);
+      if(row[1] != null){
+        doc.text(money(row[1]), R - PADX, y, {align:"right"});
+      } else {
+        // blank: a line to write the figure on
+        doc.setDrawColor(170); doc.setLineWidth(0.4);
+        doc.line(R - PADX - 46, y + 1, R - PADX, y + 1);
+        doc.setFontSize(6.9); doc.setTextColor(140);
+        doc.text("$", R - PADX - 50, y);
+        doc.setTextColor(0);
+      }
+    });
+    if(payMethods.length){
+      y += 10;
+      doc.setFont("helvetica","bold"); doc.setFontSize(6.3);
+      doc.setTextColor(125); doc.text("PAYMENT BY", tx, y); doc.setTextColor(0);
+      var boxAt = function(m, x0){
+        doc.setDrawColor(120); doc.setLineWidth(0.5);
+        doc.rect(x0, y - 5, 5, 5);          // a box the client ticks
+        doc.setFont("helvetica","normal"); doc.setFontSize(7.3);
+        doc.text(m.label, x0 + 8, y);
+        if(m.note){
+          var lw0 = doc.getTextWidth(m.label + "  ");
+          doc.setTextColor(110); doc.setFontSize(6.7);
+          doc.text(m.note, x0 + 8 + lw0, y);
+          doc.setTextColor(0);
+        }
+      };
+      // in the order they're listed; two plain ones in a row share a line
+      for(var pi2=0; pi2<payMethods.length; pi2++){
+        var m1 = payMethods[pi2], m2 = payMethods[pi2+1];
+        y += 9;
+        boxAt(m1, tx);
+        if(!m1.note && m2 && !m2.note){ boxAt(m2, tx + tw/2); pi2++; }
+      }
+    }
+  }
   if(state.project.notes){
-    var ny = by - notesBlock + 10;
-    doc.setFont("helvetica","bold"); doc.setFontSize(7);
+    var ny = by - notesBlock + 9;
+    doc.setFont("helvetica","bold"); doc.setFontSize(6.7);
     doc.setTextColor(120); doc.text("NOTES", tx, ny); doc.setTextColor(0);
-    doc.setFont("helvetica","italic"); doc.setFontSize(7.2);
+    doc.setFont("helvetica","italic"); doc.setFontSize(7.3);
     var nl = doc.splitTextToSize(state.project.notes, tw);
-    doc.text(nl.slice(0,3), tx, ny+10);
+    doc.text(nl.slice(0,3), tx, ny+9);
   }
 
   var ntsCount = state.elements.segments.filter(segIsNTS).length + state.elements.posts.filter(postIsNTS).length;
-  doc.setFont("helvetica","normal"); doc.setFontSize(6.4);
+  doc.setFont("helvetica","normal"); doc.setFontSize(6.9);
   doc.setTextColor(130);
   doc.text("Grid 1 square = "+gridStepFor(printPpf,PRINT_K)+" ft   ·   measured "+measureNote()
     + (ntsCount ? "   ·   * stated, not to scale" : ""), tx, by + 6, {maxWidth: tw});
   doc.setTextColor(0);
 
   ["Client signature", "Contractor signature", "Date"].forEach(function(lab, idx){
-    var sy = by + 26 + idx*22;
+    var sy = by + 24 + idx*20;
     doc.setDrawColor(140); doc.setLineWidth(0.6);
     doc.line(tx, sy, R - PADX, sy);
-    doc.setFont("helvetica","normal"); doc.setFontSize(6.6);
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.1);
     doc.setTextColor(120);
     doc.text(lab, tx, sy + 7);
     doc.setTextColor(0);
@@ -7177,9 +7940,16 @@ function exportPDF(){
   /* ---------------- terms and conditions ---------------- */
   if(state.project.terms !== false) drawTermsPage(doc, landscape);
 
-  var blob = doc.output("blob");
-  var filename = "fence-sketch-"+sanitizeFilename(state.project.client)+"-"+(state.project.date||todayISO())+".pdf";
+  // the editable job rides inside, so this PDF can be opened back up
+  try{ embedJob(doc); }catch(err){}
 
+  var blob = doc.output("blob");
+  deliverFile(blob, jobBaseName() + ".pdf");
+}
+
+/** Hand a finished file to the person: the host's download route when
+    there is one, otherwise an ordinary download link. */
+function deliverFile(blob, filename){
   if(downloadsNS){
     downloadsNS.save({filename:filename, data:blob}).then(function(){
       toast("Saved "+filename);
@@ -7191,6 +7961,75 @@ function exportPDF(){
     fallbackOpen(blob, filename);
   }
 }
+
+/* ---------------- save and open a job ---------------- */
+(function(){
+  var btn = document.getElementById("btn-job"), menu = document.getElementById("job-menu");
+  function close(){ menu.hidden = true; btn.setAttribute("aria-expanded","false"); }
+  btn.addEventListener("click", function(e){
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+    btn.setAttribute("aria-expanded", String(!menu.hidden));
+  });
+  menu.addEventListener("click", function(){ close(); });
+  document.addEventListener("pointerdown", function(e){
+    if(!menu.hidden && !menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) close();
+  });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
+})();
+document.getElementById("btn-save").addEventListener("click", function(){
+  var text = JSON.stringify(jobPayload(false));
+  // octet-stream so phones save it rather than opening it as a page of text
+  var blob = new Blob([text], {type:"application/octet-stream"});
+  deliverFile(blob, jobBaseName() + ".fence.json");
+});
+
+document.getElementById("btn-open").addEventListener("click", function(){
+  var input = document.getElementById("job-file");
+  input.value = "";
+  input.click();
+});
+
+document.getElementById("job-file").addEventListener("change", function(e){
+  var fl = e.target.files && e.target.files[0];
+  if(!fl) return;
+  var isPdf = /\.pdf$/i.test(fl.name) || fl.type === "application/pdf";
+  var reader = new FileReader();
+  reader.onload = function(){
+    var job = null;
+    try{
+      job = isPdf ? readJobFromPdf(new Uint8Array(reader.result)) : readJobText(String(reader.result));
+    }catch(err){ job = null; }
+    if(!job){
+      toast(isPdf
+        ? "No editable sketch in that PDF \u2014 only one exported straight from this app has it (a signed or re-saved copy loses it)"
+        : "That file isn't a saved sketch");
+      return;
+    }
+    var who = [job.project && job.project.client, job.project && job.project.address].filter(Boolean).join(" \u2014 ") || fl.name;
+    var ask = hasContent()
+      ? openDialog({
+          title: "Open " + who + "?",
+          message: "This replaces the sketch on screen. Save it first if you want to keep it.",
+          mode: "confirm", okLabel: "Open"
+        })
+      : Promise.resolve(true);
+    ask.then(function(ok){
+      if(!ok) return;
+      // the logo belongs to the company, not the job: keep yours if the file has none
+      job.project = job.project || {};
+      if(!job.project.logo && state.project.logo) job.project.logo = state.project.logo;
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(job));
+      }catch(err){
+        toast("Too big to open here \u2014 try a copy with fewer photos");
+        return;
+      }
+      location.reload();
+    });
+  };
+  if(isPdf) reader.readAsArrayBuffer(fl); else reader.readAsText(fl);
+});
 
 function fallbackOpen(blob, filename){
   // Outside the artifact host (a saved copy, your own web server) a plain
@@ -7229,12 +8068,9 @@ document.getElementById("chk-prices").checked = state.showPrices;
 document.getElementById("in-wallthick").value = inchText(state.wallThickIn, false);
 renderTagList();
 renderTagPanel();
-document.getElementById("in-postsize").value = inchText(state.postSizeIn, false);
-document.getElementById("in-postdepth").value = inchText(state.postDepthIn, false);
 document.getElementById("in-treesize").value = state.treeDiaFt;
 document.getElementById("in-w").value = state.areaFeetW;
 document.getElementById("in-h").value = state.areaFeetH;
-document.getElementById("chk-autopost").checked = state.autoPost;
 buildSwatches();
 buildPresets();
 buildLegend();
@@ -7259,15 +8095,85 @@ if(window.matchMedia){
   if(mq.addEventListener) mq.addEventListener("change", draw);
 }
 
+/* Tap the build date to throw away the offline copy and fetch whatever is
+   published now. The sketch itself lives in localStorage, which this does
+   not touch, so nothing drawn is lost. Only offered on a hosted copy --
+   opened as a plain file there is nothing to refresh from. */
+(function(){
+  var stamp = document.getElementById("buildstamp");
+  if(!stamp || location.protocol.indexOf("http") !== 0) return;
+  stamp.classList.add("tappable");
+  stamp.title = "Tap to check for a newer version";
+  stamp.addEventListener("click", function(){
+    stamp.textContent = "Checking\u2026";
+    var jobs = [];
+    if(window.caches && caches.keys){
+      jobs.push(caches.keys().then(function(keys){
+        return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+      }));
+    }
+    if(navigator.serviceWorker && navigator.serviceWorker.getRegistrations){
+      jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){
+        return Promise.all(rs.map(function(r){ return r.unregister(); }));
+      }));
+    }
+    Promise.all(jobs)["catch"](function(){}).then(function(){
+      location.replace(location.pathname + "?v=" + Date.now());
+    });
+  });
+})();
+
 })();
 </script>
 
 <script>
-/* Keep the app on the device. Registration is skipped for a local file,
-   where there's nothing to cache and no service worker is allowed. */
-if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+/* Keep the app on the device, but never let it get stuck on an old copy.
+   Registration is skipped for a local file, where there's nothing to cache
+   and no service worker is allowed. */
+(function(){
+  if(!("serviceWorker" in navigator) || location.protocol.indexOf("http") !== 0) return;
+
+  /* On a first visit the worker installs and claims this page, which is not
+     an update and must not bounce the page. Only a device that was already
+     running a worker when the page opened can be looking at a stale build. */
+  var hadWorker = !!navigator.serviceWorker.controller;
+  var reloading = false;
+  function refresh(){
+    if(reloading || !hadWorker) return;
+    reloading = true;
+    location.reload();
+  }
+
+  /* A different worker took over after load: it is serving a newer build
+     than the one on screen. */
+  navigator.serviceWorker.addEventListener("controllerchange", refresh);
+
   window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(){});
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      /* Ask GitHub whether there's a newer worker now, on every focus, and
+         hourly while the app is left open. iOS in particular will otherwise
+         sit on the installed one for days. */
+      /* With no signal this rejects; that is the normal offline case and
+         must not surface as an error. */
+      function check(){
+        try{ var u = reg.update(); if(u && u["catch"]) u["catch"](function(){}); }
+        catch(e){}
+      }
+      check();
+      setInterval(check, 60*60*1000);
+      document.addEventListener("visibilitychange", function(){
+        if(document.visibilityState === "visible") check();
+      });
+      reg.addEventListener("updatefound", function(){
+        var sw = reg.installing;
+        if(!sw) return;
+        sw.addEventListener("statechange", function(){
+          /* A newly installed worker alongside one that was already running
+             means a newer build has arrived. */
+          if(sw.state === "installed") refresh();
+        });
+      });
+    }).catch(function(){});
   });
-}
+})();
 </script>

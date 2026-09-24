@@ -22,6 +22,17 @@ You don't need the command line for any of this.
 To update it later, drag the new files in through **Add file → Upload files**
 — same names replace the old ones.
 
+## When an update doesn't show up
+
+The app keeps a copy of itself on each device so it works with no signal, so
+right after an upload a device may still open the copy it already has. It
+checks GitHub every time you switch back to it and swaps itself over within
+a few seconds.
+
+If one is stubborn, **tap the build date at the bottom of the tool panel**.
+That throws away the stored copy and pulls down whatever is published now.
+Your sketches are saved separately and are not touched.
+
 ## Putting it on your phone
 
 Open the address in Safari (iPhone) or Chrome (Android), then use
@@ -45,8 +56,20 @@ uploaded anywhere, which is why this can be a public repo without exposing any
 client details — the repo holds the app, never the jobs.
 
 The flip side: each address and each device keeps its own separate copy. A job
-drawn on your phone won't appear on your Mac. To move a sketch between devices,
-export the PDF.
+drawn on your phone won't appear on your Mac until you move it.
+
+## Saving jobs as files
+
+The folder button at the top has **Save job file**, **Open job** and **New job**.
+
+- **Save job file** downloads the job as `Client - Address - Date.fence.json`.
+  Keep these in a folder (iCloud Drive works on both phone and Mac) and open
+  any of them later to carry on editing.
+- **Open job** takes one of those files, *or a PDF exported from the app*:
+  every exported PDF carries an editable copy of the sketch inside it (it
+  shows as an attachment in Acrobat and Preview). A PDF that has been signed
+  or re-saved by another app usually loses that copy, so keep your own
+  export. Prices you hid from the client are left out of the PDF's copy.
 
 ## Files
 

@@ -1,10 +1,16 @@
-/* Fence Sketch offline cache - built 0999184b89 */
-var CACHE = "fence-sketch-0999184b89";
+/* Fence Sketch offline cache - built 7fb7cb9bf8 */
+var CACHE = "fence-sketch-7fb7cb9bf8";
 var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
+/* GitHub Pages serves with a ten-minute max-age. Going through the browser's
+   HTTP cache would happily hand back the copy this update is replacing, so
+   every shell fetch is forced past it. */
+function fresh(url){ return new Request(url, {cache: "reload"}); }
+
 self.addEventListener("install", function(e){
-  e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(SHELL); })
-    .then(function(){ return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function(c){
+    return Promise.all(SHELL.map(function(u){ return c.add(fresh(u)); }));
+  }).then(function(){ return self.skipWaiting(); }));
 });
 
 self.addEventListener("activate", function(e){
@@ -22,7 +28,7 @@ self.addEventListener("fetch", function(e){
   // being pinned to whatever was cached first.
   if(req.mode === "navigate"){
     e.respondWith(
-      fetch(req).then(function(res){
+      fetch(fresh(req.url)).then(function(res){
         var copy = res.clone();
         caches.open(CACHE).then(function(c){ c.put("./index.html", copy); });
         return res;

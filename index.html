@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <title>Fence Layout Board</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1f3a5f">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -305,6 +305,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
 
 .swatches{display:flex;flex-wrap:wrap;gap:4px;}
+.sw.custom{position:relative;overflow:hidden;cursor:pointer;
+  background:conic-gradient(#ef4444,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444);}
+.sw.custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0;}
 .sw{
   width:20px;height:20px;border-radius:5px;border:2px solid transparent;
   cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);
@@ -381,6 +384,24 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 .modal-backdrop{position:fixed;inset:0;background:rgba(15,20,28,.42);display:grid;place-items:center;z-index:80;padding:20px;}
+/* signature pad: nearly the whole screen, so there's room to sign with a finger */
+.sigpad{position:fixed;inset:0;z-index:90;background:rgba(15,20,28,.5);display:flex;align-items:center;justify-content:center;padding:12px;}
+.sigpad[hidden]{display:none;}
+.sigpad-inner{background:var(--surface);border-radius:14px;width:min(820px,100%);max-height:100%;display:flex;flex-direction:column;gap:10px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);}
+.sigpad-head b{display:block;font-size:17px;}
+.sigpad-head span{font-size:12.5px;color:var(--ink-dim);}
+.sigpad-box{position:relative;height:min(46vh,300px);border:1.5px dashed var(--line-strong);border-radius:10px;background:#fff;touch-action:none;}
+.sigpad-box canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;}
+.sigpad-x{position:absolute;left:18px;bottom:26%;font-size:22px;color:#9aa3af;pointer-events:none;}
+.sigpad-box::after{content:"";position:absolute;left:44px;right:22px;bottom:26%;border-bottom:1.5px solid #c3c9d2;pointer-events:none;}
+.sigpad-hint{position:absolute;left:0;right:0;top:40%;text-align:center;color:#c3c9d2;font-size:20px;pointer-events:none;}
+.sigpad-actions{display:flex;gap:8px;align-items:center;}
+.sig-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);}
+.sig-row:last-of-type{border-bottom:none;}
+.sig-row .sig-who{flex:1;min-width:0;font-size:12.5px;}
+.sig-row .sig-who small{display:block;color:var(--ink-dim);font-size:11px;}
+.sig-row .sig-who small.warn{color:#b45309;}
+.sig-row img{height:34px;max-width:110px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:5px;}
 .modal{
   background:var(--surface);border-radius:14px;padding:18px;width:min(420px,100%);
   display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 50px rgba(0,0,0,.3);
@@ -469,6 +490,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 
   .card{padding:12px;}
   .form-field input,.form-field textarea,.form-field select{padding:11px;font-size:16px;}
+  input,textarea,select{font-size:16px !important;}
   .btn{padding:10px 14px;font-size:13px;}
   .btn.sm{padding:8px 12px;font-size:12.5px;}
   .chip{padding:9px 14px;font-size:12.5px;}
@@ -603,7 +625,13 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <input type="file" id="job-file" accept=".json,.pdf,application/json,application/pdf" style="display:none">
     </div>
     <span class="divider"></span>
-    <button class="pill" id="btn-export">Export PDF</button>
+    <div class="jobmenu-wrap">
+      <button class="pill" id="btn-export" aria-haspopup="true">Export PDF</button>
+      <div class="jobmenu" id="export-menu" hidden>
+        <button id="btn-export-proposal"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span>Proposal &amp; contract<small>For the client: prices, payment, terms, signatures</small></span></button>
+        <button id="btn-export-install"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4Z"/></svg><span>Install sheet<small>For the crew: sketch, sizes, gates, posts, notes &mdash; no prices</small></span></button>
+      </div>
+    </div>
   </header>
 
   <main class="canvas-wrap">
@@ -631,6 +659,10 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
         <span class="optlabel">Spread</span>
         <div class="chips" id="tree-presets"></div>
         <input type="text" id="in-treesize" value="15" aria-label="Tree spread in feet">
+      </div>
+      <div class="optgroup" data-opt="line">
+        <div class="chips" id="line-style"></div>
+        <label class="check" title="Untick to draw a plain line that isn't added to the fence footage"><input type="checkbox" id="chk-linecount" checked> Counts as fence</label>
       </div>
       <div class="optgroup" data-opt="wall">
         <span class="optlabel">Thickness</span>
@@ -678,18 +710,16 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   <nav class="tools">
     <button class="tool-btn active" data-tool="select"><svg viewBox="0 0 24 24"><path d="m5 3 5.5 15 2-6.2L19 9.5 5 3Z"/></svg><span>Select</span></button>
     <div class="rail-sep"></div>
-    <button class="tool-btn" data-tool="line"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.7"/><circle cx="19" cy="5" r="1.7"/><path d="M6.3 17.7 17.7 6.3"/></svg><span>Fence</span></button>
-    <button class="tool-btn" data-tool="wall"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/><path d="M4 8v8M9 8v8M14 8v8M19 8v8"/></svg><span>Wall</span></button>
+    <button class="tool-btn" data-tool="line"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.7"/><circle cx="19" cy="5" r="1.7"/><path d="M6.3 17.7 17.7 6.3"/></svg><span>Line</span></button>
     <button class="tool-btn" data-tool="gate"><svg viewBox="0 0 24 24"><path d="M5 20V6h9"/><path d="M14 6a10 10 0 0 1 5 10"/><path d="M5 20h14"/></svg><span>Gate</span></button>
+    <button class="tool-btn" data-tool="arrow"><svg viewBox="0 0 24 24"><path d="M4 20 19 5"/><path d="M11 5h8v8"/></svg><span>Arrow</span></button>
     <div class="rail-sep"></div>
-    <button class="tool-btn" data-tool="house"><svg viewBox="0 0 24 24"><path d="M4 4h9v7h7v9H4V4Z"/></svg><span>Building</span></button>
     <button class="tool-btn" data-tool="shape"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="10" height="8"/><circle cx="16" cy="15" r="5"/></svg><span>Shape</span></button>
     <button class="tool-btn" data-tool="tree"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M12 15v6"/></svg><span>Tree</span></button>
     <button class="tool-btn" data-tool="detail"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" stroke-dasharray="3 2"/><path d="M7 16V9M12 16V9M17 16V9M6 11h12"/></svg><span>Detail</span></button>
     <div class="rail-sep"></div>
-    <button class="tool-btn" data-tool="curve"><svg viewBox="0 0 24 24"><path d="M4 18c0-8 16-8 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span>Curve</span></button>
     <button class="tool-btn" data-tool="tape"><svg viewBox="0 0 24 24"><path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg><span>Tape</span></button>
-    <button class="tool-btn" data-tool="note"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5Z"/></svg><span>Note</span></button>
+    <button class="tool-btn" data-tool="note"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4Z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Text</span></button>
     <button class="tool-btn" id="btn-photo" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="m5 17 4.5-5 3.5 4 2.5-3 4.5 5"/></svg><span>Photo</span></button>
     <input type="file" id="photo-file" accept="image/*" style="display:none">
     <button class="tool-btn" data-tool="rotate"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span>Rotate</span></button>
@@ -739,6 +769,14 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <label class="check"><input type="checkbox" id="chk-pay" checked> Print payment section on the PDF</label>
     </div>
 
+    <div class="card" id="card-sign">
+      <h2>Signatures</h2>
+      <div class="sig-row" id="sig-client"></div>
+      <div class="sig-row" id="sig-contractor"></div>
+      <div class="pay-hint">Hand the phone or tablet over and have them sign with a finger. The signature, name and time print on the proposal and the terms page.</div>
+    </div>
+
+
     <div class="card">
       <h2>Job summary</h2>
       <div class="stat-grid">
@@ -758,7 +796,10 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
         <div class="form-field" style="flex:1"><label for="in-w">Width (ft)</label><input type="number" id="in-w" min="20" max="800" step="10" value="120"></div>
         <div class="form-field" style="flex:1"><label for="in-h">Height (ft)</label><input type="number" id="in-h" min="20" max="800" step="10" value="80"></div>
       </div>
-      <div class="form-field"><label for="f-date">Date</label><input id="f-date" type="date"></div>
+      <div class="inline">
+        <div class="form-field" style="flex:1.2"><label for="f-phone">Client phone</label><input id="f-phone" type="tel" inputmode="tel" placeholder="626-555-0142"></div>
+        <div class="form-field" style="flex:1"><label for="f-date">Date</label><input id="f-date" type="date"></div>
+      </div>
       <div class="form-field"><label for="f-type">Fence type / spec</label><input id="f-type" placeholder="6' cedar shadowbox, 8' o.c. posts"></div>
       <div class="inline">
         <div class="form-field" style="flex:1"><label for="f-rep">Rep</label><input id="f-rep" placeholder="Nick T."></div>
@@ -777,12 +818,29 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <div class="legend-grid" id="legend-grid"></div>
     </div>
 
-    <div class="buildstamp" id="buildstamp">Build 2026-09-24.3</div>
+    <div class="buildstamp" id="buildstamp">Build 2026-09-25</div>
   </aside>
 </div>
 
 <div class="scrim" id="scrim"></div>
 <div class="toast" id="toast"></div>
+
+<div class="sigpad" id="sigpad" hidden>
+  <div class="sigpad-inner">
+    <div class="sigpad-head">
+      <b id="sigpad-title">Client signature</b>
+      <span id="sigpad-sub">By signing you accept this proposal and its terms and conditions.</span>
+    </div>
+    <div class="form-field"><label for="sigpad-name">Printed name</label><input id="sigpad-name" autocomplete="name"></div>
+    <div class="sigpad-box"><canvas id="sigpad-canvas"></canvas><span class="sigpad-x">&times;</span><span class="sigpad-hint" id="sigpad-hint">Sign here</span></div>
+    <div class="sigpad-actions">
+      <button class="btn" id="sigpad-clear">Clear</button>
+      <span style="flex:1"></span>
+      <button class="btn" id="sigpad-cancel">Cancel</button>
+      <button class="btn primary" id="sigpad-ok">Accept signature</button>
+    </div>
+  </div>
+</div>
 
 <div class="modal-backdrop" id="modal" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -1214,8 +1272,42 @@ var COLORS = [
   {v:"#0E7490", name:"Teal"},
   {v:"#1D4ED8", name:"Blue"},
   {v:"#7E22CE", name:"Purple"},
-  {v:"#9D174D", name:"Magenta"}
+  {v:"#9D174D", name:"Magenta"},
+  {v:"#EAB308", name:"Yellow"},
+  {v:"#DB2777", name:"Pink"},
+  {v:"#78350F", name:"Brown"},
+  {v:"#6B7280", name:"Gray"},
+  {v:"#000000", name:"Black"}
 ];
+
+/* The standard swatches, then a picker for any other colour. A colour
+   picked there shows on the picker swatch so it's easy to reuse. */
+function appendSwatches(row, current, onPick, noAuto){
+  var cur = current || null, known = false;
+  (noAuto ? COLORS.filter(function(c){ return c.v !== null; }) : COLORS).forEach(function(col){
+    var b = document.createElement("button");
+    b.type = "button";
+    var on = cur === col.v || (cur && col.v && cur.toLowerCase() === col.v.toLowerCase());
+    if(on) known = true;
+    b.className = "sw" + (col.v===null ? " auto" : "") + (on ? " on" : "");
+    if(col.v) b.style.background = col.v;
+    b.title = col.name;
+    b.setAttribute("aria-label", col.name);
+    b.addEventListener("click", function(){ onPick(col.v); });
+    row.appendChild(b);
+  });
+  var pick = document.createElement("label");
+  pick.className = "sw custom" + (cur && !known ? " on" : "");
+  pick.title = "Any colour";
+  if(cur && !known) pick.style.background = cur;
+  var inp = document.createElement("input");
+  inp.type = "color";
+  inp.value = /^#[0-9a-f]{6}$/i.test(cur || "") ? cur : "#2563eb";
+  inp.setAttribute("aria-label", "Pick any colour");
+  inp.addEventListener("change", function(){ onPick(inp.value); });
+  pick.appendChild(inp);
+  row.appendChild(pick);
+}
 
 var POST_PRESETS = [
   {w:2, h:4, label:"2x4"},
@@ -1247,16 +1339,17 @@ function shapeSpec(v){
 
 var TOOL_HINTS = {
   select: "Click to select · shift-click adds · drag a box to catch several · Ctrl+A all · Ctrl+D duplicates · drag a handle to resize.",
-  line:   "Tap each corner to run fence \u2014 ends snap to other runs, shapes and house corners. Hold Shift to lock to 0/45/90\u00b0. Esc or double-tap ends the run.",
+  arrow:  "Drag from the tail to the point. Pick Curve in its panel to bend it, or make it double-headed.",
+  line:   "Drag a line, or tap each corner in turn \u2014 ends snap to other runs, shapes and house corners. Hold Shift to lock to 0/45/90\u00b0. Esc or double-tap ends the run.",
   wall:   "Click each corner to run block wall. Hold Shift to lock the angle. Esc ends the run.",
   gate:   "Click the two gate posts. Draw it big enough to read, then set a Stated length to label its true size.",
   shape:  "Drag out a shape, or tap to drop one at the size set above, centred where you tap \u2014 set 5\" x 5\" and tap each run end for posts. Hold Shift for a perfect square or circle. Name it in the panel (Pool, Patio, Deck\u2026).",
   post:   "Tap to drop a post, or drag to draw one any size. It lands on the end of a run, a corner or another post \u2014 turn on Free to place it anywhere.",
   tree:   "Click to drop a tree. Drag its edge handle later to resize the canopy.",
-  note:   "Click where the note should point. Type the text in the box that opens.",
+  note:   "Tap where the text should start, or drag out how wide the box should be, then type. Long text wraps inside the box; drag its right edge to make it wider.",
   eraser: "Click any item to delete it.",
   house:  "Drag out the footprint. Name it in the panel, and cut back any corner there to make an L or a U.",
-  curve:  "Drag out a curved run, then drag the dot in the middle to set how much it bends. The figure is the length along the curve.",
+  curve:  "Curved line: drag it out, then drag the dot in the middle to set how much it bends. The figure is the length along the curve.",
   rotate: "Press on anything and drag around it to turn it \u2014 it turns about its own middle in 5\u00b0 steps. Hold Shift for 15\u00b0 steps, or switch on Free for any angle. Select several things first to turn them together.",
   detail: "Drag out a frame for a side view \u2014 a panel, a gate, a post cap. Draw inside it with Fence and Shape as usual: nothing inside a detail frame counts toward footage or quantities. Drag the frame and its contents come with it.",
   tape:   "Drag across anything to measure it. The figure stays on the plan and prints with it \u2014 it isn't fence, so it never reaches the quantities."
@@ -1309,6 +1402,11 @@ function payBalance(){
 }
 
 var PAD_BASE = 40;
+/* How far in you can zoom: 1200 px a foot is 100 px an inch, enough to work
+   on a 1" picket or a 5" post cap. */
+var MAX_PPF = 1200;
+/* The smallest size a shape can be typed or dragged to: 1/16". */
+var MIN_SIZE_FT = 1/192;
 var HISTORY_MAX = 60;
 var STORAGE_KEY = "fence-layout-board.v2";
 
@@ -1391,7 +1489,7 @@ function stateSnapshot(){
       gateType:state.gateType, shapeKind:state.shapeKind, shapeWFt:state.shapeWFt, shapeHFt:state.shapeHFt,
       showPrices:state.showPrices,
       wallThickIn:state.wallThickIn, freePlace:state.freePlace, objectSnap:state.objectSnap,
-      showDims:state.showDims, measureFrom:state.measureFrom,
+      showDims:state.showDims, measureFrom:state.measureFrom, lineCounts:state.lineCounts,
       nextId:state.nextId, elements:state.elements
   };
 }
@@ -1510,6 +1608,7 @@ function loadLocal(){
   state.objectSnap = p.objectSnap !== undefined ? !!p.objectSnap : true;
   state.showDims = p.showDims !== undefined ? !!p.showDims : true;
   state.measureFrom = p.measureFrom || "center";
+  state.lineCounts = p.lineCounts !== false;
   // sizes typed before they remembered their datum were typed in this one
   ((p.elements && p.elements.segments) || []).forEach(function(sg){
     if(sg.statedLen != null && !sg.statedFrom) sg.statedFrom = sg.measureFrom || state.measureFrom;
@@ -1625,6 +1724,9 @@ function feetInches(ft){
   if(rem > 0) s += " " + inchText(rem/FRAC_DEN);
   return (neg?"-":"")+s;
 }
+
+/** A length for an input box: under a foot reads in inches (1", 5 1/2"). */
+function lenText(ft){ return Math.abs(ft) < 1 ? inchText(ft*12) : feetInches(ft); }
 
 /**
  * Parse a typed length into feet. Accepts 12' 3 1/2", 12'3.5", 12ft 3in,
@@ -2364,6 +2466,16 @@ function structPoly(s){
    where it sits: anything whose middle is inside a detail frame is part of
    the illustration, not the job. ---------- */
 function isDetail(s){ return !!s && s.kind === "detail"; }
+/** Whether a run adds to the footage: not an arrow, not a line drawn for some
+    other reason, and not part of a detail illustration. */
+function segCounts(seg){
+  return seg.type !== "arrow" && seg.count !== false && !detailOf("segment", seg);
+}
+/** Whether a shape is listed in the quantities. Post squares never are --
+    they'd bury the list -- and any shape can be switched off. */
+function structCounts(s){
+  return s.kind !== "photo" && !isDetail(s) && !isPostShape(s) && s.count !== false && !detailOf("structure", s);
+}
 function detailFrames(){ return state.elements.structures.filter(isDetail); }
 function inDetailAt(x, y){
   var fr = state.elements.structures;
@@ -2675,6 +2787,29 @@ function renderPlan(c, pal, ppf, k, opts){
      exact size straight on the document, and scale measurements back, so a
      6.3pt figure is 6.3pt and a fraction lands right against its inches. */
   var VEC = !!(opts.vector && c.pdf && c.pdf.setFontSize);
+  /* Greedy word wrap to a width, keeping the typed line breaks. */
+  function wrapText(text, maxW){
+    var out = [];
+    text.split("\n").forEach(function(par){
+      var words = par.split(/\s+/).filter(Boolean), line = "";
+      if(!words.length){ out.push(""); return; }
+      words.forEach(function(wd){
+        var test = line ? line + " " + wd : wd;
+        if(mw(test) <= maxW || !line){
+          // a single word wider than the box gets broken where it must
+          if(!line && mw(wd) > maxW){
+            var chunk = "";
+            wd.split("").forEach(function(ch){
+              if(mw(chunk + ch) > maxW && chunk){ out.push(chunk); chunk = ch; } else chunk += ch;
+            });
+            line = chunk;
+          } else line = test;
+        } else { out.push(line); line = wd; }
+      });
+      out.push(line);
+    });
+    return out;
+  }
   function setFont(sz, weight){
     c.font = (weight || 400) + " " + sz + "px " + SANS;
     if(VEC) c.pdf.setFontSize(sz);
@@ -2923,7 +3058,8 @@ function renderPlan(c, pal, ppf, k, opts){
   }
 
   /* --- line-item halos: a soft colour wash under every member object --- */
-  state.elements.tags.forEach(function(t){
+  var crewSheet = pal.print && PRINT_MODE === "install";
+  (crewSheet ? [] : state.elements.tags).forEach(function(t){
     var active = opts.selection && state.activeTag === t.id;
     var halo = mix(t.color, pal.surface, active ? 0.45 : (pal.print ? 0.2 : 0.26));
     c.strokeStyle = halo;
@@ -3249,10 +3385,31 @@ function renderPlan(c, pal, ppf, k, opts){
       if(state.showDims && seg.dims !== false) dimension(DA, DB, feetInches(len)+suffix, wcol, dimSide(seg), 34);
       else if(seg.dims !== false) chip("WALL "+feetInches(len)+suffix, mid.x, mid.y-12*k, wcol);
 
+    } else if(seg.type==="arrow"){
+      var acol = sel ? pal.accent : colorOf(seg, pal.ink, pal);
+      var apts = runPath(seg);
+      c.strokeStyle = acol; c.lineWidth = (sel?2.2:1.3)*k*LW; c.lineCap = "round";
+      c.stroke();
+      c.lineCap = "butt";
+      // heads follow the curve's own direction at each end
+      var head = function(tip, from){
+        var aa = Math.atan2(tip.y-from.y, tip.x-from.x), hl = (pal.print ? 6 : 9)*k;
+        c.beginPath();
+        c.moveTo(tip.x, tip.y);
+        c.lineTo(tip.x - hl*Math.cos(aa-0.38), tip.y - hl*Math.sin(aa-0.38));
+        c.lineTo(tip.x - hl*Math.cos(aa+0.38), tip.y - hl*Math.sin(aa+0.38));
+        c.closePath(); c.fillStyle = acol; c.fill();
+      };
+      if(apts.length > 1){
+        head(apts[apts.length-1], apts[apts.length-2]);
+        if(seg.heads === 2) head(apts[0], apts[1]);
+      }
     } else {
-      var fcol = sel ? pal.accent : colorOf(seg, pal.fence, pal);
+      var plainLine = seg.count === false;
+      var fcol = sel ? pal.accent : colorOf(seg, plainLine ? pal.ink : pal.fence, pal);
       runPath(seg);
-      c.strokeStyle = fcol; c.lineWidth = (sel?3.2:1.9)*k*LW; c.lineCap = "round";
+      // a line that isn't fence is drawn lighter, so the two never get confused
+      c.strokeStyle = fcol; c.lineWidth = (sel?3.2:(plainLine ? 1.1 : 1.9))*k*LW; c.lineCap = "round";
       c.stroke();
       c.lineCap = "butt";
       if(seg.dims !== false){
@@ -3393,6 +3550,34 @@ function renderPlan(c, pal, ppf, k, opts){
     var p = P(note.x,note.y);
     var sel = isSel("note", note.id);
     var col = sel ? pal.accent : colorOf(note, pal.note, pal);
+    if(note.box){
+      /* A text box: a fixed width on the page, the text wrapped inside it,
+         as tall as the text needs. Width and type are in points, like every
+         other label, so the wrapping is the same on screen and on paper. */
+      var shrink = pal.print ? 0.8 : 1;
+      var tfs = ({s:9, m:11, l:14}[note.size] || 11)*k*shrink;
+      var tbw = (note.wPt || 240)*k*shrink, pad = 6*k*shrink;
+      setFont(tfs, note.bold ? 700 : 400);
+      var tlines = wrapText(String(note.text || ""), tbw - pad*2);
+      var tlh = tfs*1.3, tbh = Math.max(1, tlines.length)*tlh + pad*2 - tfs*0.3;
+      c.fillStyle = pal.surface;
+      c.fillRect(p.x, p.y, tbw, tbh);
+      if(note.border !== false || sel){
+        c.strokeStyle = col; c.lineWidth = (sel ? 1.6 : 0.9)*k*(sel ? 1 : LW);
+        c.strokeRect(p.x, p.y, tbw, tbh);
+      }
+      c.fillStyle = note.color ? colorOf(note, pal.ink, pal) : pal.ink;
+      c.textBaseline = "alphabetic";
+      tlines.forEach(function(ln, li){ c.fillText(ln, p.x + pad, p.y + pad + tfs*0.8 + li*tlh); });
+      placed.push({x0:p.x, y0:p.y, x1:p.x+tbw, y1:p.y+tbh});
+      if(opts.selection) note._box = {x0:note.x, y0:note.y, x1:note.x + tbw/ppf, y1:note.y + tbh/ppf};
+      if(sel){
+        // the right edge handle widens the box
+        c.fillStyle = pal.accent;
+        c.fillRect(p.x + tbw - 3*k, p.y + tbh/2 - 9*k, 6*k, 18*k);
+      }
+      return;
+    }
     var lines = String(note.text||"").split("\n");
     var nfs = (pal.print ? 8 : 10.5)*k;
     setFont(nfs);
@@ -3485,7 +3670,7 @@ function renderPlan(c, pal, ppf, k, opts){
   });
 
   /* --- line-item badges, above everything else --- */
-  state.elements.tags.forEach(function(t, ti){
+  (crewSheet ? [] : state.elements.tags).forEach(function(t, ti){
     var anchor = tagAnchor(t);
     if(!anchor) return;
     var ap = P(anchor.x, anchor.y);
@@ -3890,7 +4075,7 @@ function updateZoomLabel(){
 /** Zoom about a fixed screen point so the plan doesn't lurch. */
 function zoomAt(nextScale, screenX, screenY){
   var s0 = state.pxPerFoot;
-  var s1 = Math.max(1, Math.min(120, nextScale));
+  var s1 = Math.max(1, Math.min(MAX_PPF, nextScale));
   if(Math.abs(s1-s0) < 1e-6) return;
   var wx = (screenX - state.pan.x)/s0;
   var wy = (screenY - state.pan.y)/s0;
@@ -3943,6 +4128,9 @@ function addSegment(type,p1,p2){
   var seg = {id:uid(), type:type, x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y, color:state.color};
   if(type==="gate"){ seg.hinge="a"; seg.swingSide=1; seg.gateType=state.gateType; }
   if(type==="wall"){ seg.thickness = state.wallThickIn; }
+  if(type==="arrow"){ seg.dims = false; }
+  // a plain line, drawn for some other reason than fence
+  if(type==="line" && state.lineCounts === false){ seg.count = false; }
   state.elements.segments.push(seg);
   return seg;
 }
@@ -4019,6 +4207,8 @@ function tagQty(t){
     var el = findEl(m.kind, m.id);
     if(!el) return;
     if(detailOf(m.kind, el)) return;       // drawn in a detail: illustration only
+    if(m.kind === "segment" && !segCounts(el)) return;
+    if(m.kind === "structure" && !structCounts(el)) return;
     if(m.kind === "structure" && isDetail(el)) return;
     if(m.kind==="segment"){
       var L = segLenOf(el);
@@ -4285,6 +4475,13 @@ function hitTest(fx,fy){
   }
   for(i=state.elements.notes.length-1;i>=0;i--){
     var nt = state.elements.notes[i];
+    if(nt.box && nt._box){
+      var nb = nt._box, edgeR = (COARSE?14:8)/ppf;
+      if(isSelected("note", nt.id) && Math.abs(fx - nb.x1) < edgeR && fy > nb.y0 && fy < nb.y1)
+        return {kind:"note-w", id:nt.id};
+      if(fx >= nb.x0 && fx <= nb.x1 && fy >= nb.y0 && fy <= nb.y1) return {kind:"note", id:nt.id};
+      continue;
+    }
     if(dist(fx,fy,nt.x,nt.y) < (COARSE?18:11)/ppf) return {kind:"note", id:nt.id};
   }
   for(i=state.elements.trees.length-1;i>=0;i--){
@@ -4385,6 +4582,7 @@ function openDialog(o){
   modalTextarea.hidden = mode!=="multiline";
   modalInput.hidden = mode!=="text";
   if(mode==="multiline") modalTextarea.value = o.value || "";
+  modalTextarea.style.minHeight = o.tall ? "180px" : "";
   if(mode==="text") modalInput.value = o.value || "";
 
   modal.hidden = false;
@@ -4625,7 +4823,7 @@ function segDatumEnds(seg){
 /* ---------- tape measures: a dimension with nothing built on it ----------
    Stored apart from the runs on purpose: a measurement taken across a yard
    must never find its way into the fence footage on a quote. ---------- */
-function isRunTool(t){ return t==="line" || t==="gate" || t==="wall" || t==="tape" || t==="curve"; }
+function isRunTool(t){ return t==="line" || t==="gate" || t==="wall" || t==="tape" || t==="curve" || t==="arrow"; }
 
 function newDim(p1, p2){
   return {id:uid(), x1:p1.x, y1:p1.y, x2:p2.x, y2:p2.y,
@@ -4692,16 +4890,7 @@ function colorRow(container, current, onPick, noAuto){
   wrap.appendChild(lab);
   var row = document.createElement("div");
   row.className = "swatches";
-  (noAuto ? COLORS.filter(function(c){ return c.v !== null; }) : COLORS).forEach(function(col){
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "sw" + (col.v===null ? " auto" : "") + ((current||null)===col.v ? " on" : "");
-    if(col.v) b.style.background = col.v;
-    b.title = col.name;
-    b.setAttribute("aria-label", col.name);
-    b.addEventListener("click", function(){ onPick(col.v); });
-    row.appendChild(b);
-  });
+  appendSwatches(row, current, onPick, noAuto);
   wrap.appendChild(row);
   container.appendChild(wrap);
 }
@@ -4741,14 +4930,14 @@ function lenRow(container, labelText, valueFt, minFt, maxFt, onChange){
   lab.textContent = labelText;
   var inp = document.createElement("input");
   inp.type = "text";
-  inp.value = feetInches(valueFt);
+  inp.value = lenText(valueFt);
   inp.spellcheck = false;
   inp.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 8px;width:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;";
   function commit(){
     var v = parseLen(inp.value, valueFt);
     if(!isFinite(v)) v = valueFt;
     v = Math.max(minFt, Math.min(maxFt, v));
-    inp.value = feetInches(v);
+    inp.value = lenText(v);
     onChange(v);
   }
   inp.addEventListener("change", commit);
@@ -4937,10 +5126,35 @@ function renderSelection(){
     }
     addAction(actionsEl, "Delete", del, true);
 
+  } else if(kind==="segment" && el.type==="arrow"){
+    titleEl.textContent = "Arrow";
+    lenEl.textContent = "";
+    numberRow(bodyEl, "Curve", Math.round(segBow(el)*100), -90, 90, 5, "%", function(v){
+      snapshot(); el.bow = v/100; refresh();
+    });
+    checkRow(bodyEl, "Head at both ends", el.heads === 2, function(v){
+      snapshot(); el.heads = v ? 2 : 1; refresh();
+    });
+    checkRow(bodyEl, "Show length", el.dims !== false, function(v){ snapshot(); el.dims = v; refresh(); });
+    colorRow(bodyEl, el.color, recolor);
+    addAction(actionsEl, "Flip direction", function(){
+      snapshot();
+      var tx = el.x1, ty = el.y1;
+      el.x1 = el.x2; el.y1 = el.y2; el.x2 = tx; el.y2 = ty;
+      if(el.bow) el.bow = -el.bow;
+      refresh();
+    });
+    addAction(actionsEl,"Delete",del,true);
+
   } else if(kind==="segment"){
     titleEl.textContent = el.type==="gate"
       ? gateTypeLabel(el.gateType||"single")+" gate"
-      : (el.type==="wall" ? "Block wall" : "Fence line");
+      : (el.type==="wall" ? "Block wall" : (el.count === false ? "Line" : "Fence line"));
+    if(el.type === "line"){
+      checkRow(bodyEl, "Counts as fence footage", el.count !== false, function(v){
+        snapshot(); if(v) delete el.count; else el.count = false; refresh();
+      });
+    }
     lenEl.textContent = feetInches(segLenOf(el));
     if(el.type==="gate"){
       chipRow(bodyEl, "Gate type", GATE_TYPES, el.gateType||"single", function(v){
@@ -5090,10 +5304,10 @@ function renderSelection(){
     addAction(actionsEl,"Delete",del,true);
 
   } else if(kind==="note"){
-    titleEl.textContent = "Note"; lenEl.textContent = "";
+    titleEl.textContent = el.box ? "Text box" : "Note"; lenEl.textContent = "";
     var ta = document.createElement("textarea");
     ta.value = el.text || "";
-    ta.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 9px;width:100%;min-height:56px;resize:vertical;";
+    ta.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 9px;width:100%;min-height:" + (el.box ? 150 : 56) + "px;resize:vertical;line-height:1.4;";
     ta.addEventListener("input", function(){ el.text = ta.value; saveLocal(); draw(); });
     var lab = document.createElement("label");
     lab.style.cssText = "font-size:11px;font-weight:600;color:var(--ink-dim);";
@@ -5102,6 +5316,16 @@ function renderSelection(){
     w.className = "form-field";
     w.appendChild(lab); w.appendChild(ta);
     bodyEl.appendChild(w);
+    if(el.box){
+      chipRow(bodyEl, "Text size", [{v:"s",label:"Small"},{v:"m",label:"Medium"},{v:"l",label:"Large"}], el.size || "m", function(v){
+        snapshot(); el.size = v; refresh();
+      });
+      numberRow(bodyEl, "Box width", Math.round(el.wPt || 240), 60, 900, 10, "pt", function(v){
+        snapshot(); el.wPt = v; refresh();
+      });
+      checkRow(bodyEl, "Border", el.border !== false, function(v){ snapshot(); el.border = v; refresh(); });
+      checkRow(bodyEl, "Bold", !!el.bold, function(v){ snapshot(); el.bold = v; refresh(); });
+    }
     colorRow(bodyEl, el.color, recolor);
     addAction(actionsEl,"Delete",del,true);
 
@@ -5187,10 +5411,10 @@ function renderSelection(){
       });
     }
 
-    lenRow(bodyEl, "Width", el.w, 0.25, 500, function(v){
+    lenRow(bodyEl, "Width", el.w, MIN_SIZE_FT, 500, function(v){
       snapshot(); el.w = v; if(el.locked) el.h = v; refresh();
     });
-    lenRow(bodyEl, "Depth", el.h, 0.25, 500, function(v){
+    lenRow(bodyEl, "Depth", el.h, MIN_SIZE_FT, 500, function(v){
       snapshot(); el.h = v; if(el.locked) el.w = v; refresh();
     });
     numberRow(bodyEl, "Rotation", Math.round(el.rot||0), -180, 180, 1, "deg", function(v){ snapshot(); el.rot = v; refresh(); });
@@ -5240,6 +5464,11 @@ function renderSelection(){
     colorRow(bodyEl, el.color, recolor);
     checkRow(bodyEl, "Hatch fill", el.hatch !== false, function(v){ snapshot(); el.hatch = v; refresh(); });
     checkRow(bodyEl, "Show dimensions", el.dims !== false, function(v){ snapshot(); el.dims = v; refresh(); });
+    if(!isPostShape(el)){
+      checkRow(bodyEl, "List in quantities", el.count !== false, function(v){
+        snapshot(); if(v) delete el.count; else el.count = false; refresh();
+      });
+    }
     if(el.kind!=="corner"){
       checkRow(bodyEl, "Lock equal sides", !!el.locked, function(v){
         snapshot(); el.locked = v;
@@ -5262,7 +5491,7 @@ function renderSelection(){
 function totals(){
   var t = {fence:0, wall:0, gate:0, gates:[], posts:{}, structs:[], shapes:[]};
   state.elements.segments.forEach(function(seg){
-    if(detailOf("segment", seg)) return;   // part of an illustration
+    if(!segCounts(seg)) return;            // an arrow, a plain line, or part of a detail
     var len = segLenOf(seg);
     if(seg.type==="gate"){ t.gate += len; t.gates.push({len:len, type:seg.gateType||"single"}); }
     else if(seg.type==="wall"){ t.wall += len; }
@@ -5273,8 +5502,7 @@ function totals(){
     t.posts[k] = (t.posts[k]||0)+1;
   });
   state.elements.structures.forEach(function(s){
-    if(s.kind==="photo") return;   // a reference image isn't a material to count
-    if(isDetail(s) || detailOf("structure", s)) return;
+    if(!structCounts(s)) return;   // photos, details, posts and switched-off shapes
     var entry = {
       label: s.label || (s.hatch===false ? shapeSpec(s.shapeKind||"rect").label : "Structure"),
       w:s.w, h:s.h, round: s.kind==="ellipse" && Math.abs(s.w-s.h)<0.01
@@ -5568,6 +5796,7 @@ function renderTagPanel(){
 }
 
 function renderSummary(){
+  if(state.project.sign && (state.project.sign.client || state.project.sign.contractor)) renderSigns();
   var t = totals();
   document.getElementById("stat-fence").textContent = feetInches(t.fence);
   document.getElementById("stat-wall").textContent = feetInches(t.wall);
@@ -5626,6 +5855,8 @@ function toast(msg){
 /* ========================= Tools ========================= */
 
 function setTool(tool){
+  // the Line button comes back the way it was last used, straight or curved
+  if(tool === "line" && state.lineStyle === "curve") tool = "curve";
   state.tool = tool;
   state.draft = [];
   state.draftPreview = null;
@@ -5635,10 +5866,12 @@ function setTool(tool){
   state.snapEdge = null;
   state.snapPoint = null;
   document.querySelectorAll(".tool-btn").forEach(function(b){
-    b.classList.toggle("active", b.dataset.tool===tool);
+    // curved lines are the Line tool with Curved picked
+    b.classList.toggle("active", b.dataset.tool===(tool==="curve" ? "line" : tool));
   });
   canvas.classList.toggle("tool-select", tool==="select");
   document.getElementById("hint").textContent = TOOL_HINTS[tool] || "";
+  if(tool === "line" || tool === "curve") buildPresets();
   updateOptBar();
   draw();
 }
@@ -5646,7 +5879,8 @@ function setTool(tool){
 /* Only show the settings that belong to the tool in hand. */
 var OPT_FOR = {
   select:["always"],
-  line:  ["color","always"],
+  line:  ["color","line","always"],
+  arrow: ["color","always"],
   wall:  ["color","wall","always"],
   gate:  ["color","gate","always"],
   tree:  ["color","tree","always"],
@@ -5657,7 +5891,7 @@ var OPT_FOR = {
   rotate:["always"],
   shape: ["color","shape","always"],
   tape:  ["color","always"],
-  curve: ["color","always"]
+  curve: ["color","line","always"]
 };
 function updateOptBar(){
   var want = OPT_FOR[state.tool] || ["always"];
@@ -5757,7 +5991,7 @@ function placePhoto(img, file){
   }
 })();
 
-var KEYMAP = {v:"select", f:"line", w:"wall", g:"gate", t:"tree", d:"detail", r:"rotate", n:"note", e:"eraser", h:"house", s:"shape", m:"tape", u:"curve"};
+var KEYMAP = {v:"select", l:"line", f:"line", g:"gate", a:"arrow", t:"tree", d:"detail", r:"rotate", n:"note", x:"note", e:"eraser", s:"shape", m:"tape", u:"curve"};
 
 window.addEventListener("keydown", function(e){
   if(!modal.hidden) return;
@@ -5847,15 +6081,9 @@ canvas.addEventListener("pointerdown", function(e){
   }
 
   if(state.tool==="note"){
-    openDialog({title:"Add a note", message:"This prints on the sketch at the point you clicked.", mode:"multiline", value:"", okLabel:"Add note"})
-      .then(function(text){
-        if(text===null || !text.trim()) return;
-        snapshot();
-        var note = {id:uid(), x:sx, y:sy, text:text.trim(), color:state.color};
-        state.elements.notes.push(note);
-        setSel([{kind:"note", id:note.id}]);
-        refresh();
-      });
+    // press, and optionally drag across to set the box's width
+    state.noteDraft = {x0:sx, y0:sy, x1:sx};
+    dragging = {kind:"note-draw"};
     return;
   }
 
@@ -5931,6 +6159,10 @@ canvas.addEventListener("pointerdown", function(e){
                 spanX: dmv.x2 - dmv.x1, spanY: dmv.y2 - dmv.y1};
     renderSelection();
     draw();
+    return;
+  }
+  if(hit.kind==="note-w"){
+    snapshot(); dragging = {kind:"note-w", id:hit.id};
     return;
   }
   if(hit.kind==="dim-handle"){
@@ -6328,6 +6560,13 @@ canvas.addEventListener("pointermove", function(e){
     case "rotate":
       applyRotate(f, e);
       break;
+    case "note-w":
+      el = findEl("note", dragging.id);
+      if(el) el.wPt = Math.max(60, Math.min(900, (f.x - el.x)*state.pxPerFoot));
+      break;
+    case "note-draw":
+      state.noteDraft.x1 = f.x;
+      break;
     case "struct-rot":
       el = findEl("structure", dragging.id);
       if(el){
@@ -6433,14 +6672,14 @@ function resizeStructure(s, cornerIdx, px, py){
   var sy = unit[cornerIdx].v - unit[opp].v;
 
   var d = rotVec(px-O.x, py-O.y, -(s.rot||0));
-  var newW = Math.max(snapFt(), Math.abs(d.x));
-  var newH = Math.max(snapFt(), Math.abs(d.y));
+  var newW = Math.max(MIN_SIZE_FT, Math.abs(d.x));
+  var newH = Math.max(MIN_SIZE_FT, Math.abs(d.y));
   if(s.locked){
     if(s.kind==="photo" && s.natW && s.natH){
       // keep the photo's own aspect ratio instead of forcing a square
       var ratio = s.natH / s.natW;
-      if(Math.abs(d.x) >= Math.abs(d.y)){ newW = Math.max(snapFt(), Math.abs(d.x)); newH = newW*ratio; }
-      else { newH = Math.max(snapFt(), Math.abs(d.y)); newW = newH/ratio; }
+      if(Math.abs(d.x) >= Math.abs(d.y)){ newW = Math.max(MIN_SIZE_FT, Math.abs(d.x)); newH = newW*ratio; }
+      else { newH = Math.max(MIN_SIZE_FT, Math.abs(d.y)); newW = newH/ratio; }
     } else {
       newW = newH = Math.max(newW, newH);
     }
@@ -6460,7 +6699,7 @@ function resizeStructure(s, cornerIdx, px, py){
 function resizeStructureEdge(s, which, px, py){
   var cx = s.x + s.w/2, cy = s.y + s.h/2;
   var p = rotPt(px, py, cx, cy, -(s.rot||0));   // pointer in the shape's own frame
-  var minS = Math.max(snapFt(), 0.05);
+  var minS = MIN_SIZE_FT;
   var l = s.x, r = s.x + s.w, t = s.y, b = s.y + s.h;
 
   if(which === 0) t = Math.min(p.y, b - minS);
@@ -6540,7 +6779,7 @@ function endDrag(e){
     return;
   }
   if(dragging.kind==="seg-draw"){
-    var sdType = state.tool==="gate" ? "gate" : (state.tool==="wall" ? "wall" : "line");
+    var sdType = state.tool==="gate" ? "gate" : (state.tool==="wall" ? "wall" : (state.tool==="arrow" ? "arrow" : "line"));
     var sdStart = dragging.start;
     var sdEnd = state.draftPreview;
     var sdChain = dragging.chainFrom;
@@ -6582,7 +6821,7 @@ function endDrag(e){
       }
       var sdSeg2 = addSegment(sdType, sdChain, sdTap);
       if(state.tool === "curve") sdSeg2.bow = 0.22;
-      if(sdType === "gate"){
+      if(sdType === "gate" || sdType === "arrow"){
         setSel([{kind:"segment", id:sdSeg2.id}]);
         state.draft = [];
       } else {
@@ -6592,6 +6831,26 @@ function endDrag(e){
       return;
     }
     draw();
+    return;
+  }
+  if(dragging.kind==="note-draw" && state.noteDraft){
+    var nd = state.noteDraft;
+    state.noteDraft = null; dragging = null;
+    var dragW = Math.abs(nd.x1 - nd.x0)*state.pxPerFoot;
+    var wPt = dragW > 40 ? dragW : 240;
+    var nx0 = Math.min(nd.x0, nd.x1), ny0 = nd.y0;
+    openDialog({title:"Add text", message:"It prints on the sketch in a box. Long text wraps to the box width.",
+                mode:"multiline", value:"", okLabel:"Add", tall:true})
+      .then(function(text){
+        if(text===null || !text.trim()) return;
+        snapshot();
+        var note = {id:uid(), x:nx0, y:ny0, text:text.replace(/\s+$/, ""), color:state.color,
+                    box:true, wPt:wPt, size:"m", border:true};
+        state.elements.notes.push(note);
+        setSel([{kind:"note", id:note.id}]);
+        setTool("select");
+        refresh();
+      });
     return;
   }
   if(dragging.kind==="struct-draw" && state.structDraft){
@@ -6610,7 +6869,7 @@ function endDrag(e){
       w = def.w; h = def.h;
       sx0 = d.x0 - w/2; sy0 = d.y0 - h/2;
     } else {
-      w = Math.max(w, 0.25); h = Math.max(h, 0.25);
+      w = Math.max(w, MIN_SIZE_FT); h = Math.max(h, MIN_SIZE_FT);
     }
     snapshot();
     var s = addStructure(d.tool, sx0, sy0, w, h);
@@ -6699,19 +6958,10 @@ canvas.addEventListener("dblclick", function(e){
 function buildSwatches(){
   var row = document.getElementById("tool-swatches");
   row.innerHTML = "";
-  COLORS.forEach(function(col){
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "sw" + (col.v===null ? " auto" : "") + (state.color===col.v ? " on" : "");
-    if(col.v) b.style.background = col.v;
-    b.title = col.name + " — used for new items";
-    b.setAttribute("aria-label", col.name);
-    b.addEventListener("click", function(){
-      state.color = col.v;
-      saveLocal();
-      buildSwatches();
-    });
-    row.appendChild(b);
+  appendSwatches(row, state.color, function(v){
+    state.color = v;
+    saveLocal();
+    buildSwatches();
   });
 }
 
@@ -6739,6 +6989,19 @@ function buildSnapOptions(){
 }
 
 function buildPresets(){
+  // the Line tool: straight or curved, and whether it counts as fence
+  var ls = document.getElementById("line-style");
+  if(ls){
+    ls.innerHTML = "";
+    [{v:"line", label:"Straight"}, {v:"curve", label:"Curved"}].forEach(function(o){
+      var b = document.createElement("button");
+      b.className = "chip" + ((state.tool === o.v) ? " on" : "");
+      b.textContent = o.label;
+      b.addEventListener("click", function(){ state.lineStyle = o.v; setTool(o.v); });
+      ls.appendChild(b);
+    });
+    document.getElementById("chk-linecount").checked = state.lineCounts !== false;
+  }
   var tp = document.getElementById("tree-presets");
   tp.innerHTML = "";
   TREE_PRESETS.forEach(function(ft){
@@ -6782,8 +7045,8 @@ function buildPresets(){
   });
 
   var swEl = document.getElementById("in-shapew"), shEl = document.getElementById("in-shapeh");
-  if(document.activeElement !== swEl) swEl.value = feetInches(state.shapeWFt);
-  if(document.activeElement !== shEl) shEl.value = feetInches(state.shapeHFt);
+  if(document.activeElement !== swEl) swEl.value = lenText(state.shapeWFt);
+  if(document.activeElement !== shEl) shEl.value = lenText(state.shapeHFt);
 }
 
 document.getElementById("in-treesize").addEventListener("change", function(e){
@@ -6792,15 +7055,19 @@ document.getElementById("in-treesize").addEventListener("change", function(e){
 });
 document.getElementById("in-shapew").addEventListener("change", function(e){
   var v = parseLen(e.target.value, state.shapeWFt);
-  state.shapeWFt = Math.max(0.25, Math.min(500, v));
-  e.target.value = feetInches(state.shapeWFt);
+  state.shapeWFt = Math.max(MIN_SIZE_FT, Math.min(500, v));
+  e.target.value = lenText(state.shapeWFt);
   saveLocal();
 });
 document.getElementById("in-shapeh").addEventListener("change", function(e){
   var v = parseLen(e.target.value, state.shapeHFt);
-  state.shapeHFt = Math.max(0.25, Math.min(500, v));
-  e.target.value = feetInches(state.shapeHFt);
+  state.shapeHFt = Math.max(MIN_SIZE_FT, Math.min(500, v));
+  e.target.value = lenText(state.shapeHFt);
   saveLocal();
+});
+document.getElementById("chk-linecount").addEventListener("change", function(e){
+  state.lineCounts = e.target.checked; saveLocal();
+  toast(e.target.checked ? "New lines count as fence" : "New lines are plain lines \u2014 not in the footage");
 });
 /* round toggles in the canvas corner */
 function bindToggle(id, get, set){
@@ -6894,7 +7161,7 @@ document.getElementById("btn-zoom-out").addEventListener("click", function(){ zo
     var r = canvas.getBoundingClientRect();
     var d = Math.max(1, Math.hypot(pts[1].x-pts[0].x, pts[1].y-pts[0].y));
     var mid = {x:(pts[0].x+pts[1].x)/2 - r.left, y:(pts[0].y+pts[1].y)/2 - r.top};
-    var next = Math.max(1, Math.min(120, pinch.s0 * (d/pinch.d0)));
+    var next = Math.max(1, Math.min(MAX_PPF, pinch.s0 * (d/pinch.d0)));
     // the world point under the original midpoint follows the new midpoint,
     // so the gesture pans and zooms in one motion
     var wx = (pinch.mid0.x - pinch.pan0.x)/pinch.s0;
@@ -7134,6 +7401,178 @@ bindField("f-date","date");
 bindField("f-type","fenceType");
 bindField("f-notes","notes");
 bindField("f-rep","rep");
+bindField("f-phone","phone");
+
+/* ---------- signatures ----------
+   Signed on the device, in person. Each one keeps the ink (a transparent
+   PNG), the printed name, when it was signed, and a fingerprint of the job
+   as it stood -- so if the sketch or the prices change afterwards the panel
+   says so, and it's plain the signature was given to an earlier version. */
+function signState(){
+  var s = state.project.sign;
+  if(!s || typeof s !== "object") s = state.project.sign = {};
+  return s;
+}
+function jobFingerprint(){
+  var j = JSON.parse(JSON.stringify(stateSnapshot()));
+  // only what the client agreed to: drawing, prices, terms -- not the view or tool settings
+  ["pan","pxPerFoot","color","shapeKind","shapeWFt","shapeHFt","showDims","freePlace","objectSnap","snapIn",
+   "lineCounts","gateType","treeDiaFt","wallThickIn","postSizeIn","postDepthIn","autoPost"].forEach(function(k){ delete j[k]; });
+  if(j.project){ delete j.project.sign; delete j.project.logo; }
+  (j.elements.notes || []).forEach(function(n){ delete n._box; });
+  var str = JSON.stringify(j), h = 5381;
+  for(var i=0; i<str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+function sigWhen(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return "";
+  return d.toLocaleDateString("en-US", {month:"short", day:"numeric", year:"numeric"}) + ", " +
+         d.toLocaleTimeString("en-US", {hour:"numeric", minute:"2-digit"});
+}
+function renderSigns(){
+  var s = signState();
+  [["client", "Client"], ["contractor", "Contractor"]].forEach(function(pair){
+    var who = pair[0], box = document.getElementById("sig-" + who);
+    if(!box) return;
+    box.innerHTML = "";
+    var rec = s[who];
+    var info = document.createElement("div");
+    info.className = "sig-who";
+    if(rec && rec.img){
+      var im = document.createElement("img"); im.src = rec.img; im.alt = pair[1] + " signature";
+      box.appendChild(im);
+      info.innerHTML = "<b>" + escapeHtml(rec.name || pair[1]) + "</b><small>Signed " + escapeHtml(sigWhen(rec.at)) + "</small>";
+      if(rec.job && rec.job !== jobFingerprint()){
+        info.innerHTML += "<small class='warn'>The job has changed since this was signed</small>";
+      }
+      box.appendChild(info);
+      var clr = document.createElement("button");
+      clr.className = "btn sm"; clr.textContent = "Remove";
+      clr.addEventListener("click", function(){
+        openDialog({title:"Remove this signature?", mode:"confirm", okLabel:"Remove"}).then(function(ok){
+          if(!ok) return;
+          delete signState()[who]; saveLocal(); renderSigns();
+        });
+      });
+      box.appendChild(clr);
+    } else {
+      info.innerHTML = "<b>" + pair[1] + " signature</b><small>Not signed yet</small>";
+      box.appendChild(info);
+      var go = document.createElement("button");
+      go.className = "btn sm primary"; go.textContent = "Sign now";
+      go.addEventListener("click", function(){ openSigPad(who); });
+      box.appendChild(go);
+    }
+  });
+}
+
+var sigPad = (function(){
+  var wrap = document.getElementById("sigpad");
+  var cv = document.getElementById("sigpad-canvas");
+  var ctx = cv.getContext("2d");
+  var hint = document.getElementById("sigpad-hint");
+  var strokes = [], cur = null, who = null, dpr = 1;
+
+  function size(){
+    var r = cv.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr);
+    paint();
+  }
+  function paint(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle = "#111827"; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    strokes.forEach(function(st){
+      if(st.length === 1){
+        ctx.beginPath(); ctx.arc(st[0].x, st[0].y, 1.4, 0, Math.PI*2); ctx.fillStyle = "#111827"; ctx.fill();
+        return;
+      }
+      // smooth through the midpoints; a touch heavier where the finger slows
+      ctx.lineWidth = 2.6;
+      ctx.beginPath(); ctx.moveTo(st[0].x, st[0].y);
+      for(var i=1; i<st.length-1; i++){
+        var mx = (st[i].x + st[i+1].x)/2, my = (st[i].y + st[i+1].y)/2;
+        ctx.quadraticCurveTo(st[i].x, st[i].y, mx, my);
+      }
+      var last = st[st.length-1]; ctx.lineTo(last.x, last.y);
+      ctx.stroke();
+    });
+    hint.style.display = strokes.length ? "none" : "";
+  }
+  function pt(e){ var r = cv.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; }
+  cv.addEventListener("pointerdown", function(e){
+    e.preventDefault();
+    try{ cv.setPointerCapture(e.pointerId); }catch(err){}
+    cur = [pt(e)]; strokes.push(cur); paint();
+  });
+  cv.addEventListener("pointermove", function(e){
+    if(!cur) return;
+    e.preventDefault();
+    var p = pt(e), q = cur[cur.length-1];
+    if(Math.hypot(p.x-q.x, p.y-q.y) > 0.8){ cur.push(p); paint(); }
+  });
+  function up(){ cur = null; }
+  cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+
+  /* Only the ink, trimmed to its own edges, on a transparent background. */
+  function exportInk(){
+    var xs = [], ys = [];
+    strokes.forEach(function(st){ st.forEach(function(p){ xs.push(p.x); ys.push(p.y); }); });
+    var pad = 6;
+    var x0 = Math.min.apply(null, xs) - pad, y0 = Math.min.apply(null, ys) - pad;
+    var x1 = Math.max.apply(null, xs) + pad, y1 = Math.max.apply(null, ys) + pad;
+    var scale = 2, out = document.createElement("canvas");
+    out.width = Math.max(1, Math.round((x1-x0)*scale)); out.height = Math.max(1, Math.round((y1-y0)*scale));
+    var o = out.getContext("2d");
+    o.setTransform(scale,0,0,scale,-x0*scale,-y0*scale);
+    o.strokeStyle = "#111827"; o.fillStyle = "#111827"; o.lineCap = "round"; o.lineJoin = "round"; o.lineWidth = 2.6;
+    strokes.forEach(function(st){
+      if(st.length === 1){ o.beginPath(); o.arc(st[0].x, st[0].y, 1.4, 0, Math.PI*2); o.fill(); return; }
+      o.beginPath(); o.moveTo(st[0].x, st[0].y);
+      for(var i=1; i<st.length-1; i++){
+        o.quadraticCurveTo(st[i].x, st[i].y, (st[i].x+st[i+1].x)/2, (st[i].y+st[i+1].y)/2);
+      }
+      o.lineTo(st[st.length-1].x, st[st.length-1].y); o.stroke();
+    });
+    return {img: out.toDataURL("image/png"), w: x1-x0, h: y1-y0};
+  }
+
+  document.getElementById("sigpad-clear").addEventListener("click", function(){ strokes = []; paint(); });
+  document.getElementById("sigpad-cancel").addEventListener("click", function(){ wrap.hidden = true; });
+  document.getElementById("sigpad-ok").addEventListener("click", function(){
+    var ink = strokes.reduce(function(n, st){ return n + st.length; }, 0);
+    if(ink < 6){ toast("Sign in the box first"); return; }
+    var name = document.getElementById("sigpad-name").value.trim();
+    if(!name){ toast("Add the printed name"); document.getElementById("sigpad-name").focus(); return; }
+    var inkImg = exportInk();
+    signState()[who] = {img: inkImg.img, aspect: inkImg.w/Math.max(1, inkImg.h), name: name,
+                        at: new Date().toISOString(), job: jobFingerprint()};
+    saveLocal();
+    wrap.hidden = true;
+    renderSigns();
+    toast("Signature saved \u2014 it prints on the PDF");
+  });
+  window.addEventListener("resize", function(){ if(!wrap.hidden) size(); });
+
+  return {
+    open: function(w){
+      who = w; strokes = [];
+      document.getElementById("sigpad-title").textContent = w === "client" ? "Client signature" : "Contractor signature";
+      document.getElementById("sigpad-sub").textContent = w === "client"
+        ? "By signing you accept this proposal and its terms and conditions."
+        : "Signed for " + COMPANY.name + ".";
+      document.getElementById("sigpad-name").value = w === "client" ? (state.project.client || "") : (state.project.rep || "");
+      wrap.hidden = false;
+      requestAnimationFrame(size);
+    }
+  };
+})();
+function openSigPad(who){ closeSheet(); sigPad.open(who); }
+/* For the automated checks: the retired Building and Wall tools, and the
+   Curved line option, can still be picked directly. */
+window.__fenceSketch = {setTool: function(t){ setTool(t); }};
 
 /* ---------- payment ---------- */
 function renderPay(){
@@ -7219,10 +7658,12 @@ function syncProjectFields(){
   document.getElementById("f-type").value = state.project.fenceType||"";
   document.getElementById("f-notes").value = state.project.notes||"";
   document.getElementById("f-rep").value = state.project.rep||"";
+  document.getElementById("f-phone").value = state.project.phone||"";
   document.getElementById("f-warranty").value =
     state.project.warrantyYears == null ? 5 : state.project.warrantyYears;
   document.getElementById("chk-terms").checked = state.project.terms !== false;
   renderPay();
+  renderSigns();
 }
 
 /* ========================= Legend ========================= */
@@ -7414,13 +7855,21 @@ function contentBounds(ppf, k){
   // note text runs to the right of its anchor
   var ftPerChar = ft(0.55 * 11.5);
   state.elements.notes.forEach(function(n){
+    if(n.box){
+      var sz = ({s:9, m:11, l:14}[n.size] || 11)*0.8, bw = (n.wPt || 240)*0.8;
+      var perLine = Math.max(4, Math.floor((bw - 10) / (sz*0.5)));
+      var nl = 0;
+      String(n.text || "").split("\n").forEach(function(par){ nl += Math.max(1, Math.ceil(par.length/perLine)); });
+      add(n.x, n.y); add(n.x + ft(bw), n.y + ft(nl*sz*1.3 + 12));
+      return;
+    }
     var lines = String(n.text||"").split("\n");
     var longest = 0;
     lines.forEach(function(l){ longest = Math.max(longest, l.length); });
     add(n.x, n.y - ft(lines.length*7 + 6));
     add(n.x + ft(12) + longest*ftPerChar, n.y + ft(lines.length*7 + 6));
   });
-  state.elements.tags.forEach(function(t){
+  (PRINT_MODE === "install" ? [] : state.elements.tags).forEach(function(t){
     var a = tagAnchor(t);
     if(!a) return;
     var label = (t.label||"") + (state.showPrices ? "  "+money(tagTotal(t)) : "");
@@ -7454,7 +7903,17 @@ function buildPrintCanvas(bounds, ppf){
   return off;
 }
 
-document.getElementById("btn-export").addEventListener("click", exportPDF);
+(function(){
+  var btn = document.getElementById("btn-export"), menu = document.getElementById("export-menu");
+  function close(){ menu.hidden = true; }
+  btn.addEventListener("click", function(e){ e.stopPropagation(); menu.hidden = !menu.hidden; });
+  menu.addEventListener("click", close);
+  document.addEventListener("pointerdown", function(e){
+    if(!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
+  });
+  document.getElementById("btn-export-proposal").addEventListener("click", function(){ exportPDF("proposal"); });
+  document.getElementById("btn-export-install").addEventListener("click", function(){ exportPDF("install"); });
+})();
 
 /** Height the line-item table will occupy, used to lay out the page. */
 function measureItemTable(rows){
@@ -7591,7 +8050,7 @@ function drawTermsPage(doc, landscape){
   // who this is for, so a loose page still belongs to a job
   doc.setFont("helvetica","normal"); doc.setFontSize(8);
   doc.setTextColor(95);
-  doc.text([state.project.client, state.project.address, state.project.date]
+  doc.text([state.project.client, state.project.phone, state.project.address, state.project.date]
     .filter(Boolean).join("   ·   ") || "—", tx, y, {maxWidth: tw});
   doc.setTextColor(0);
   y += 16;
@@ -7638,6 +8097,7 @@ function drawTermsPage(doc, landscape){
 
   // signatures at the foot
   var sy = PH - M - 78;
+  var csig = signState().client;
   [["Printed name", 0], ["Signature", 26], ["Date", 52]].forEach(function(row){
     var ly = sy + row[1];
     doc.setDrawColor(140); doc.setLineWidth(0.6);
@@ -7646,14 +8106,37 @@ function drawTermsPage(doc, landscape){
     doc.setTextColor(115);
     doc.text(row[0], tx, ly + 8);
     doc.setTextColor(0);
+    if(csig){
+      doc.setFontSize(10);
+      if(row[0] === "Printed name" && csig.name) doc.text(csig.name, tx + 3, ly - 4);
+      if(row[0] === "Signature" && csig.img) placeSignature(doc, csig, tx + 3, ly - 1, tw*0.5, 22);
+      if(row[0] === "Date" && csig.at) doc.text(sigWhen(csig.at), tx + 3, ly - 4);
+    }
   });
 }
 
-function exportPDF(){
+/* Which sheet is being printed: the client's proposal, or the crew's
+   install sheet (same drawing, no prices or item markings). */
+var PRINT_MODE = "proposal";
+
+/** Ink sitting on a signature line: bottom on the line, fitted to a box. */
+function placeSignature(doc, rec, x, lineY, maxW, maxH){
+  var a = rec.aspect || 3, h = maxH, w = h*a;
+  if(w > maxW){ w = maxW; h = w/a; }
+  try{ doc.addImage(rec.img, "PNG", x, lineY - h, w, h); }catch(e){}
+}
+
+function exportPDF(mode){
   if(!window.jspdf || !window.jspdf.jsPDF){
     toast("PDF library didn't load — check your connection and reload");
     return;
   }
+  PRINT_MODE = mode === "install" ? "install" : "proposal";
+  try{ buildPDF(PRINT_MODE === "install"); }
+  finally{ PRINT_MODE = "proposal"; }
+}
+
+function buildPDF(INSTALL){
 
   // Crop to what was actually drawn, and orient the page to suit it, so the
   // sketch fills the sheet instead of floating small in the middle.
@@ -7743,18 +8226,19 @@ function exportPDF(){
     rule(y);
     y += 3;
   }
+  /* label and value on one line -- a job's details in a compact list, so
+     the options and payment below keep their room */
+  var FLD = 50;
   function field(label, value){
-    y += 10.5;
-    doc.setFont("helvetica","bold"); doc.setFontSize(6.3);
+    y += 11;
+    doc.setFont("helvetica","bold"); doc.setFontSize(6.1);
     doc.setTextColor(125);
     doc.text(label, tx, y);
     doc.setTextColor(0);
-    doc.setFont("helvetica","normal"); doc.setFontSize(8.4);
-    var lines = doc.splitTextToSize(String(value || "—"), tw);
-    y += 10;
-    doc.text(lines.slice(0,2), tx, y);
-    y += (Math.min(lines.length,2) - 1) * 9;
-    y += 2;
+    doc.setFont("helvetica","normal"); doc.setFontSize(8.2);
+    var lines = doc.splitTextToSize(String(value || "—"), tw - FLD);
+    doc.text(lines.slice(0,2), tx + FLD, y);
+    y += (Math.min(lines.length,2) - 1) * 9.4;
   }
   /* two short fields side by side — date and rep don't need a line each */
   function field2(la, va, lb, vb){
@@ -7801,15 +8285,19 @@ function exportPDF(){
 
   doc.setFont("helvetica","normal"); doc.setFontSize(9.4);
   doc.setCharSpace(0.9);
-  doc.text("PROPOSAL & CONTRACT", tx, y);
+  doc.text(INSTALL ? "INSTALLATION SHEET" : "PROPOSAL & CONTRACT", tx, y);
   doc.setCharSpace(0);
   y += 5;
   rule(y, "strong");
 
+  y += 2;
   field("CLIENT", state.project.client);
-  field("JOB ADDRESS", state.project.address);
-  field2("DATE", state.project.date, "REP", state.project.rep);
-  field("FENCE SPEC", state.project.fenceType);
+  if(state.project.phone) field("PHONE", state.project.phone);
+  field("JOB SITE", state.project.address);
+  field("DATE", state.project.date);
+  field("FENCE", state.project.fenceType);
+  if(state.project.rep) field("REP", state.project.rep);
+  y += 2;
 
   sectionHead("QUANTITIES");
   stat("Fence run", feetInches(t.fence));
@@ -7819,16 +8307,97 @@ function exportPDF(){
   if(t.structs.length) stat("Structures", t.structs.length);
   y += 4;
 
-  var postText = Object.keys(t.posts).sort()
-    .map(function(k){ return t.posts[k]+"× "+postLabel(k); }).join(", ");
-  if(postText){
-    y += 10;
-    doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
-    doc.setTextColor(105);
-    var pl = doc.splitTextToSize(postText, tw);
-    doc.text(pl.slice(0,3), tx, y);
-    y += (Math.min(pl.length,3)-1)*8;
+  if(INSTALL){
+    installColumn();
+    deliverFile(doc.output("blob"), jobBaseName() + " - install sheet.pdf");
+    return;
+  }
+
+  /* The crew's column: what to build and where, no money. */
+  function installColumn(){
+    // posts, grouped by size -- the crew needs the count even if the client doesn't
+    var posts = {};
+    state.elements.structures.forEach(function(s){
+      if(!isPostShape(s) || detailOf("structure", s)) return;
+      var a = Math.min(s.w, s.h)*12, b = Math.max(s.w, s.h)*12;
+      var key = inchText(a, false) + " x " + inchText(b, false) + "\"";
+      posts[key] = (posts[key] || 0) + 1;
+    });
+    var nPosts = Object.keys(posts).reduce(function(n, k){ return n + posts[k]; }, 0);
+    if(nPosts) stat("Posts", nPosts);
+    Object.keys(posts).sort().forEach(function(k){
+      y += 9; doc.setFontSize(7); doc.setTextColor(115);
+      doc.text(posts[k] + "  \u00d7  " + k, tx + 8, y); doc.setTextColor(0);
+    });
+    y += 4;
+
+    // every gate, with what the crew has to know about it
+    var gates = state.elements.segments.filter(function(sg){ return sg.type === "gate" && !detailOf("segment", sg); });
+    if(gates.length){
+      sectionHead("GATES");
+      gates.forEach(function(g, gi){
+        y += 10.5;
+        doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
+        doc.text((gi+1) + ".  " + gateTypeLabel(g.gateType || "single") + " gate", tx, y);
+        doc.text(feetInches(segLenOf(g)) + (segIsNTS(g) ? " *" : ""), R - PADX, y, {align:"right"});
+        y += 8.5;
+        doc.setFontSize(6.6); doc.setTextColor(115);
+        var sub = measureMode(segMeasureFrom(g)).short;
+        doc.text(sub, tx + 12, y);
+        doc.setTextColor(0);
+      });
+      y += 3;
+    }
+
+    // what each line item covers, without the money
+    var items = state.elements.tags;
+    if(items.length){
+      sectionHead(items.length > 1 && optionTags().length > 1 ? "SCOPE (OPTIONS QUOTED)" : "SCOPE");
+      items.forEach(function(tg, ti){
+        y += 10.5;
+        doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
+        doc.text(doc.splitTextToSize((ti+1) + ".  " + (tg.label || "Untitled"), tw)[0], tx, y);
+        y += 8.5;
+        doc.setFontSize(6.6); doc.setTextColor(115);
+        var q = doc.splitTextToSize(tagQtyText(tg), tw - 12);
+        doc.text(q.slice(0, 2), tx + 12, y);
+        y += (Math.min(q.length, 2) - 1)*7.5;
+        if(tg.note){
+          y += 8;
+          doc.setFont("helvetica","italic");
+          var nl0 = doc.splitTextToSize(tg.note, tw - 12);
+          doc.text(nl0.slice(0, 3), tx + 12, y);
+          y += (Math.min(nl0.length, 3) - 1)*7.5;
+          doc.setFont("helvetica","normal");
+        }
+        doc.setTextColor(0);
+      });
+      y += 3;
+    }
+
+    // crew notes get the room the proposal gives to prices and payment
+    var foot = PH - M - 58;
+    if(state.project.notes){
+      sectionHead("NOTES FOR THE CREW");
+      doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
+      var cn = doc.splitTextToSize(state.project.notes, tw);
+      var room = Math.max(1, Math.floor((foot - y - 8)/9.4));
+      doc.text(cn.slice(0, room), tx, y + 9);
+      y += 9 + Math.min(cn.length, room)*9.4;
+    }
+
+    doc.setFont("helvetica","normal"); doc.setFontSize(6.9);
+    doc.setTextColor(130);
+    doc.text("Grid 1 square = " + gridStepFor(printPpf, PRINT_K) + " ft   \u00b7   measured " + measureNote(), tx, foot, {maxWidth: tw});
     doc.setTextColor(0);
+    ["Installed by", "Date completed"].forEach(function(lab, idx){
+      var sy = foot + 22 + idx*20;
+      doc.setDrawColor(140); doc.setLineWidth(0.6);
+      doc.line(tx, sy, R - PADX, sy);
+      doc.setFontSize(7.1); doc.setTextColor(120);
+      doc.text(lab, tx, sy + 7);
+      doc.setTextColor(0);
+    });
   }
 
   /* ---- line items: what's in the job, then the alternates ---- */
@@ -7995,14 +8564,20 @@ function exportPDF(){
     + (ntsCount ? "   ·   * stated, not to scale" : ""), tx, by + 6, {maxWidth: tw});
   doc.setTextColor(0);
 
-  ["Client signature", "Contractor signature", "Date"].forEach(function(lab, idx){
+  var sigs = signState();
+  [["Client signature", "client"], ["Contractor signature", "contractor"], ["Date", null]].forEach(function(row, idx){
     var sy = by + 24 + idx*20;
     doc.setDrawColor(140); doc.setLineWidth(0.6);
     doc.line(tx, sy, R - PADX, sy);
     doc.setFont("helvetica","normal"); doc.setFontSize(7.1);
     doc.setTextColor(120);
-    doc.text(lab, tx, sy + 7);
+    var rec = row[1] ? sigs[row[1]] : null;
+    doc.text(row[0] + (rec && rec.name ? "  \u2014  " + rec.name : ""), tx, sy + 7);
     doc.setTextColor(0);
+    if(rec && rec.img) placeSignature(doc, rec, tx + 2, sy - 1, tw*0.62, 17);
+    if(!row[1] && sigs.client && sigs.client.at){
+      doc.setFontSize(8); doc.text(sigWhen(sigs.client.at), tx + 2, sy - 3);
+    }
   });
 
   /* ---------------- overflow schedule ---------------- */

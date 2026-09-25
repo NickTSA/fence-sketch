@@ -1,5 +1,5 @@
-/* Fence Sketch offline cache - built da9cf680b4 */
-var CACHE = "fence-sketch-da9cf680b4";
+/* Fence Sketch offline cache - built 33c03ea820 */
+var CACHE = "fence-sketch-33c03ea820";
 var SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 /* GitHub Pages serves with a ten-minute max-age. Going through the browser's

@@ -1,12 +1,14 @@
 <meta charset="utf-8">
 <title>Fence Layout Board</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#1f3a5f">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0a7cff">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Fence Sketch">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
   --bg:#eef0f3;
@@ -261,6 +263,14 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   color:var(--ink-dim);font-weight:700;
 }
 .card.selection{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+/* cards fold away to their heading: tap the heading */
+.card.foldable > h2{cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  margin:-4px -4px -4px 0;padding:4px 4px 4px 0;user-select:none;-webkit-user-select:none;}
+.card.foldable > h2::after{content:"";width:7px;height:7px;border-right:1.6px solid currentColor;
+  border-bottom:1.6px solid currentColor;transform:rotate(45deg);margin:0 4px 3px 8px;transition:transform .15s;}
+.card.foldable.folded > h2::after{transform:rotate(-45deg);margin-bottom:0;}
+.card.folded > :not(h2){display:none !important;}
+.card.folded{gap:0;}
 #card-selection[hidden]{display:none;}
 
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
@@ -375,6 +385,45 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 }
 .buildstamp.tappable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
 .buildstamp.tappable:active{color:var(--ink);}
+/* the selection's quick actions take the options bar's place */
+.quickbar{
+  position:absolute;top:32px;left:50%;transform:translateX(-50%);z-index:5;
+  display:flex;align-items:center;gap:2px;
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:12px;
+  padding:4px;box-shadow:0 4px 16px rgba(0,0,0,.14);
+  max-width:calc(100% - 16px);
+}
+.quickbar[hidden]{display:none;}
+body.qb-on .optbar{display:none;}
+.qb-title{font-size:12px;font-weight:600;padding:0 6px 0 8px;white-space:nowrap;
+  max-width:11em;overflow:hidden;text-overflow:ellipsis;}
+.qb-val,.qb-input{
+  font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;
+  border:1px dashed var(--line-strong);background:var(--surface-2);
+  border-radius:8px;padding:7px 9px;margin-right:2px;cursor:text;
+}
+.qb-input{width:8.5em;border-style:solid;border-color:var(--accent);background:var(--surface);outline:none;}
+.qb-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  min-width:44px;height:44px;padding:3px 4px;border:0;border-radius:8px;
+  background:transparent;color:var(--ink);cursor:pointer;font-size:10px;line-height:1.1;
+}
+.qb-btn:hover{background:var(--surface-2);}
+.qb-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;}
+.qb-btn span{white-space:nowrap;}
+.qb-btn.danger{color:var(--danger);}
+.qb-edit{display:none;}
+
+details.more{margin-top:2px;border-top:1px solid var(--line);padding-top:6px;}
+details.more summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--ink-dim);padding:4px 0;list-style:none;}
+details.more summary::-webkit-details-marker{display:none;}
+details.more summary::before{content:"\25B8";display:inline-block;width:1.1em;transition:transform .15s;}
+details.more[open] summary::before{transform:rotate(90deg);}
+.more-body{display:flex;flex-direction:column;gap:9px;padding-top:6px;}
+.mini-note{font-size:11px;color:var(--ink-dim);}
+
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
   background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:9px;
@@ -500,17 +549,20 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   .item-row{padding:11px;}
   .iconbtn{width:40px;height:40px;}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom));max-width:calc(100% - 32px);text-align:center;}
+  .quickbar{top:12px;}
+  .qb-edit{display:flex;}
+  .qb-btn{min-width:46px;height:48px;}
   .modal{border-radius:16px;}
   .modal textarea,.modal input{font-size:16px;padding:11px;}
 }
 
 /* ---- tablet: the rail stays down the side, just roomier ---- */
 @media (pointer:coarse) and (min-width:801px) and (max-width:1200px){
-  .tools{padding:8px 0 20px;}
-  .tool-btn{padding:12px 2px 10px;}
-  .tool-btn svg{width:25px;height:25px;}
+  .tools{padding:6px 0 12px;}
+  .tool-btn{padding:8px 2px 6px;}
+  .tool-btn svg{width:23px;height:23px;}
   .tool-btn span{font-size:10.5px;}
-  .rail-sep{margin:7px 14px;}
+  .rail-sep{margin:4px 14px;}
   .optbar{top:14px;}
 }
 
@@ -594,6 +646,13 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   .zoomval{right:6px;bottom:52px;font-size:10px;padding:3px 7px;}
 }
 
+@media (max-width:800px){
+  .quickbar{top:8px;max-width:calc(100% - 12px);}
+  .qb-title{display:none;}
+  .qb-btn{min-width:42px;padding:3px 2px;}
+  .qb-val,.qb-input{padding:7px 7px;font-size:12.5px;}
+}
+
 @media (max-width:360px){
   .tool-btn{width:calc(100%/5);}
   .title-field{font-size:13px;}
@@ -608,6 +667,9 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
 
     <button class="iconbtn plain" id="btn-undo" title="Undo (Ctrl+Z)">
       <svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-2"/></svg>
+    </button>
+    <button class="iconbtn plain" id="btn-redo" title="Redo (Shift+Ctrl+Z)">
+      <svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5M20 9H10a6 6 0 0 0 0 12h2"/></svg>
     </button>
     <button class="iconbtn plain" id="btn-details" title="Job details">
       <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
@@ -677,6 +739,8 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
         <select id="sel-measure" title="Sheet default — any one run can override it from its own panel"></select>
       </div>
     </div>
+
+    <div class="quickbar" id="quickbar" hidden></div>
 
     <div class="hint" id="hint">Pick a tool to start drawing.</div>
     <div class="navhint">Two-finger scroll or space-drag to pan &middot; Ctrl/&#8984; +&nbsp;&minus; to zoom &middot; &#8984;0 to fit</div>
@@ -777,21 +841,19 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
     </div>
 
 
-    <div class="card">
-      <h2>Job summary</h2>
+    <div class="card" id="card-summary">
+      <h2>Totals</h2>
       <div class="stat-grid">
-        <div class="stat"><div class="n mono" id="stat-fence">0'</div><div class="l">Fence run</div></div>
+        <div class="stat"><div class="n mono" id="stat-fence">0'</div><div class="l">Fence</div></div>
         <div class="stat"><div class="n mono" id="stat-wall">0'</div><div class="l">Block wall</div></div>
         <div class="stat"><div class="n mono" id="stat-gates">0</div><div class="l">Gates</div></div>
-        <div class="stat"><div class="n mono" id="stat-trees">0</div><div class="l">Trees</div></div>
-        <div class="stat"><div class="n mono" id="stat-structs">0</div><div class="l">Structures</div></div>
-        <div class="stat"><div class="n mono" id="stat-shapes">0</div><div class="l">Shapes</div></div>
+        <div class="stat"><div class="n mono" id="stat-posts">0</div><div class="l">Posts</div></div>
       </div>
       <div class="rows" id="gate-list"></div>
     </div>
 
-    <div class="card">
-      <h2>Sheet &amp; job details</h2>
+    <div class="card" id="card-sheet">
+      <h2>Job details</h2>
       <div class="inline">
         <div class="form-field" style="flex:1"><label for="in-w">Width (ft)</label><input type="number" id="in-w" min="20" max="800" step="10" value="120"></div>
         <div class="form-field" style="flex:1"><label for="in-h">Height (ft)</label><input type="number" id="in-h" min="20" max="800" step="10" value="80"></div>
@@ -813,12 +875,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
       <div class="form-field"><label for="f-notes">Notes for crew</label><textarea id="f-notes" placeholder="Grade slopes 3ft over the north run. Call 811 first."></textarea></div>
     </div>
 
-    <div class="card">
-      <h2>Legend</h2>
-      <div class="legend-grid" id="legend-grid"></div>
-    </div>
-
-    <div class="buildstamp" id="buildstamp">Build 2026-09-25</div>
+    <div class="buildstamp" id="buildstamp">Build 2026-10-08</div>
   </aside>
 </div>
 
@@ -855,7 +912,7 @@ input,select,textarea{font-family:inherit;font-size:13px;color:var(--ink);}
   </div>
 </div>
 
-<script>
+<script>/* jsPDF 2.5.1 (MIT) */
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
@@ -2466,6 +2523,50 @@ function structPoly(s){
    where it sits: anything whose middle is inside a detail frame is part of
    the illustration, not the job. ---------- */
 function isDetail(s){ return !!s && s.kind === "detail"; }
+function structPaintOrder(a, b){
+  function tier(s){ return s.kind === "photo" ? 0 : (isDetail(s) ? 1 : 2); }
+  return (tier(a) - tier(b)) || (b.w*b.h - a.w*a.h);
+}
+
+/**
+ * Everything under a point, in the order a tap would pick it. Tapping the
+ * same spot again walks down this list, so a line under a shape, or a
+ * shape under another, can always be reached.
+ */
+function elementsAt(fx, fy){
+  var ppf = state.pxPerFoot, out = [], seen = {};
+  var reach = (COARSE_POINTER ? 16 : 9)/ppf;
+  function push(kind, id){ if(!seen[kind+id]){ seen[kind+id] = 1; out.push({kind:kind, id:id}); } }
+  state.elements.notes.forEach(function(n){
+    if(n.box && n._box){ if(fx >= n._box.x0 && fx <= n._box.x1 && fy >= n._box.y0 && fy <= n._box.y1) push("note", n.id); }
+    else if(dist(fx,fy,n.x,n.y) < reach*1.2) push("note", n.id);
+  });
+  state.elements.trees.forEach(function(t){ if(dist(fx,fy,t.x,t.y) < Math.max(reach, t.diaFt/2)) push("tree", t.id); });
+  state.elements.dims.forEach(function(d){
+    var g = dimDrawn(d);
+    if(distToSegment(fx,fy,g.a.x,g.a.y,g.b.x,g.b.y) < reach) push("dim", d.id);
+  });
+  var shapes = state.elements.structures.filter(function(s){
+    if(isDetail(s)) return false;
+    if(pointInPoly(fx,fy,structPoly(s))) return true;
+    return Math.max(s.w, s.h)*ppf <= 44 && dist(fx,fy,s.x+s.w/2,s.y+s.h/2) < Math.max(reach, Math.hypot(s.w,s.h)/2);
+  }).sort(function(a,b){ return a.w*a.h - b.w*b.h; });
+  // small shapes (posts) first, then runs, then the bigger shapes
+  shapes.filter(function(s){ return Math.max(s.w,s.h)*ppf <= 44; }).forEach(function(s){ push("structure", s.id); });
+  state.elements.segments.map(function(sg){ return {sg:sg, d:distToRun(fx,fy,sg)}; })
+    .filter(function(h){ return h.d < reach; })
+    .sort(function(p,q){ return ((p.sg.type==="gate")?0:1) - ((q.sg.type==="gate")?0:1) || p.d - q.d; })
+    .forEach(function(h){ push("segment", h.sg.id); });
+  shapes.forEach(function(s){ push("structure", s.id); });
+  detailFrames().forEach(function(f){
+    var dp = structPoly(f);
+    for(var j=0; j<dp.length; j++){
+      var q = dp[(j+1)%dp.length];
+      if(distToSegment(fx,fy,dp[j].x,dp[j].y,q.x,q.y) < reach){ push("structure", f.id); break; }
+    }
+  });
+  return out;
+}
 /** Whether a run adds to the footage: not an arrow, not a line drawn for some
     other reason, and not part of a detail illustration. */
 function segCounts(seg){
@@ -3096,9 +3197,10 @@ function renderPlan(c, pal, ppf, k, opts){
 
   /* --- structures (drawn beneath everything) --- */
   // detail frames go down first so whatever is drawn in them sits on top
-  state.elements.structures.slice().sort(function(a, b){
-    return (isDetail(b) ? 1 : 0) - (isDetail(a) ? 1 : 0);
-  }).forEach(function(s){
+  // Paint order: photos under everything, then detail frames, then shapes
+  // biggest first -- so a picket or a post drawn before the panel or patio
+  // around it is never buried under it.
+  state.elements.structures.slice().sort(structPaintOrder).forEach(function(s){
     var sel = isSel("structure", s.id);
     var col = sel ? pal.accent : colorOf(s, pal.struct, pal);
     var poly = structPoly(s).map(function(pt){ return P(pt.x,pt.y); });
@@ -3314,6 +3416,11 @@ function renderPlan(c, pal, ppf, k, opts){
         c.strokeStyle = mix(col, pal.surface, 0.62);
         c.lineWidth = 1.1*k*LW;
         c.stroke();
+        if(crewSheet){
+          var mx2 = hinge.x + Math.cos((aOpen+aClosed)/2)*r, my2 = hinge.y + Math.sin((aOpen+aClosed)/2)*r;
+          placed.push({x0:Math.min(hinge.x, ox, closedEnd.x, mx2), y0:Math.min(hinge.y, oy, closedEnd.y, my2),
+                       x1:Math.max(hinge.x, ox, closedEnd.x, mx2), y1:Math.max(hinge.y, oy, closedEnd.y, my2)});
+        }
       }
 
       // jambs: a short tick across the fence at each gate post
@@ -3669,6 +3776,65 @@ function renderPlan(c, pal, ppf, k, opts){
     if(dsel){ handle(DMA.x, DMA.y, pal.accent); handle(DMB.x, DMB.y, pal.accent); }
   });
 
+  /* --- run letters and gate numbers, on the crew's sheet only --- */
+  if(crewSheet){
+    var IR = installRuns();
+    IR.runs.concat(IR.gates).forEach(function(r){
+      var seg = r.seg, isGate = seg.type === "gate";
+      var A = P(seg.x1,seg.y1), B = P(seg.x2,seg.y2);
+      var L = Math.hypot(B.x-A.x, B.y-A.y) || 1;
+      var ux = (B.x-A.x)/L, uy = (B.y-A.y)/L;
+      var mid = segIsCurved(seg) ? P(segBowHandle(seg).x, segBowHandle(seg).y) : {x:(A.x+B.x)/2, y:(A.y+B.y)/2};
+      var side = -dimSide(seg);                    // inside, away from the dimension
+      var nx = -uy*side, ny = ux*side;
+      var fs = 6.6*k;
+      setFont(fs, 700);
+      var tw = mw(r.tag);
+      var rad = Math.max(5.2*k, tw/2 + 2.2*k);
+      var off = rad + 3.5*k;
+      // along the run (as a share of it, or "past the end"), then out from it
+      var END = 9;
+      var tries = [[0,1],[0.22,1],[-0.22,1],[0.36,1],[-0.36,1],[0,-1],[0.22,-1],[-0.22,-1],
+                   [END,1],[-END,1],[END,-1],[-END,-1],[0,2],[0,-2],[0,3],[0,-3],[END,2],[-END,2]];
+      var pick = null;
+      for(var ti2=0; ti2<tries.length; ti2++){
+        var tA = tries[ti2][0];
+        var along = Math.abs(tA) === END
+          ? (tA > 0 ? 1 : -1) * (L/2 + rad + 2*k)
+          : Math.max(-L/2 + rad, Math.min(L/2 - rad, tA*L));
+        var cx = mid.x + ux*along + nx*off*tries[ti2][1];
+        var cy = mid.y + uy*along + ny*off*tries[ti2][1];
+        var bx = {x0:cx-rad, y0:cy-rad, x1:cx+rad, y1:cy+rad};
+        if(!clashes(bx)){ pick = {x:cx, y:cy, b:bx}; break; }
+      }
+      if(!pick){
+        var cx0 = mid.x + nx*off, cy0 = mid.y + ny*off;
+        pick = {x:cx0, y:cy0, b:{x0:cx0-rad, y0:cy0-rad, x1:cx0+rad, y1:cy0+rad}};
+      }
+      placed.push(pick.b);
+      c.beginPath();
+      if(isGate){
+        // gates read as tags: a rounded square in the gate colour
+        var rr = rad*0.45, x0 = pick.x-rad, y0 = pick.y-rad*0.8, w0 = rad*2, h0 = rad*1.6;
+        c.moveTo(x0+rr, y0); c.lineTo(x0+w0-rr, y0); c.quadraticCurveTo(x0+w0, y0, x0+w0, y0+rr);
+        c.lineTo(x0+w0, y0+h0-rr); c.quadraticCurveTo(x0+w0, y0+h0, x0+w0-rr, y0+h0);
+        c.lineTo(x0+rr, y0+h0); c.quadraticCurveTo(x0, y0+h0, x0, y0+h0-rr);
+        c.lineTo(x0, y0+rr); c.quadraticCurveTo(x0, y0, x0+rr, y0);
+        c.closePath();
+        c.fillStyle = pal.gate;
+      } else {
+        c.arc(pick.x, pick.y, rad, 0, Math.PI*2);
+        c.fillStyle = "#1f3a5f";
+      }
+      c.fill();
+      c.fillStyle = "#ffffff";
+      c.textAlign = "center"; c.textBaseline = "middle";
+      setFont(fs, 700);
+      c.fillText(r.tag, pick.x, pick.y + 0.4*k);
+      c.textAlign = "left"; c.textBaseline = "alphabetic";
+    });
+  }
+
   /* --- line-item badges, above everything else --- */
   (crewSheet ? [] : state.elements.tags).forEach(function(t, ti){
     var anchor = tagAnchor(t);
@@ -3703,6 +3869,18 @@ function renderPlan(c, pal, ppf, k, opts){
     var boxW = rBadge*2 + (label ? tw + (pal.print ? 5 : 8)*k : 0);
     var boxH = rBadge*2;
     var bx = ap.x - rBadge, by = ap.y - rBadge;
+    /* A badge left where the app put it steps off any figure or name it
+       would sit on; one you've dragged stays exactly where you put it. */
+    if(!t.anchor){
+      var step = boxH + 3*k, tries = [[0,0],[0,-1],[0,1],[0,-2],[0,2],[-0.5,-1],[-0.5,1],[0,-3],[0,3]];
+      for(var bi=0; bi<tries.length; bi++){
+        var ox = tries[bi][0]*boxW, oy = tries[bi][1]*step;
+        var cand = {x0:bx+ox-1*k, y0:by+oy-1*k, x1:bx+ox+boxW+1*k, y1:by+oy+boxH+1*k};
+        if(!clashes(cand)){ ap = {x:ap.x+ox, y:ap.y+oy}; bx += ox; by += oy; break; }
+      }
+    }
+    placed.push({x0:bx, y0:by, x1:bx+boxW, y1:by+boxH});
+    if(opts.selection) t._at = {x: bx0 + (ap.x - OX)/ppf, y: by0 + (ap.y - OY)/ppf};
 
     if(label){
       // a clear patch to letter on; on paper no frame, just the number disc
@@ -3958,6 +4136,7 @@ function viewInsets(){
     if(side === "bottom") ins.bottom = Math.max(ins.bottom, board.bottom - r.top + 10);
   }
   clear("#optbar", "top");
+  clear("#quickbar", "top");
   clear(".cornertools", "bottom");
   clear(".zoomcluster", "bottom");
   // never let the furniture eat so much that there's nothing left to fit into
@@ -4102,17 +4281,40 @@ function pointerFeet(evt){
 
 /* ========================= Model ========================= */
 
+var future = [];                         // undone steps, for redo
 function snapshot(){
-  history.push(JSON.stringify(state.elements));
+  var now = JSON.stringify(state.elements);
+  if(history[history.length-1] === now) return;     // nothing new to remember
+  history.push(now);
   if(history.length>HISTORY_MAX) history.shift();
+  future = [];
+}
+/** Drop the last snapshot if nothing actually changed since it was taken
+    (a tap that selected something, a drag that went nowhere). */
+function forgetIfUnchanged(){
+  if(history.length && history[history.length-1] === JSON.stringify(state.elements)) history.pop();
 }
 
+/** After undo/redo, keep hold of whatever is still there to hold. */
+function keepLiveSel(){
+  state.sel = state.sel.filter(function(s){ return !!findEl(s.kind, s.id); });
+  if(state.activeTag && !findTag(state.activeTag)) state.activeTag = null;
+}
 function undo(){
   if(!history.length){ toast("Nothing to undo"); return; }
+  future.push(JSON.stringify(state.elements));
   state.elements = JSON.parse(history.pop());
-  clearSel();
+  keepLiveSel();
   refresh();
   toast("Undone");
+}
+function redo(){
+  if(!future.length){ toast("Nothing to redo"); return; }
+  history.push(JSON.stringify(state.elements));
+  state.elements = JSON.parse(future.pop());
+  keepLiveSel();
+  refresh();
+  toast("Redone");
 }
 
 function newPost(x, y, wIn, hIn, rot){
@@ -4228,18 +4430,27 @@ function tagQty(t){
   return q;
 }
 
+/** What an item covers, in the terms it's built and priced by: linear
+    footage and gates. Shapes, notes and trees ride along on the plan but
+    aren't quantities anyone orders. */
 function tagQtyText(t){
   var q = tagQty(t), parts = [];
   if(q.fenceFt) parts.push(feetInches(q.fenceFt)+" fence");
   if(q.wallFt)  parts.push(feetInches(q.wallFt)+" wall");
   if(q.gates)   parts.push(q.gates+" gate"+(q.gates>1?"s":"")+" ("+feetInches(q.gateFt)+")");
-  if(q.posts)   parts.push(q.posts+" post"+(q.posts>1?"s":""));
-  if(q.trees)   parts.push(q.trees+" tree"+(q.trees>1?"s":""));
-  if(q.structures) parts.push(q.structures+" structure"+(q.structures>1?"s":""));
-  if(q.shapes)  parts.push(q.shapes+" shape"+(q.shapes>1?"s":""));
-  if(q.notes)   parts.push(q.notes+" note"+(q.notes>1?"s":""));
-  return parts.join(", ") || "no objects yet";
+  return parts.join(" \u00b7 ");
 }
+/** Height and material: "6' high \u00b7 Vinyl privacy". */
+function tagSpecText(t){
+  var h = String(t.height || "").trim(), m = String(t.material || "").trim();
+  return [h ? h + (/high|tall|h$/i.test(h) ? "" : " high") : "", m].filter(Boolean).join(" \u00b7 ");
+}
+/** One line for lists: spec, then footage. */
+function tagLineText(t){
+  return [tagSpecText(t), tagQtyText(t)].filter(Boolean).join(" \u00b7 ") || "Nothing measured yet";
+}
+var MATERIALS = ["Vinyl", "Wood", "Chain link", "Wrought iron", "Aluminum", "Block"];
+var HEIGHTS = ["3'", "4'", "5'", "6'", "7'", "8'"];
 
 function tagTotal(t){
   var p = Number(t.price)||0;
@@ -4406,7 +4617,7 @@ function hitTest(fx,fy){
   // line-item badges sit above everything and can be repositioned
   for(var bi=state.elements.tags.length-1; bi>=0; bi--){
     var tg = state.elements.tags[bi];
-    var an = tagAnchor(tg);
+    var an = (!tg.anchor && tg._at) ? tg._at : tagAnchor(tg);
     if(an && dist(fx,fy,an.x,an.y) < (COARSE?18:11)/ppf) return {kind:"tag-badge", id:tg.id};
   }
 
@@ -4536,11 +4747,14 @@ function hitTest(fx,fy){
     });
     return {kind:"segment", id:segHits[0].seg.id};
   }
+  // where shapes overlap, the smallest one under the finger is the one meant
+  var inside = null;
   for(i=state.elements.structures.length-1;i>=0;i--){
     var st2 = state.elements.structures[i];
     if(isDetail(st2)) continue;
-    if(pointInPoly(fx,fy,structPoly(st2))) return {kind:"structure", id:st2.id};
+    if(pointInPoly(fx,fy,structPoly(st2)) && (!inside || st2.w*st2.h < inside.w*inside.h)) inside = st2;
   }
+  if(inside) return {kind:"structure", id:inside.id};
   /* A detail frame holds a drawing, so clicking inside it must still reach
      empty paper (for a box-select) — it answers only on its border and its
      title. */
@@ -4862,6 +5076,21 @@ function dimIsNTS(d){
  * real dimension while staying drawn big enough to read — the classic
  * not-to-scale annotation.
  */
+/** The run's length as measured (centres, inside or outside faces) — what
+    the dimension reads when no figure has been typed over it. */
+function segMeasuredLen(seg){ return Math.max(0, segGeomLen(seg) + segEndAdjust(seg)); }
+/** Stretch or shrink a run from its first end so it measures `v`. Curves
+    keep their shape: the bow is a share of the chord, so scaling the chord
+    scales the arc with it. */
+function setSegMeasuredLen(seg, v){
+  var target = Math.max(0.02, v - segEndAdjust(seg));
+  var now = segGeomLen(seg);
+  if(!(now > 1e-6)) return;
+  var k = target / now;
+  seg.x2 = seg.x1 + (seg.x2 - seg.x1) * k;
+  seg.y2 = seg.y1 + (seg.y2 - seg.y1) * k;
+}
+
 function segLenOf(seg){
   if(seg.statedLen != null && isFinite(seg.statedLen)) return Math.max(0, segStatedNow(seg));
   return Math.max(0, segGeomLen(seg) + segEndAdjust(seg));
@@ -4982,6 +5211,28 @@ function textRow(container, labelText, value, onChange){
   container.appendChild(wrap);
 }
 
+/** "More options" fold for the rarely used rows. Open/closed is remembered
+    across selections so it doesn't snap shut every time you tap something. */
+var moreOpen = false;
+try{ moreOpen = localStorage.getItem("fence-layout-board.more") === "1"; }catch(e){}
+function moreBox(label){
+  var d = document.createElement("details");
+  d.className = "more";
+  var s = document.createElement("summary");
+  s.textContent = label || "More options";
+  d.appendChild(s);
+  var inner = document.createElement("div");
+  inner.className = "more-body";
+  d.appendChild(inner);
+  d.body = inner;
+  d.open = !!moreOpen;
+  d.addEventListener("toggle", function(){
+    moreOpen = d.open;
+    try{ localStorage.setItem("fence-layout-board.more", moreOpen ? "1" : "0"); }catch(e){}
+  });
+  return d;
+}
+
 function chipRow(container, labelText, options, current, onPick){
   var wrap = document.createElement("div");
   wrap.className = "form-field";
@@ -5002,6 +5253,35 @@ function chipRow(container, labelText, options, current, onPick){
   });
   wrap.appendChild(row);
   container.appendChild(wrap);
+}
+
+/** A short text field with one-tap presets under it (heights, materials). */
+function specRow(container, labelText, presets, value, placeholder, onChange){
+  var wrap = document.createElement("div");
+  wrap.className = "form-field";
+  var lab = document.createElement("label");
+  lab.textContent = labelText;
+  var inp = document.createElement("input");
+  inp.type = "text"; inp.value = value || ""; inp.placeholder = placeholder || "";
+  inp.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:6px 8px;width:100%;";
+  var row = document.createElement("div");
+  row.className = "chips";
+  row.style.marginTop = "4px";
+  function paint(){
+    Array.prototype.forEach.call(row.children, function(b){
+      b.classList.toggle("on", b.textContent.toLowerCase() === inp.value.trim().toLowerCase());
+    });
+  }
+  presets.forEach(function(p){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = p;
+    b.addEventListener("click", function(){ inp.value = p; paint(); onChange(p); });
+    row.appendChild(b);
+  });
+  inp.addEventListener("change", function(){ paint(); onChange(inp.value.trim()); });
+  wrap.appendChild(lab); wrap.appendChild(inp); wrap.appendChild(row);
+  container.appendChild(wrap);
+  paint();
 }
 
 function checkRow(container, labelText, checked, onChange){
@@ -5044,7 +5324,9 @@ function addDimAction(container, items){
   container.insertBefore(container.lastChild, container.firstChild);
 }
 
+var selActs = [];
 function addAction(container,label,fn,danger){
+  if(container && container.id === "sel-actions") selActs.push({label:label, fn:fn, danger:!!danger});
   var b = document.createElement("button");
   b.className = "btn sm" + (danger?" danger":"");
   b.textContent = label;
@@ -5052,13 +5334,19 @@ function addAction(container,label,fn,danger){
   container.appendChild(b);
 }
 
+/** The panel and the quick bar always show the same selection. */
 function renderSelection(){
+  renderSelectionPanel();
+  renderQuickBar();
+}
+function renderSelectionPanel(){
   var card = document.getElementById("card-selection");
   var titleEl = document.getElementById("sel-title");
   var lenEl = document.getElementById("sel-len");
   var bodyEl = document.getElementById("sel-body");
   var actionsEl = document.getElementById("sel-actions");
   bodyEl.innerHTML = ""; actionsEl.innerHTML = "";
+  selActs = [];
 
   // drop anything that has since been deleted
   state.sel = state.sel.filter(function(s){ return !!findEl(s.kind, s.id); });
@@ -5149,59 +5437,48 @@ function renderSelection(){
   } else if(kind==="segment"){
     titleEl.textContent = el.type==="gate"
       ? gateTypeLabel(el.gateType||"single")+" gate"
-      : (el.type==="wall" ? "Block wall" : (el.count === false ? "Line" : "Fence line"));
-    if(el.type === "line"){
-      checkRow(bodyEl, "Counts as fence footage", el.count !== false, function(v){
-        snapshot(); if(v) delete el.count; else el.count = false; refresh();
-      });
-    }
-    lenEl.textContent = feetInches(segLenOf(el));
+      : (el.type==="wall" ? "Block wall" : (el.count === false ? "Line" : "Fence"));
+    lenEl.textContent = feetInches(segLenOf(el)) + (segIsNTS(el) ? " *" : "");
+    var more = moreBox();
     if(el.type==="gate"){
-      chipRow(bodyEl, "Gate type", GATE_TYPES, el.gateType||"single", function(v){
+      chipRow(bodyEl, "", GATE_TYPES, el.gateType||"single", function(v){
         snapshot(); el.gateType = v; refresh();
       });
     }
-    lenRow(bodyEl, "Drawn length", segGeomLen(el), 0.02, 800, function(v){
-      snapshot();
-      var a = Math.atan2(el.y2-el.y1, el.x2-el.x1);
-      el.x2 = el.x1 + Math.cos(a)*v;
-      el.y2 = el.y1 + Math.sin(a)*v;
-      refresh();
+    lenRow(bodyEl, "Length", segMeasuredLen(el), 0.02, 800, function(v){
+      snapshot(); setSegMeasuredLen(el, v); refresh();
     });
-    lenRow(bodyEl, "Stated length (label only)", segLenOf(el), 0.02, 800, function(v){
+    chipRow(bodyEl, "Measure", [{v:"", label:"Sheet"}, {v:"center", label:"Centres"}, {v:"inside", label:"Inside"}, {v:"outside", label:"Outside"}],
+      el.measureFrom || "", function(v){
+        snapshot();
+        if(v) el.measureFrom = v; else delete el.measureFrom;
+        refresh();
+      });
+    if(el.type === "line"){
+      checkRow(bodyEl, "Counts as fence", el.count !== false, function(v){
+        snapshot(); if(v) delete el.count; else el.count = false; refresh();
+      });
+    }
+    colorRow(bodyEl, el.color, recolor);
+
+    // the rest, folded away until wanted
+    lenRow(more.body, "Label it as (not to scale)", segLenOf(el), 0.02, 800, function(v){
         // typed in whatever the run is measured from right now
         snapshot(); el.statedLen = v; el.statedFrom = segMeasureFrom(el); refresh();
       });
-    if(el.statedLen != null){
+    if(segIsNTS(el)){
       var ntsNote = document.createElement("div");
-      ntsNote.style.cssText = "font-size:11px;color:var(--ink-dim);";
-      ntsNote.textContent = segIsNTS(el)
-        ? "Labelled " + feetInches(segLenOf(el)) + " — drawn " + feetInches(segGeomLen(el) + segEndAdjust(el))
-          + " (" + measureMode(segMeasureFrom(el)).short + "), marked * as not to scale."
-        : "Stated size matches the drawing.";
-      bodyEl.appendChild(ntsNote);
+      ntsNote.className = "mini-note";
+      ntsNote.textContent = "Drawn " + feetInches(segGeomLen(el) + segEndAdjust(el)) + ", marked * not to scale.";
+      more.body.appendChild(ntsNote);
     }
-    var datumOpts = [{v:"", label:"Sheet default"}].concat(
-      MEASURE_MODES.map(function(m){ return {v:m.v, label:m.label}; }));
-    chipRow(bodyEl, "Measure from", datumOpts, el.measureFrom || "", function(v){
-      snapshot();
-      if(v) el.measureFrom = v; else delete el.measureFrom;
-      refresh();
-    });
-    var datumNote = document.createElement("div");
-    datumNote.style.cssText = "font-size:11px;color:var(--ink-dim);";
-    datumNote.textContent = el.measureFrom
-      ? "This run alone is measured " + measureMode(el.measureFrom).short + "."
-      : "Follows the sheet: " + measureLabel() + ".";
-    bodyEl.appendChild(datumNote);
-
     if(el.type==="wall"){
-      inchRow(bodyEl, "Wall thickness (inches)", el.thickness || 8, 1, 48, function(v){
+      inchRow(more.body, "Wall thickness (inches)", el.thickness || 8, 1, 48, function(v){
         snapshot(); el.thickness = v; refresh();
       });
     }
     var degNow = Math.round(Math.atan2(el.y2-el.y1, el.x2-el.x1)*180/Math.PI*10)/10;
-    numberRow(bodyEl, "Angle", degNow, -180, 180, 0.5, "deg", function(v){
+    numberRow(more.body, "Angle", degNow, -180, 180, 0.5, "deg", function(v){
       snapshot();
       var L = segGeomLen(el);
       var r = v*Math.PI/180;
@@ -5210,32 +5487,26 @@ function renderSelection(){
       refresh();
     });
     if(el.type !== "gate"){
-      numberRow(bodyEl, "Curve", Math.round(segBow(el)*100), -90, 90, 5, "%", function(v){
+      numberRow(more.body, "Curve", Math.round(segBow(el)*100), -90, 90, 5, "%", function(v){
         snapshot(); el.bow = v/100; refresh();
       });
-      if(segIsCurved(el)){
-        var curveNote = document.createElement("div");
-        curveNote.style.cssText = "font-size:11px;color:var(--ink-dim);";
-        curveNote.textContent = "Curved \u2014 " + feetInches(segGeomLen(el))
-          + " along the arc, " + feetInches(segChordLen(el)) + " end to end.";
-        bodyEl.appendChild(curveNote);
-      }
     }
-    checkRow(bodyEl, "Show dimension", el.dims !== false, function(v){
+    checkRow(more.body, "Show dimension", el.dims !== false, function(v){
       snapshot(); el.dims = v; refresh();
     });
-    colorRow(bodyEl, el.color, recolor);
+    bodyEl.appendChild(more);
+
     if(el.type==="gate"){
       var gt = el.gateType || "single";
       if(gt==="single"){
         addAction(actionsEl,"Flip hinge",function(){ snapshot(); el.hinge = el.hinge==="a"?"b":"a"; refresh(); });
       }
-      addAction(actionsEl, gt==="slide" ? "Flip slide direction" : "Flip swing", function(){
+      addAction(actionsEl, gt==="slide" ? "Flip slide" : "Flip swing", function(){
         snapshot(); el.swingSide *= -1; refresh();
       });
     }
     if(el.statedLen != null){
-      addAction(actionsEl,"Match label to drawing",function(){
+      addAction(actionsEl,"Clear label *",function(){
         snapshot(); el.statedLen = null; delete el.statedFrom; refresh();
       });
     }
@@ -5399,8 +5670,9 @@ function renderSelection(){
 
     textRow(bodyEl, "Name", el.label, function(v){ el.label = v; saveLocal(); draw(); renderSummary(); });
 
+    var more = moreBox();
     if(isShape){
-      chipRow(bodyEl, "Shape", SHAPE_KINDS, el.shapeKind || (el.kind==="ellipse" ? "ellipse" : "rect"), function(v){
+      chipRow(more.body, "Shape", SHAPE_KINDS, el.shapeKind || (el.kind==="ellipse" ? "ellipse" : "rect"), function(v){
         snapshot();
         var spec = shapeSpec(v);
         el.kind = spec.kind;
@@ -5417,7 +5689,7 @@ function renderSelection(){
     lenRow(bodyEl, "Depth", el.h, MIN_SIZE_FT, 500, function(v){
       snapshot(); el.h = v; if(el.locked) el.w = v; refresh();
     });
-    numberRow(bodyEl, "Rotation", Math.round(el.rot||0), -180, 180, 1, "deg", function(v){ snapshot(); el.rot = v; refresh(); });
+    numberRow(more.body, "Rotation", Math.round(el.rot||0), -180, 180, 1, "deg", function(v){ snapshot(); el.rot = v; refresh(); });
 
     /* Corner cuts: tap a corner to cut it back, and one slider sizes
        whichever are cut. An L-shaped house is one corner; a U is two. */
@@ -5462,15 +5734,16 @@ function renderSelection(){
     }
 
     colorRow(bodyEl, el.color, recolor);
-    checkRow(bodyEl, "Hatch fill", el.hatch !== false, function(v){ snapshot(); el.hatch = v; refresh(); });
-    checkRow(bodyEl, "Show dimensions", el.dims !== false, function(v){ snapshot(); el.dims = v; refresh(); });
+    checkRow(more.body, "Hatch fill", el.hatch !== false, function(v){ snapshot(); el.hatch = v; refresh(); });
+    checkRow(more.body, "Show dimensions", el.dims !== false, function(v){ snapshot(); el.dims = v; refresh(); });
     if(!isPostShape(el)){
-      checkRow(bodyEl, "List in quantities", el.count !== false, function(v){
+      checkRow(more.body, "List in quantities", el.count !== false, function(v){
         snapshot(); if(v) delete el.count; else el.count = false; refresh();
       });
     }
+    bodyEl.appendChild(more);
     if(el.kind!=="corner"){
-      checkRow(bodyEl, "Lock equal sides", !!el.locked, function(v){
+      checkRow(more.body, "Lock equal sides", !!el.locked, function(v){
         snapshot(); el.locked = v;
         if(v){ var side = Math.max(el.w, el.h); el.w = side; el.h = side; }
         refresh();
@@ -5533,6 +5806,56 @@ function postDisplayLabel(p){
 function postKey(p){
   return postIsNTS(p) ? "s:"+String(p.statedSize).trim().toLowerCase() : postWIn(p)+"x"+postHIn(p);
 }
+/* ---- install sheet: every run gets a letter, every gate a number ----
+   Runs are lettered in the order you'd walk the fence, end to end along
+   each connected stretch, so A is followed by B on the ground too. */
+function runLetterName(i){
+  var s = ""; i += 1;
+  while(i > 0){ var m = (i-1) % 26; s = String.fromCharCode(65+m) + s; i = Math.floor((i-1)/26); }
+  return s;
+}
+function installRuns(){
+  var segs = state.elements.segments.filter(segCounts);
+  function key(x, y){ return Math.round(x*4) + "," + Math.round(y*4); }
+  var adj = {};
+  segs.forEach(function(s){
+    [key(s.x1,s.y1), key(s.x2,s.y2)].forEach(function(kk){ (adj[kk] = adj[kk] || []).push(s); });
+  });
+  var used = {}, order = [];
+  function walkFrom(s, fromKey){
+    var cur = s, kk = fromKey;
+    while(cur && !used[cur.id]){
+      used[cur.id] = true; order.push(cur);
+      var k1 = key(cur.x1,cur.y1), k2 = key(cur.x2,cur.y2);
+      var next = (kk === k1) ? k2 : k1;
+      var cand = (adj[next] || []).filter(function(q){ return !used[q.id]; });
+      kk = next; cur = cand[0] || null;
+    }
+  }
+  // open stretches from their top-left end; closed loops afterwards
+  var ends = [];
+  segs.forEach(function(s){
+    [[s.x1,s.y1],[s.x2,s.y2]].forEach(function(p){
+      var kk = key(p[0], p[1]);
+      if(adj[kk].length === 1) ends.push({s:s, k:kk, v:p[0] + p[1]});
+    });
+  });
+  ends.sort(function(a, b){ return a.v - b.v; });
+  ends.forEach(function(e){ if(!used[e.s.id]) walkFrom(e.s, e.k); });
+  segs.slice().sort(function(a, b){
+    return (Math.min(a.x1,a.x2) + Math.min(a.y1,a.y2)) - (Math.min(b.x1,b.x2) + Math.min(b.y1,b.y2));
+  }).forEach(function(s){ if(!used[s.id]) walkFrom(s, key(s.x1,s.y1)); });
+
+  var runs = [], gates = [], byId = {};
+  order.forEach(function(s){
+    var isGate = s.type === "gate";
+    var r = {seg:s, tag: isGate ? "G" + (gates.length+1) : runLetterName(runs.length)};
+    (isGate ? gates : runs).push(r);
+    byId[s.id] = r;
+  });
+  return {runs:runs, gates:gates, byId:byId};
+}
+
 function postLabel(key){
   key = String(key);
   if(key.indexOf("s:") === 0){
@@ -5647,7 +5970,7 @@ function renderTagList(){
     card.classList.add("empty");
     var hint = document.createElement("div");
     hint.style.cssText = "font-size:11.5px;color:var(--ink-dim);line-height:1.5;";
-    hint.textContent = "Select objects on the plan \u2014 tap one, or drag a box around several \u2014 then choose Create line item to attach a price and note.";
+    hint.textContent = "Select the runs to price, then tap Line item.";
     list.appendChild(hint);
     totalEl.textContent = money(0);
     return;
@@ -5668,7 +5991,7 @@ function renderTagList(){
     row.innerHTML =
       "<span class='item-num' style='background:"+t.color+"'>"+(i+1)+"</span>"+
       "<span class='item-main'><span class='item-name'>"+escapeHtml(t.label||"Untitled")+"</span>"+
-      "<span class='item-qty'>"+escapeHtml(tagQtyText(t))+"</span></span>"+
+      "<span class='item-qty'>"+escapeHtml(tagLineText(t))+"</span></span>"+
       "<span class='item-price mono'>"+escapeHtml(money(tagTotal(t)))+"</span>";
     row.addEventListener("click", function(){
       state.activeTag = (state.activeTag===t.id) ? null : t.id;
@@ -5708,36 +6031,24 @@ function renderTagPanel(){
   card.hidden = false;
   titleEl.textContent = "Line item " + tagIndex(t);
 
+  /* An item that still has its placeholder name takes its name from the
+     height and material as you pick them: "6' Vinyl". */
+  function autoName(){
+    if(t.label && !/^Item \d+$/.test(t.label)) return;
+    var nm = [t.height, t.material].filter(Boolean).join(" ");
+    if(nm){ t.label = nm; nameInput.value = nm; }
+  }
   textRow(body, "Name", t.label, function(v){ t.label = v; saveLocal(); draw(); renderTagList(); });
+  var nameInput = body.lastChild.querySelector("input");
 
-  var noteWrap = document.createElement("div");
-  noteWrap.className = "form-field";
-  var noteLab = document.createElement("label");
-  noteLab.textContent = "Note";
-  var ta = document.createElement("textarea");
-  ta.value = t.note || "";
-  ta.placeholder = "Scope, materials, exclusions…";
-  ta.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 9px;width:100%;min-height:52px;resize:vertical;";
-  ta.addEventListener("input", function(){ t.note = ta.value; saveLocal(); });
-  noteWrap.appendChild(noteLab); noteWrap.appendChild(ta);
-  body.appendChild(noteWrap);
+  specRow(body, "Height", HEIGHTS, t.height, "e.g. 6'", function(v){ t.height = v; autoName(); saveLocal(); draw(); renderTagList(); });
+  specRow(body, "Material", MATERIALS, t.material, "e.g. Vinyl privacy, white", function(v){ t.material = v; autoName(); saveLocal(); draw(); renderTagList(); });
 
-  chipRow(body, "Pricing", [{v:"lump",label:"Lump sum"},{v:"perft",label:"Per foot"}], t.rateMode, function(v){
+  chipRow(body, "", [{v:"option", label:"Option"}, {v:"included", label:"In the total"}],
+    tagIsOption(t) ? "option" : "included", function(v){ snapshot(); t.option = (v === "option"); refresh(); });
+  chipRow(body, "", [{v:"lump",label:"Lump sum"},{v:"perft",label:"Per foot"}], t.rateMode, function(v){
     snapshot(); t.rateMode = v; refresh();
   });
-
-  chipRow(body, "Counts toward the job", [
-    {v:"option", label:"Option / alternate"},
-    {v:"included", label:"Included in total"}
-  ], tagIsOption(t) ? "option" : "included", function(v){
-    snapshot(); t.option = (v === "option"); refresh();
-  });
-  var optHint = document.createElement("div");
-  optHint.style.cssText = "font-size:11px;color:var(--ink-dim);";
-  optHint.textContent = tagIsOption(t)
-    ? "Priced as an alternate \u2014 listed on its own and left out of the total."
-    : "Added to the job total.";
-  body.appendChild(optHint);
 
   var priceWrap = document.createElement("div");
   priceWrap.className = "form-field";
@@ -5770,8 +6081,20 @@ function renderTagPanel(){
 
   var qty = document.createElement("div");
   qty.style.cssText = "font-size:11.5px;color:var(--ink-dim);";
-  qty.textContent = tagQtyText(t);
+  qty.textContent = tagQtyText(t) || "No fence or gates in this item yet";
   body.appendChild(qty);
+
+  var noteWrap = document.createElement("div");
+  noteWrap.className = "form-field";
+  var noteLab = document.createElement("label");
+  noteLab.textContent = "Note";
+  var ta = document.createElement("textarea");
+  ta.value = t.note || "";
+  ta.placeholder = "Cap style, colour, exclusions\u2026";
+  ta.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 9px;width:100%;min-height:44px;resize:vertical;";
+  ta.addEventListener("input", function(){ t.note = ta.value; saveLocal(); });
+  noteWrap.appendChild(noteLab); noteWrap.appendChild(ta);
+  body.appendChild(noteWrap);
 
   colorRow(body, t.color, function(v){
     snapshot(); t.color = v || TAG_COLORS[0]; refresh();
@@ -5801,9 +6124,8 @@ function renderSummary(){
   document.getElementById("stat-fence").textContent = feetInches(t.fence);
   document.getElementById("stat-wall").textContent = feetInches(t.wall);
   document.getElementById("stat-gates").textContent = t.gates.length;
-  document.getElementById("stat-trees").textContent = state.elements.trees.length;
-  document.getElementById("stat-structs").textContent = t.structs.length;
-  document.getElementById("stat-shapes").textContent = t.shapes.length;
+  document.getElementById("stat-posts").textContent =
+    Object.keys(t.posts).reduce(function(n, k){ return n + t.posts[k]; }, 0);
 
   var gl = document.getElementById("gate-list");
   gl.innerHTML = "";
@@ -5816,7 +6138,9 @@ function renderSummary(){
   t.gates.forEach(function(g,i){
     addRow("Gate "+(i+1)+" · "+gateTypeLabel(g.type).toLowerCase(), feetInches(g.len));
   });
-  t.structs.concat(t.shapes).forEach(function(s){ addRow(s.label, sizeText(s)); });
+  Object.keys(t.posts).forEach(function(k){
+    addRow(postLabel(k), "\u00d7" + t.posts[k]);
+  });
 }
 
 function escapeHtml(s){
@@ -5839,6 +6163,166 @@ function refresh(){
   renderSummary();
   saveLocal();
   draw();
+}
+
+/* ========================= Quick bar =========================
+   The few things you do to a selection over and over — fix its size,
+   copy it, turn it, put it on a line item, bin it — sit in one strip over
+   the drawing, so a phone never has to open the panel for them. */
+var QB_ICONS = {
+  dup:'<path d="M9 9h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1Z"/><path d="M16 9V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  rot:'<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>',
+  flip:'<path d="M12 3v18"/><path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/>',
+  item:'<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9Z"/><circle cx="7.5" cy="7.5" r="1.4"/>',
+  del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  edit:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'
+};
+function qbButton(bar, icon, label, fn, cls){
+  var b = document.createElement("button");
+  b.type = "button";
+  b.className = "qb-btn" + (cls ? " " + cls : "");
+  b.innerHTML = '<svg viewBox="0 0 24 24">' + QB_ICONS[icon] + '</svg><span>' + label + '</span>';
+  b.title = label;
+  b.addEventListener("click", function(ev){ ev.stopPropagation(); fn(); });
+  bar.appendChild(b);
+  return b;
+}
+function qbAct(test){
+  for(var i=0;i<selActs.length;i++){
+    var a = selActs[i];
+    if(typeof test === "string" ? a.label === test : test(a.label)) return a;
+  }
+  return null;
+}
+/** What the value chip shows and what typing into it changes. */
+function quickValue(){
+  if(state.sel.length !== 1) return null;
+  var s = state.sel[0], el = findEl(s.kind, s.id);
+  if(!el) return null;
+  if(s.kind === "segment" && el.type !== "arrow"){
+    return {
+      text: feetInches(segLenOf(el)) + (segIsNTS(el) ? " *" : ""),
+      edit: feetInches(segMeasuredLen(el)),
+      apply: function(str){
+        var v = parseLen(str, NaN);
+        if(!(v > 0.02)) return false;
+        snapshot(); setSegMeasuredLen(el, Math.min(800, v)); return true;
+      }
+    };
+  }
+  if(s.kind === "dim"){
+    return {
+      text: feetInches(dimLenOf(el)),
+      edit: feetInches(dimGeomLen(el)),
+      apply: function(str){
+        var v = parseLen(str, NaN);
+        if(!(v > 0.02)) return false;
+        snapshot();
+        var a = Math.atan2(el.y2-el.y1, el.x2-el.x1);
+        el.x2 = el.x1 + Math.cos(a)*v; el.y2 = el.y1 + Math.sin(a)*v;
+        return true;
+      }
+    };
+  }
+  if(s.kind === "structure" && el.kind !== "photo" && !isDetail(el)){
+    var round = el.kind === "ellipse" && Math.abs(el.w-el.h) < 0.01;
+    return {
+      text: round ? "\u00d8 " + feetInches(el.w) : feetInches(el.w) + " \u00d7 " + feetInches(el.h),
+      edit: round ? feetInches(el.w) : feetInches(el.w) + " x " + feetInches(el.h),
+      apply: function(str){
+        var parts = String(str).split(/\s*[x\u00d7X*]\s*|\s+by\s+/);
+        var w = parseLen(parts[0], NaN);
+        var h = parts.length > 1 ? parseLen(parts[1], NaN) : (el.locked || round ? w : el.h);
+        if(!(w >= MIN_SIZE_FT) || !(h >= MIN_SIZE_FT)) return false;
+        snapshot(); el.w = Math.min(500, w); el.h = Math.min(500, h);
+        if(el.locked) el.h = el.w;
+        return true;
+      }
+    };
+  }
+  return null;
+}
+/** Bring up a line item's own card — price, height, material. */
+function openItem(t){
+  state.activeTag = t.id;
+  renderTagPanel(); renderTagList(); markSelection(); draw();
+  var card = document.getElementById("card-item-edit");
+  if(isCompact()){
+    openSheet(false);
+    setTimeout(function(){ if(card && !card.hidden) panelEl.scrollTop = Math.max(0, card.offsetTop - 52); }, 30);
+  } else if(card && card.scrollIntoView){
+    card.scrollIntoView({block:"nearest", behavior:"smooth"});
+  }
+}
+function renderQuickBar(){
+  var bar = document.getElementById("quickbar");
+  if(!bar) return;
+  bar.innerHTML = "";
+  var show = state.sel.length && state.tool === "select";
+  bar.hidden = !show;
+  document.body.classList.toggle("qb-on", !!show);
+  if(!show) return;
+
+  var title = document.createElement("span");
+  title.className = "qb-title";
+  title.textContent = state.sel.length > 1
+    ? state.sel.length + " selected"
+    : (document.getElementById("sel-title").textContent || "");
+  bar.appendChild(title);
+
+  var qv = quickValue();
+  if(qv){
+    var val = document.createElement("button");
+    val.type = "button";
+    val.className = "qb-val mono";
+    val.textContent = qv.text;
+    val.title = "Tap to type a size";
+    val.addEventListener("click", function(ev){
+      ev.stopPropagation();
+      var inp = document.createElement("input");
+      inp.type = "text";
+      inp.className = "qb-input mono";
+      inp.value = qv.edit;
+      inp.setAttribute("enterkeyhint", "done");
+      inp.setAttribute("autocomplete", "off");
+      inp.spellcheck = false;
+      var done = false;
+      function finish(save){
+        if(done) return; done = true;
+        if(save && inp.value.trim() && inp.value.trim() !== qv.edit){
+          if(qv.apply(inp.value)) { refresh(); return; }
+          toast("Couldn't read that size \u2014 try 24' 6\" or 12 x 10");
+        }
+        renderQuickBar();
+      }
+      inp.addEventListener("keydown", function(e){
+        if(e.key === "Enter"){ e.preventDefault(); finish(true); }
+        else if(e.key === "Escape"){ e.preventDefault(); finish(false); }
+        e.stopPropagation();
+      });
+      inp.addEventListener("blur", function(){ finish(true); });
+      bar.replaceChild(inp, val);
+      inp.focus(); inp.select();
+    });
+    bar.appendChild(val);
+  }
+
+  var dup = qbAct("Duplicate");
+  if(dup) qbButton(bar, "dup", "Copy", dup.fn);
+  var turn = qbAct(function(l){ return /^Rotate 90/.test(l); });
+  if(turn) qbButton(bar, "rot", "Rotate", turn.fn);
+  var flip = qbAct(function(l){ return /^Flip (swing|slide|side|direction)/.test(l); });
+  if(flip) qbButton(bar, "flip", "Flip", flip.fn);
+  // line item: add to the one being built, open the one it's already on,
+  // or start a new one
+  var add = qbAct(function(l){ return /^Add to item/.test(l); });
+  var owner = state.sel.length === 1 ? tagOf(state.sel[0].kind, state.sel[0].id) : null;
+  if(add) qbButton(bar, "item", "+ " + add.label.replace("Add to item", "Item"), add.fn);
+  else if(owner) qbButton(bar, "item", "Item " + tagIndex(owner), function(){ openItem(owner); });
+  else { var mk = qbAct("Create line item"); if(mk) qbButton(bar, "item", "New item", mk.fn); }
+  var del = qbAct(function(l){ return /^Delete/.test(l); });
+  if(del) qbButton(bar, "del", "Delete", del.fn, "danger");
+  qbButton(bar, "edit", "Edit", function(){ openSheet(true); }, "qb-edit");
 }
 
 /* ========================= Toast ========================= */
@@ -5873,6 +6357,7 @@ function setTool(tool){
   document.getElementById("hint").textContent = TOOL_HINTS[tool] || "";
   if(tool === "line" || tool === "curve") buildPresets();
   updateOptBar();
+  renderQuickBar();
   draw();
 }
 
@@ -6025,7 +6510,8 @@ window.addEventListener("keydown", function(e){
     }
     return;
   }
-  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); undo(); return; }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); return; }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="y"){ e.preventDefault(); redo(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="d"){ e.preventDefault(); duplicateSelection(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="c"){ e.preventDefault(); copySelection(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="v"){ e.preventDefault(); pasteClipboard(); return; }
@@ -6207,9 +6693,14 @@ canvas.addEventListener("pointerdown", function(e){
       renderSelection(); draw();
       return;
     }
+    var only0 = soleSel();
+    var again = state.sel.length && isSelected(hit.kind, hit.id) &&
+                (state.sel.length === 1 || selectionFor(hit).length === state.sel.length);
     if(!isSelected(hit.kind, hit.id)) setSel(selectionFor(hit));
     snapshot();
     dragging = makeGroupDrag(f, e);
+    // a second tap on what's already selected reaches whatever lies beneath
+    if(again) dragging.cycle = {kind:hit.kind, id:hit.id, x:f.x, y:f.y};
   }
   renderSelection();
   draw();
@@ -6758,15 +7249,24 @@ function resizePostEdge(p, which, px, py){
 }
 
 function endDrag(e){
-  if(!dragging){
-    // a plain tap on an object: bring up its panel on a phone
-    if(e && e.pointerType === "touch" && state.tool === "select" && state.sel.length){
-      openSheet(true);
-    }
-    return;
-  }
+  if(!dragging) return;
   var wasTap = dragging.kind === "group" && dragging.items && dragging.items.length
             && !dragging.moved;
+  if(wasTap && dragging.cycle){
+    var cyc = dragging.cycle;
+    var stack = elementsAt(cyc.x, cyc.y);
+    var at = -1;
+    stack.forEach(function(q, qi){ if(q.kind === cyc.kind && q.id === cyc.id) at = qi; });
+    if(stack.length > 1 && at !== -1){
+      var nextHit = stack[(at + 1) % stack.length];
+      forgetIfUnchanged();               // nothing moved: drop the snapshot
+      dragging = null;
+      setSel(selectionFor(nextHit));
+      refresh();
+      toast("Picked: " + (document.getElementById("sel-title").textContent || "the one beneath"));
+      return;
+    }
+  }
   if(dragging.kind==="marquee"){
     var r = state.marquee;
     var picked = (Math.abs(r.x1-r.x0) > 0.05 || Math.abs(r.y1-r.y0) > 0.05)
@@ -6912,10 +7412,8 @@ function endDrag(e){
   state.snapPoint = null;
   state.guides = null;
   state.rotUI = null;
+  forgetIfUnchanged();
   refresh();
-  if(wasTap && e && e.pointerType === "touch" && state.tool === "select" && state.sel.length){
-    openSheet(true);
-  }
 }
 canvas.addEventListener("pointerup", function(e){
   if(e.pointerType === "touch" && window.touchNav){
@@ -7253,6 +7751,41 @@ document.getElementById("in-h").addEventListener("change", function(e){
   state.areaFeetH = Math.max(20, parseFloat(e.target.value)||80); updateSheetLabel(); saveLocal(); draw();
 });
 
+/* ---------------- folding cards ----------------
+   The panel is long on a phone. Anything you don't touch on every job
+   folds down to its heading, and stays the way you left it. */
+var FOLD_KEY = "fence-layout-board.folds";
+function initFolds(){
+  var saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(FOLD_KEY) || "null"); }catch(e){}
+  var compactDefault = { "card-pay":1, "card-sign":1, "card-summary":1 };
+  var compactNow = window.matchMedia("(max-width:800px), (pointer:coarse) and (max-width:1200px)").matches;
+  ["card-items","card-pay","card-sign","card-summary","card-sheet"].forEach(function(id){
+    var card = document.getElementById(id);
+    if(!card) return;
+    var h = card.querySelector(":scope > h2");
+    if(!h) return;
+    card.classList.add("foldable");
+    var folded = saved && (id in saved) ? !!saved[id] : (compactNow && !!compactDefault[id]);
+    card.classList.toggle("folded", folded);
+    h.setAttribute("role", "button");
+    h.setAttribute("tabindex", "0");
+    h.setAttribute("aria-expanded", folded ? "false" : "true");
+    function flip(){
+      var now = !card.classList.contains("folded");
+      card.classList.toggle("folded", now);
+      h.setAttribute("aria-expanded", now ? "false" : "true");
+      var all = {};
+      try{ all = JSON.parse(localStorage.getItem(FOLD_KEY) || "{}") || {}; }catch(e){}
+      all[id] = now ? 1 : 0;
+      try{ localStorage.setItem(FOLD_KEY, JSON.stringify(all)); }catch(e){}
+    }
+    h.addEventListener("click", flip);
+    h.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); flip(); } });
+  });
+}
+initFolds();
+
 /* ---------------- mobile sheet ---------------- */
 var panelEl = document.getElementById("panel");
 var scrimEl = document.getElementById("scrim");
@@ -7367,6 +7900,7 @@ function placeDrawSettings(){
 window.addEventListener("resize", placeDrawSettings);
 
 document.getElementById("btn-undo").addEventListener("click", undo);
+document.getElementById("btn-redo").addEventListener("click", redo);
 
 document.getElementById("btn-new").addEventListener("click", function(){
   openDialog({
@@ -7683,6 +8217,7 @@ function buildLegend(){
     {c:"nts",    t:"* stated size, not to scale"}
   ];
   var grid = document.getElementById("legend-grid");
+  if(!grid) return;            // the legend card was retired; the PDF draws its own
   grid.innerHTML = "";
   items.forEach(function(it){
     var row = document.createElement("div");
@@ -7963,7 +8498,7 @@ function drawItemTable(doc, x, y, w, rows, startIndex){
       doc.setTextColor(0);
     }
     doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
-    doc.text(tagQtyText(t), colQty, ry, {maxWidth: (colPrice-colQty) - (state.showPrices?70:0)});
+    doc.text(tagLineText(t), colQty, ry, {maxWidth: (colPrice-colQty) - (state.showPrices?70:0)});
 
     if(state.showPrices){
       doc.setFont("helvetica","bold"); doc.setFontSize(9);
@@ -8136,7 +8671,298 @@ function exportPDF(mode){
   finally{ PRINT_MODE = "proposal"; }
 }
 
+/**
+ * The crew's sheet. Deliberately nothing like the proposal: a work-order
+ * band across the top, the sketch as big as the page allows with every run
+ * lettered, and a strip along the bottom the crew reads off on site —
+ * materials, run lengths, gates and posts, notes, sign-off. No prices.
+ */
+function buildInstallPDF(){
+  var M = 14;
+  var NAVY = [31,58,95], INK = [28,30,33], DIM = [112,118,126], RULE = [205,210,216];
+  var HB = 46;                                   // header band
+  var FOOT = 11;                                 // fine print under the strip
+  // whichever way up lets the sketch print larger
+  function layout(land){
+    var L = {land:land, PW: land ? 792 : 612, PH: land ? 612 : 792, STRIP: land ? 158 : 228};
+    L.stripTop = L.PH - M - FOOT - L.STRIP;
+    L.boxX = M; L.boxY = M + HB + 6; L.boxW = L.PW - M*2; L.boxH = L.stripTop - 6 - L.boxY;
+    L.fit = planFit(L.boxW, L.boxH);
+    return L;
+  }
+  var LA = layout(true), PO = layout(false);
+  var Lo = PO.fit.ppf > LA.fit.ppf * 1.04 ? PO : LA;
+  var landscape = Lo.land, PW = Lo.PW, PH = Lo.PH, STRIP = Lo.STRIP, stripTop = Lo.stripTop;
+  var boxX = Lo.boxX, boxY = Lo.boxY, boxW = Lo.boxW, boxH = Lo.boxH, fit = Lo.fit;
+  var doc = new window.jspdf.jsPDF({
+    orientation: landscape ? "landscape" : "portrait", unit:"pt", format:"letter", compress:true
+  });
+
+  /* ---------------- the sketch ---------------- */
+  doc.setDrawColor(255); doc.setLineWidth(0.1); doc.rect(M, M, 1, 1);   // see buildPDF
+  var hasPhotos = state.elements.structures.some(function(s){ return s.kind==="photo"; });
+  var placed = null;
+  if(!hasPhotos){ try{ placed = drawPlanVector(doc, boxX, boxY, boxW, boxH, fit.bounds, fit.ppf); }catch(err){ placed = null; } }
+  if(!placed){
+    var off = buildPrintCanvas(fit.bounds, fit.ppf);
+    var sc = Math.min(boxW/off.width, boxH/off.height);
+    var iw = off.width*sc, ih = off.height*sc;
+    doc.addImage(off.toDataURL("image/png",1.0), "PNG", boxX + (boxW-iw)/2, boxY + (boxH-ih)/2, iw, ih);
+  }
+  doc.setFillColor(255,255,255);
+  doc.rect(0, 0, PW, boxY, "F");
+  doc.rect(0, boxY+boxH, PW, PH-(boxY+boxH), "F");
+  doc.rect(0, 0, boxX, PH, "F");
+  doc.rect(boxX+boxW, 0, PW-(boxX+boxW), PH, "F");
+
+  function font(sz, style, rgb){
+    doc.setFont("helvetica", style || "normal"); doc.setFontSize(sz);
+    doc.setTextColor.apply(doc, rgb || INK);
+  }
+  function clip(str, w){
+    str = String(str == null ? "" : str);
+    if(doc.getTextWidth(str) <= w) return str;
+    while(str.length > 1 && doc.getTextWidth(str + "...") > w) str = str.slice(0, -1);
+    return str.replace(/\s+$/, "") + "...";
+  }
+
+  /* ---------------- header band ---------------- */
+  doc.setFillColor.apply(doc, NAVY);
+  doc.rect(M, M, PW - M*2, HB, "F");
+  font(15, "bold", [255,255,255]);
+  doc.setCharSpace(1.2);
+  doc.text("INSTALL SHEET", M + 12, M + 21);
+  var titleW = doc.getTextWidth("INSTALL SHEET") + 13*1.2;
+  doc.setCharSpace(0);
+  font(6.6, "normal", [184,198,216]);
+  doc.text(COMPANY.name + "  \u00b7  work order  \u00b7  no prices", M + 12, M + 33);
+
+  var p = state.project;
+  var fields = [
+    ["CLIENT", p.client, 0.22], ["JOB SITE", p.address, 0.36], ["PHONE", p.phone, 0.16],
+    ["DATE", p.date, 0.13], ["REP", p.rep, 0.13]
+  ];
+  var fx0 = M + 12 + Math.max(titleW, 120) + 22, fw = PW - M - 10 - fx0, fx = fx0;
+  fields.forEach(function(f){
+    var w = fw * f[2];
+    font(5.8, "bold", [160,178,202]);
+    doc.text(f[0], fx, M + 17);
+    font(landscape ? 9.2 : 8.2, "bold", [255,255,255]);
+    doc.text(clip(f[1] || "\u2014", w - 8), fx, M + 30);
+    fx += w;
+  });
+
+  /* ---------------- the crew's strip ---------------- */
+  var IR = installRuns();
+  var cols = [
+    {head:"FENCE & MATERIALS", w: landscape ? 0.30 : 0.5},
+    {head:"RUNS",              w: landscape ? 0.20 : 0.5},
+    {head:"GATES & POSTS",     w: landscape ? 0.24 : 0.5},
+    {head:"CREW NOTES",        w: landscape ? 0.26 : 0.5}
+  ];
+  var rows = landscape ? [[0,1,2,3]] : [[0,1],[2,3]];
+  if(landscape && IR.runs.length > 12){ cols[0].w = 0.25; cols[1].w = 0.27; cols[2].w = 0.22; cols[3].w = 0.26; }
+  var SW = PW - M*2, PAD = 8, HEADH = 14;
+  var rowH = STRIP / rows.length;
+
+  // the strip's own frame
+  doc.setDrawColor.apply(doc, NAVY); doc.setLineWidth(1.1);
+  doc.rect(M, stripTop, SW, STRIP);
+
+  var LH = 9.6;
+  function block(col, x, y, w, h){
+    // heading bar
+    doc.setFillColor(234,239,245);
+    doc.rect(x, y, w, HEADH, "F");
+    font(6.6, "bold", NAVY);
+    doc.setCharSpace(0.6);
+    doc.text(col.head, x + PAD, y + 9.6);
+    doc.setCharSpace(0);
+    var cy = y + HEADH + 10.5, bottom = y + h - 4;
+    var api = {
+      x: x + PAD, w: w - PAD*2,
+      room: function(n){ return cy + (n||1)*LH - LH <= bottom; },
+      line: function(left, right, opts){
+        opts = opts || {};
+        if(cy > bottom) return false;
+        font(opts.size || 7.8, opts.bold ? "bold" : "normal", opts.dim ? DIM : INK);
+        var ind = opts.indent || 0;
+        var rw = 0;
+        if(right != null && right !== ""){
+          rw = doc.getTextWidth(String(right)) + 6;
+          doc.text(String(right), x + w - PAD, cy, {align:"right"});
+        }
+        doc.text(clip(left, w - PAD*2 - ind - rw), x + PAD + ind, cy);
+        cy += opts.lh || LH;
+        return true;
+      },
+      wrap: function(text, maxLines, opts){
+        opts = opts || {};
+        font(opts.size || 7.8, opts.italic ? "italic" : "normal", opts.dim ? DIM : INK);
+        var ls = doc.splitTextToSize(String(text), w - PAD*2 - (opts.indent||0));
+        var fitN = Math.max(0, Math.floor((bottom - cy)/LH) + 1);
+        var n = Math.min(ls.length, maxLines || ls.length, fitN);
+        for(var i=0;i<n;i++){
+          var s = ls[i];
+          if(i === n-1 && n < ls.length) s = clip(s + " ...", w - PAD*2);
+          doc.text(s, x + PAD + (opts.indent||0), cy);
+          cy += LH;
+        }
+      },
+      gap: function(g){ cy += g; },
+      y: function(){ return cy; },
+      bottom: bottom
+    };
+    col.fill(api);
+  }
+
+  // 1. fence & materials: what's being built, item by item
+  cols[0].fill = function(b){
+    var t = totals();
+    var tags = state.elements.tags;
+    if(tags.length){
+      tags.forEach(function(tg, i){
+        if(!b.room(2)) return;
+        var spec = tagSpecText(tg), name = tg.label || "Item " + (i+1);
+        var head = spec && name.toLowerCase().indexOf(spec.toLowerCase()) === -1 ? name + " \u2014 " + spec : name;
+        b.line((i+1) + ".  " + head, null, {bold:true});
+        var q = tagQtyText(tg);
+        if(q) b.line(q, null, {dim:true, indent:11, size:7.2});
+        if(tg.note && b.room(1)) b.wrap(tg.note, 1, {italic:true, dim:true, indent:11, size:7});
+        b.gap(2);
+      });
+    } else if(p.fenceType){
+      b.wrap(p.fenceType, 2);
+    }
+    if(tags.length && p.fenceType && b.room(2)){ b.gap(1); b.wrap("Spec: " + p.fenceType, 2, {dim:true, size:7.2}); }
+    if(b.room(1)){
+      b.gap(2);
+      var tot = [feetInches(t.fence) + " fence"];
+      if(t.wall) tot.push(feetInches(t.wall) + " wall");
+      if(t.gates.length) tot.push(t.gates.length + " gate" + (t.gates.length > 1 ? "s" : ""));
+      b.line("Total  " + tot.join("  \u00b7  "), null, {bold:true, size:7.6});
+    }
+  };
+
+  // 2. runs, lettered to match the drawing — two to a line when there are many
+  cols[1].fill = function(b){
+    var runs = IR.runs;
+    if(!runs.length){ b.line("No runs drawn", null, {dim:true}); return; }
+    function txt(r){
+      var s = r.seg;
+      return {tag:r.tag, kind: s.type === "wall" ? "wall" : "", len: feetInches(segLenOf(s)) + (segIsNTS(s) ? " *" : "")};
+    }
+    var fitRows = Math.max(1, Math.floor((b.bottom - b.y())/LH) + 1);
+    // as many sub-columns as the length of the list needs, or the width allows
+    var maxCols = Math.max(1, Math.floor((b.w + 8) / 66));
+    var nCols = Math.min(maxCols, Math.max(Math.ceil(runs.length / fitRows), runs.length > 4 ? Math.ceil(runs.length / 4) : 1));
+    var twoUp = nCols > 1;
+    var colW = Math.min(b.w / nCols, 120);
+    var y0 = b.y();
+    var perCol = Math.ceil(runs.length / nCols);
+    var shown = 0;
+    runs.forEach(function(r, i){
+      var ci = Math.floor(i / perCol), ri = i % perCol;
+      var yy = y0 + ri*LH;
+      if(yy > b.bottom) return;
+      var v = txt(r), x = b.x + ci*Math.min(b.w / nCols, colW + 20);
+      doc.setFillColor.apply(doc, NAVY);
+      doc.circle(x + 4.2, yy - 2.6, 4.2, "F");
+      font(5.8, "bold", [255,255,255]);
+      doc.text(v.tag, x + 4.2, yy - 0.6, {align:"center"});
+      font(7.8, "normal", INK);
+      doc.text(v.len, x + colW - (twoUp ? 8 : 0), yy, {align:"right"});
+      if(v.kind){ font(6.8, "normal", DIM); doc.text(v.kind, x + 12, yy); }
+      shown++;
+    });
+    if(shown < runs.length){
+      font(6.8, "italic", DIM);
+      doc.text("+ " + (runs.length - shown) + " more on the drawing", b.x, b.bottom + 2);
+    }
+  };
+
+  // 3. gates and posts
+  cols[2].fill = function(b){
+    var DATUM = {center:"post centres", inside:"clear opening", outside:"overall"};
+    IR.gates.forEach(function(r){
+      if(!b.room(1)) return;
+      var g = r.seg;
+      b.line(r.tag + "   " + gateTypeLabel(g.gateType || "single") + " gate",
+             feetInches(segLenOf(g)) + (segIsNTS(g) ? " *" : ""), {bold:true});
+      if(b.room(1)) b.line(DATUM[segMeasureFrom(g)] || "", null, {dim:true, indent:17, size:6.8, lh:8.6});
+    });
+    if(!IR.gates.length) b.line("No gates", null, {dim:true});
+    // posts by size: placed posts, and post-sized squares drawn as shapes
+    var posts = {};
+    state.elements.posts.forEach(function(pp){
+      if(detailOf && detailOf("post", pp)) return;
+      var kk = postLabel(postKey(pp)); posts[kk] = (posts[kk] || 0) + 1;
+    });
+    state.elements.structures.forEach(function(s){
+      if(!isPostShape(s) || detailOf("structure", s)) return;
+      var a = Math.min(s.w, s.h)*12, bb = Math.max(s.w, s.h)*12;
+      var kk = (a === bb ? inchText(a) + " sq." : inchText(a, false) + " x " + inchText(bb)) + " post";
+      posts[kk] = (posts[kk] || 0) + 1;
+    });
+    var keys = Object.keys(posts);
+    if(keys.length && b.room(2)){
+      b.gap(4);
+      font(6.2, "bold", DIM); doc.text("POSTS", b.x, b.y()); b.gap(LH);
+      keys.sort().forEach(function(kk){ if(b.room(1)) b.line(kk, "\u00d7 " + posts[kk]); });
+    }
+  };
+
+  // 4. crew notes, then the sign-off
+  cols[3].fill = function(b){
+    var signH = 34;
+    var notesBottom = b.bottom - signH;
+    if(p.notes){
+      var saveBottom = b.bottom;
+      b.bottom = notesBottom;
+      font(7.8, "normal", INK);
+      var ls = doc.splitTextToSize(p.notes, b.w);
+      var n = Math.max(0, Math.min(ls.length, Math.floor((notesBottom - b.y())/LH) + 1));
+      for(var i=0;i<n;i++){ doc.text(i === n-1 && n < ls.length ? clip(ls[i] + " ...", b.w) : ls[i], b.x, b.y()); b.gap(LH); }
+      b.bottom = saveBottom;
+    } else {
+      // ruled lines to write on
+      doc.setDrawColor.apply(doc, RULE); doc.setLineWidth(0.5);
+      for(var yy = b.y() + 4; yy < notesBottom - 4; yy += 13) doc.line(b.x, yy, b.x + b.w, yy);
+    }
+    var sy = b.bottom - 18;
+    var half = (b.w - 10)/2;
+    doc.setDrawColor(120); doc.setLineWidth(0.6);
+    doc.line(b.x, sy, b.x + half, sy);
+    doc.line(b.x + half + 10, sy, b.x + b.w, sy);
+    font(6.4, "normal", DIM);
+    doc.text("Installed by", b.x, sy + 8);
+    doc.text("Date completed", b.x + half + 10, sy + 8);
+  };
+
+  rows.forEach(function(row, ri){
+    var y = stripTop + ri*rowH, x = M;
+    var totalW = row.reduce(function(n, ci){ return n + cols[ci].w; }, 0);
+    row.forEach(function(ci, k2){
+      var w = SW * cols[ci].w / totalW;
+      block(cols[ci], x, y, w, rowH);
+      if(k2 > 0){ doc.setDrawColor.apply(doc, RULE); doc.setLineWidth(0.6); doc.line(x, y, x, y + rowH); }
+      x += w;
+    });
+    if(ri > 0){ doc.setDrawColor.apply(doc, NAVY); doc.setLineWidth(0.8); doc.line(M, y, M + SW, y); }
+  });
+
+  /* ---------------- fine print ---------------- */
+  font(6.3, "normal", DIM);
+  var fine = "Grid: 1 square = " + gridStepFor(fit.ppf, PRINT_K) + " ft   \u00b7   lengths measured " + measureNote();
+  if(state.elements.segments.some(segIsNTS)) fine += "   \u00b7   * labelled size, not to scale";
+  doc.text(fine, M + 2, PH - M - 2);
+  doc.text(COMPANY.name + "  \u00b7  " + COMPANY.phones, PW - M - 2, PH - M - 2, {align:"right"});
+
+  deliverFile(doc.output("blob"), jobBaseName() + " - install sheet.pdf");
+}
+
 function buildPDF(INSTALL){
+  if(INSTALL) return buildInstallPDF();
 
   // Crop to what was actually drawn, and orient the page to suit it, so the
   // sketch fills the sheet instead of floating small in the middle.
@@ -8303,102 +9129,8 @@ function buildPDF(INSTALL){
   stat("Fence run", feetInches(t.fence));
   if(t.wall) stat("Block wall", feetInches(t.wall));
   stat("Gates", t.gates.length + (t.gates.length ? " ("+feetInches(t.gate)+")" : ""));
-  if(state.elements.trees.length) stat("Trees", state.elements.trees.length);
-  if(t.structs.length) stat("Structures", t.structs.length);
   y += 4;
 
-  if(INSTALL){
-    installColumn();
-    deliverFile(doc.output("blob"), jobBaseName() + " - install sheet.pdf");
-    return;
-  }
-
-  /* The crew's column: what to build and where, no money. */
-  function installColumn(){
-    // posts, grouped by size -- the crew needs the count even if the client doesn't
-    var posts = {};
-    state.elements.structures.forEach(function(s){
-      if(!isPostShape(s) || detailOf("structure", s)) return;
-      var a = Math.min(s.w, s.h)*12, b = Math.max(s.w, s.h)*12;
-      var key = inchText(a, false) + " x " + inchText(b, false) + "\"";
-      posts[key] = (posts[key] || 0) + 1;
-    });
-    var nPosts = Object.keys(posts).reduce(function(n, k){ return n + posts[k]; }, 0);
-    if(nPosts) stat("Posts", nPosts);
-    Object.keys(posts).sort().forEach(function(k){
-      y += 9; doc.setFontSize(7); doc.setTextColor(115);
-      doc.text(posts[k] + "  \u00d7  " + k, tx + 8, y); doc.setTextColor(0);
-    });
-    y += 4;
-
-    // every gate, with what the crew has to know about it
-    var gates = state.elements.segments.filter(function(sg){ return sg.type === "gate" && !detailOf("segment", sg); });
-    if(gates.length){
-      sectionHead("GATES");
-      gates.forEach(function(g, gi){
-        y += 10.5;
-        doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
-        doc.text((gi+1) + ".  " + gateTypeLabel(g.gateType || "single") + " gate", tx, y);
-        doc.text(feetInches(segLenOf(g)) + (segIsNTS(g) ? " *" : ""), R - PADX, y, {align:"right"});
-        y += 8.5;
-        doc.setFontSize(6.6); doc.setTextColor(115);
-        var sub = measureMode(segMeasureFrom(g)).short;
-        doc.text(sub, tx + 12, y);
-        doc.setTextColor(0);
-      });
-      y += 3;
-    }
-
-    // what each line item covers, without the money
-    var items = state.elements.tags;
-    if(items.length){
-      sectionHead(items.length > 1 && optionTags().length > 1 ? "SCOPE (OPTIONS QUOTED)" : "SCOPE");
-      items.forEach(function(tg, ti){
-        y += 10.5;
-        doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
-        doc.text(doc.splitTextToSize((ti+1) + ".  " + (tg.label || "Untitled"), tw)[0], tx, y);
-        y += 8.5;
-        doc.setFontSize(6.6); doc.setTextColor(115);
-        var q = doc.splitTextToSize(tagQtyText(tg), tw - 12);
-        doc.text(q.slice(0, 2), tx + 12, y);
-        y += (Math.min(q.length, 2) - 1)*7.5;
-        if(tg.note){
-          y += 8;
-          doc.setFont("helvetica","italic");
-          var nl0 = doc.splitTextToSize(tg.note, tw - 12);
-          doc.text(nl0.slice(0, 3), tx + 12, y);
-          y += (Math.min(nl0.length, 3) - 1)*7.5;
-          doc.setFont("helvetica","normal");
-        }
-        doc.setTextColor(0);
-      });
-      y += 3;
-    }
-
-    // crew notes get the room the proposal gives to prices and payment
-    var foot = PH - M - 58;
-    if(state.project.notes){
-      sectionHead("NOTES FOR THE CREW");
-      doc.setFont("helvetica","normal"); doc.setFontSize(7.8);
-      var cn = doc.splitTextToSize(state.project.notes, tw);
-      var room = Math.max(1, Math.floor((foot - y - 8)/9.4));
-      doc.text(cn.slice(0, room), tx, y + 9);
-      y += 9 + Math.min(cn.length, room)*9.4;
-    }
-
-    doc.setFont("helvetica","normal"); doc.setFontSize(6.9);
-    doc.setTextColor(130);
-    doc.text("Grid 1 square = " + gridStepFor(printPpf, PRINT_K) + " ft   \u00b7   measured " + measureNote(), tx, foot, {maxWidth: tw});
-    doc.setTextColor(0);
-    ["Installed by", "Date completed"].forEach(function(lab, idx){
-      var sy = foot + 22 + idx*20;
-      doc.setDrawColor(140); doc.setLineWidth(0.6);
-      doc.line(tx, sy, R - PADX, sy);
-      doc.setFontSize(7.1); doc.setTextColor(120);
-      doc.text(lab, tx, sy + 7);
-      doc.setTextColor(0);
-    });
-  }
 
   /* ---- line items: what's in the job, then the alternates ---- */
   var sigBlock = 80;                    // room for all three rules and their labels
@@ -8449,7 +9181,7 @@ function buildPDF(INSTALL){
       y += 8;
       doc.setFont("helvetica","normal"); doc.setFontSize(6.7);
       doc.setTextColor(115);
-      var q = doc.splitTextToSize(tagQtyText(tg), tw);
+      var q = doc.splitTextToSize(tagLineText(tg), tw);
       doc.text(q.slice(0,2), tx+9, y);
       y += (Math.min(q.length,2)-1)*7;
       doc.setTextColor(0);
@@ -8789,53 +9521,18 @@ if(window.matchMedia){
 </script>
 
 <script>
-/* Keep the app on the device, but never let it get stuck on an old copy.
-   Registration is skipped for a local file, where there's nothing to cache
-   and no service worker is allowed. */
 (function(){
   if(!("serviceWorker" in navigator) || location.protocol.indexOf("http") !== 0) return;
-
-  /* On a first visit the worker installs and claims this page, which is not
-     an update and must not bounce the page. Only a device that was already
-     running a worker when the page opened can be looking at a stale build. */
-  var hadWorker = !!navigator.serviceWorker.controller;
-  var reloading = false;
-  function refresh(){
-    if(reloading || !hadWorker) return;
+  var had = !!navigator.serviceWorker.controller, reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if(!had || reloading) return;      // first install: nothing to swap out
     reloading = true;
     location.reload();
-  }
-
-  /* A different worker took over after load: it is serving a newer build
-     than the one on screen. */
-  navigator.serviceWorker.addEventListener("controllerchange", refresh);
-
+  });
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("sw.js").then(function(reg){
-      /* Ask GitHub whether there's a newer worker now, on every focus, and
-         hourly while the app is left open. iOS in particular will otherwise
-         sit on the installed one for days. */
-      /* With no signal this rejects; that is the normal offline case and
-         must not surface as an error. */
-      function check(){
-        try{ var u = reg.update(); if(u && u["catch"]) u["catch"](function(){}); }
-        catch(e){}
-      }
-      check();
-      setInterval(check, 60*60*1000);
-      document.addEventListener("visibilitychange", function(){
-        if(document.visibilityState === "visible") check();
-      });
-      reg.addEventListener("updatefound", function(){
-        var sw = reg.installing;
-        if(!sw) return;
-        sw.addEventListener("statechange", function(){
-          /* A newly installed worker alongside one that was already running
-             means a newer build has arrived. */
-          if(sw.state === "installed") refresh();
-        });
-      });
-    }).catch(function(){});
+      if(reg.update) reg.update();
+    })["catch"](function(){});
   });
 })();
 </script>

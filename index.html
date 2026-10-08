@@ -611,7 +611,7 @@ details.more[open] summary::before{transform:rotate(90deg);}
     padding-bottom:max(2px, env(safe-area-inset-bottom));
   }
   .tool-btn{
-    width:calc(100%/7);min-width:0;flex:0 0 auto;padding:7px 1px 5px;gap:2px;
+    width:calc(100%/8);min-width:0;flex:0 0 auto;padding:7px 1px 5px;gap:2px;
   }
   .tool-btn svg{width:20px;height:20px;}
   .tool-btn span{
@@ -676,7 +676,7 @@ details.more[open] summary::before{transform:rotate(90deg);}
 }
 
 @media (max-width:360px){
-  .tool-btn{width:calc(100%/5);}
+  .tool-btn{width:calc(100%/4);}
   .title-field{font-size:13px;}
 }
 </style>
@@ -745,13 +745,8 @@ details.more[open] summary::before{transform:rotate(90deg);}
         <div class="chips" id="tree-presets"></div>
         <input type="text" id="in-treesize" value="15" aria-label="Tree spread in feet">
       </div>
-      <div class="optgroup" data-opt="ltype">
-        <span class="optlabel">Type</span>
-        <div class="chips" id="line-types"></div>
-      </div>
       <div class="optgroup" data-opt="line">
         <div class="chips" id="line-style"></div>
-        <label class="check" title="Untick to draw a plain line that isn't added to the fence footage"><input type="checkbox" id="chk-linecount" checked> Counts as fence</label>
       </div>
       <div class="optgroup" data-opt="wall">
         <span class="optlabel">Thickness</span>
@@ -761,7 +756,7 @@ details.more[open] summary::before{transform:rotate(90deg);}
         <span class="optlabel">Snap</span>
         <select id="sel-snap"></select>
       </div>
-      <div class="optgroup" data-opt="always">
+      <div class="optgroup" data-opt="never" hidden>
         <span class="optlabel">Measure</span>
         <select id="sel-measure" title="Sheet default — any one run can override it from its own panel"></select>
       </div>
@@ -802,19 +797,15 @@ details.more[open] summary::before{transform:rotate(90deg);}
     <button class="tool-btn active" data-tool="select"><svg viewBox="0 0 24 24"><path d="m5 3 5.5 15 2-6.2L19 9.5 5 3Z"/></svg><span>Select</span></button>
     <div class="rail-sep"></div>
     <button class="tool-btn" data-tool="line"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.7"/><circle cx="19" cy="5" r="1.7"/><path d="M6.3 17.7 17.7 6.3"/></svg><span>Line</span></button>
+    <button class="tool-btn" data-tool="shape"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="10" height="8"/><circle cx="16" cy="15" r="5"/></svg><span>Shape</span></button>
+    <button class="tool-btn" data-tool="note"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4Z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Text</span></button>
+    <div class="rail-sep"></div>
     <button class="tool-btn" data-tool="gate"><svg viewBox="0 0 24 24"><path d="M5 20V6h9"/><path d="M14 6a10 10 0 0 1 5 10"/><path d="M5 20h14"/></svg><span>Gate</span></button>
     <button class="tool-btn" data-tool="arrow"><svg viewBox="0 0 24 24"><path d="M4 20 19 5"/><path d="M11 5h8v8"/></svg><span>Arrow</span></button>
-    <div class="rail-sep"></div>
-    <button class="tool-btn" data-tool="shape"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="10" height="8"/><circle cx="16" cy="15" r="5"/></svg><span>Shape</span></button>
-    <button class="tool-btn" data-tool="tree"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M12 15v6"/></svg><span>Tree</span></button>
-    <button class="tool-btn" data-tool="detail"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" stroke-dasharray="3 2"/><path d="M7 16V9M12 16V9M17 16V9M6 11h12"/></svg><span>Detail</span></button>
-    <div class="rail-sep"></div>
     <button class="tool-btn" data-tool="tape"><svg viewBox="0 0 24 24"><path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg><span>Tape</span></button>
-    <button class="tool-btn" data-tool="note"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4Z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg><span>Text</span></button>
+    <div class="rail-sep"></div>
     <button class="tool-btn" id="btn-photo" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="1.5"/><circle cx="8.5" cy="10" r="1.7"/><path d="m5 17 4.5-5 3.5 4 2.5-3 4.5 5"/></svg><span>Photo</span></button>
     <input type="file" id="photo-file" accept="image/*" style="display:none">
-    <button class="tool-btn" data-tool="rotate"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span>Rotate</span></button>
-    <button class="tool-btn" data-tool="eraser"><svg viewBox="0 0 24 24"><path d="m7 21-4-4a2 2 0 0 1 0-2.8L13.6 3.6a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8L10 21H7Z"/><path d="M13 8 17 12"/></svg><span>Erase</span></button>
   </nav>
 
   <aside class="panel" id="panel">
@@ -830,24 +821,9 @@ details.more[open] summary::before{transform:rotate(90deg);}
       <div class="sel-actions" id="sel-actions"></div>
     </div>
 
-    <div class="card" id="card-types">
-      <h2>Fence types</h2>
-      <div class="ft-list" id="type-list"></div>
-      <div class="sel-actions"><button class="btn sm" id="btn-add-type" type="button">+ New fence type</button></div>
-    </div>
-
-    <div class="card" id="card-item-edit" hidden>
-      <h2 id="item-edit-title">Line item</h2>
-      <div class="sel-body" id="item-edit-body"></div>
-    </div>
-
     <div class="card" id="card-items">
-      <h2>Line items &amp; pricing</h2>
-      <div class="item-list" id="item-list"></div>
-      <div class="item-foot">
-        <label class="check"><input type="checkbox" id="chk-prices"> Show prices on plan &amp; PDF</label>
-        <div class="total-row"><span>Total</span><span class="mono" id="item-total">$0.00</span></div>
-      </div>
+      <h2>Highlights</h2>
+      <div class="ft-list" id="item-list"></div>
     </div>
 
     <div class="card" id="card-pay">
@@ -874,16 +850,6 @@ details.more[open] summary::before{transform:rotate(90deg);}
     </div>
 
 
-    <div class="card" id="card-summary">
-      <h2>Totals</h2>
-      <div class="stat-grid">
-        <div class="stat"><div class="n mono" id="stat-fence">0'</div><div class="l">Fence</div></div>
-        <div class="stat"><div class="n mono" id="stat-wall">0'</div><div class="l">Block wall</div></div>
-        <div class="stat"><div class="n mono" id="stat-gates">0</div><div class="l">Gates</div></div>
-      </div>
-      <div class="rows" id="gate-list"></div>
-    </div>
-
     <div class="card" id="card-sheet">
       <h2>Job details</h2>
       <div class="inline">
@@ -894,7 +860,7 @@ details.more[open] summary::before{transform:rotate(90deg);}
         <div class="form-field" style="flex:1.2"><label for="f-phone">Client phone</label><input id="f-phone" type="tel" inputmode="tel" placeholder="626-555-0142"></div>
         <div class="form-field" style="flex:1"><label for="f-date">Date</label><input id="f-date" type="date"></div>
       </div>
-      <div class="form-field"><label for="f-type">Fence type / spec</label><input id="f-type" placeholder="6' cedar shadowbox, 8' o.c. posts"></div>
+      <div class="form-field" hidden><label for="f-type">Fence type / spec</label><input id="f-type" placeholder="6' cedar shadowbox, 8' o.c. posts"></div>
       <div class="inline">
         <div class="form-field" style="flex:1"><label for="f-rep">Rep</label><input id="f-rep" placeholder="Nick T."></div>
         <div class="form-field" style="flex:1"><label for="f-warranty">Warranty (yrs)</label><input id="f-warranty" type="number" min="0" max="25" step="1" value="5"></div>
@@ -907,7 +873,7 @@ details.more[open] summary::before{transform:rotate(90deg);}
       <div class="form-field"><label for="f-notes">Notes for crew</label><textarea id="f-notes" placeholder="Grade slopes 3ft over the north run. Call 811 first."></textarea></div>
     </div>
 
-    <div class="buildstamp" id="buildstamp">Build 2026-10-08.2</div>
+    <div class="buildstamp" id="buildstamp">Build 2026-10-08.3</div>
   </aside>
 </div>
 
@@ -1528,12 +1494,10 @@ var state = {
   color:null,
   tool:"select",
   nextId:1,
-  elements:{segments:[],posts:[],trees:[],notes:[],structures:[],dims:[],tags:[],ftypes:[]},
-  lineFt:"",                 // fence type new lines are drawn as ("" = plain Fence)
+  elements:{segments:[],posts:[],trees:[],notes:[],structures:[],dims:[],tags:[]},
   postLabel:"",              // label a dropped post carries ("6x6", "4x4 steel")
   sel:[],                 // multi-selection: [{kind,id}, ...]
-  activeTag:null,         // line item currently being edited (not persisted)
-  showPrices:false,       // print prices on the plan and in the PDF
+  activeTag:null,         // highlight last worked on (not persisted)
   draft:[],
   draftPreview:null,
   structDraft:null,
@@ -1579,10 +1543,9 @@ function stateSnapshot(){
       postSizeIn:state.postSizeIn, postDepthIn:state.postDepthIn,
       treeDiaFt:state.treeDiaFt, color:state.color,
       gateType:state.gateType, shapeKind:state.shapeKind, shapeWFt:state.shapeWFt, shapeHFt:state.shapeHFt,
-      showPrices:state.showPrices,
       wallThickIn:state.wallThickIn, freePlace:state.freePlace, objectSnap:state.objectSnap,
       showDims:state.showDims, measureFrom:state.measureFrom, lineCounts:state.lineCounts,
-      lineFt:state.lineFt, postLabel:state.postLabel,
+      postLabel:state.postLabel,
       nextId:state.nextId, elements:state.elements
   };
 }
@@ -1599,9 +1562,6 @@ function jobPayload(forPdf){
   job.project = job.project || {};
   if(forPdf){
     // the copy riding inside a client's PDF holds nothing the page doesn't show
-    if(!state.showPrices){
-      (job.elements.tags || []).forEach(function(t){ t.price = 0; });
-    }
     var pp = job.project.pay;
     if(pp && pp.print === false){ delete pp.total; delete pp.deposit; delete pp.progress; delete pp.balance; }
     job.project.logo = null;             // the page already carries it
@@ -1671,6 +1631,56 @@ function embedJob(doc){
   });
 }
 
+/**
+ * Older jobs priced line items and gave runs a fence type. Both become
+ * highlights now: the name, spec, note and price turn into the text, so
+ * nothing typed is lost.
+ */
+function migrateHighlights(ftypesOld){
+  var segs = state.elements.segments;
+  function segById(id){ return segs.find(function(s){ return s.id === id; }); }
+  function money0(n){ return "$" + Number(n).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  state.elements.tags.forEach(function(t){
+    if(t.text !== undefined) return;                  // already a highlight
+    var lines = [];
+    if(t.label && !/^Item \d+$/.test(t.label)) lines.push(t.label);
+    var spec = [t.height, t.material].map(function(x){ return String(x || "").trim(); }).filter(Boolean).join(" ");
+    if(spec) lines.push(spec);
+    if(t.note) lines.push(t.note);
+    var price = Number(t.price) || 0;
+    if(price > 0){
+      if(t.rateMode === "perft"){
+        var ft = 0;
+        (t.members || []).forEach(function(m){
+          var s = m.kind === "segment" ? segById(m.id) : null;
+          if(s && s.type !== "arrow") ft += segLenOf(s);
+        });
+        lines.push(money0(price) + "/ft = " + money0(price * ft));
+      } else lines.push(money0(price));
+    }
+    t.text = lines.join("\n");
+    t.showLen = true; t.len = ""; t.off = null;
+    ["label","note","price","rateMode","option","anchor","height","material"].forEach(function(k){ delete t[k]; });
+  });
+  // fence types: their runs become a highlight (or join the one they're all in)
+  (ftypesOld || []).forEach(function(ft){
+    var runs = segs.filter(function(s){ return s.ft === ft.id; });
+    if(!runs.length) return;
+    var words = [ft.design, ft.material].map(function(w){ return String(w || "").trim(); }).filter(Boolean)
+      .map(function(w, i){ return i ? w.charAt(0).toLowerCase() + w.slice(1) : w; });
+    var name = [String(ft.height || "").trim()].concat(words).filter(Boolean).join(" ") || "Fence";
+    var text = [name, ft.posts ? "Posts: " + ft.posts : "", ft.note || ""].filter(Boolean).join("\n");
+    var home = state.elements.tags.find(function(t){
+      return runs.every(function(r){ return t.members.some(function(m){ return m.kind === "segment" && m.id === r.id; }); });
+    });
+    if(home) home.text = home.text ? home.text + "\n" + text : text;
+    else state.elements.tags.push({id:uid(), color:ft.color || TAG_COLORS[state.elements.tags.length % TAG_COLORS.length],
+      text:text, showLen:true, len:"", off:null,
+      members:runs.map(function(r){ return {kind:"segment", id:r.id}; })});
+  });
+  segs.forEach(function(s){ delete s.ft; });
+}
+
 function loadLocal(){
   var migratedPosts = false;
   var raw;
@@ -1695,14 +1705,18 @@ function loadLocal(){
   state.shapeKind = p.shapeKind || state.shapeKind;
   state.shapeWFt = p.shapeWFt || state.shapeWFt;
   state.shapeHFt = p.shapeHFt || state.shapeHFt;
-  state.showPrices = !!p.showPrices;
   state.wallThickIn = p.wallThickIn || state.wallThickIn;
   state.freePlace = !!p.freePlace;
   state.objectSnap = p.objectSnap !== undefined ? !!p.objectSnap : true;
   state.showDims = p.showDims !== undefined ? !!p.showDims : true;
-  state.measureFrom = p.measureFrom || "center";
+  /* Runs are measured end to end now; a job set to inside or outside
+     faces keeps that on each of its runs so no length changes. */
+  var oldMeasure = p.measureFrom || "center";
+  if(oldMeasure !== "center"){
+    ((p.elements && p.elements.segments) || []).forEach(function(sg){ if(!sg.measureFrom) sg.measureFrom = oldMeasure; });
+  }
+  state.measureFrom = "center";
   state.lineCounts = p.lineCounts !== false;
-  state.lineFt = p.lineFt || "";
   state.postLabel = p.postLabel || "";
   // sizes typed before they remembered their datum were typed in this one
   ((p.elements && p.elements.segments) || []).forEach(function(sg){
@@ -1719,27 +1733,7 @@ function loadLocal(){
   state.elements.structures = el.structures || [];
   state.elements.dims = el.dims || [];
   state.elements.tags = el.tags || [];
-  state.elements.ftypes = el.ftypes || [];
-  // line items predating the option flag were all part of one total
-  state.elements.tags.forEach(function(t){ if(t.option === undefined) t.option = false; });
-  /* Height and material used to be typed on a line item. They belong to the
-     fence itself now (its fence type), so carry them over to the item's runs. */
-  state.elements.tags.forEach(function(t){
-    var h = String(t.height || "").trim(), m = String(t.material || "").trim();
-    delete t.height; delete t.material;
-    if(!h && !m) return;
-    var runs = (t.members || []).map(function(mm){
-      return mm.kind === "segment" ? state.elements.segments.find(function(s){ return s.id === mm.id; }) : null;
-    }).filter(function(s){ return s && (s.type === "line" || s.type === "wall") && s.count !== false && !s.ft; });
-    if(!runs.length) return;
-    var ft = state.elements.ftypes.find(function(x){ return x.height === h && x.material === m && !x.design; });
-    if(!ft){
-      ft = {id:uid(), height:h, design:"", material:m, posts:"", note:"",
-            color:FT_COLORS[state.elements.ftypes.length % FT_COLORS.length]};
-      state.elements.ftypes.push(ft);
-    }
-    runs.forEach(function(s){ s.ft = ft.id; });
-  });
+  migrateHighlights(el.ftypes || []);
 
   // migrate v1 enum sizes to numbers
   var POST_MAP = {"2":2,"4x4":4,"6x6":6,"8x8":8};
@@ -3191,6 +3185,31 @@ function renderPlan(c, pal, ppf, k, opts){
     drawPieces(pcs, fs, cx-w/2, cy + fs*0.3 - 1*k);
   }
 
+  /* What a highlight box would rather not cover: shapes (their outline
+     box) and points along every line. Worked out once per drawing. */
+  var _geo = null;
+  function boxObstacles(){
+    if(_geo) return _geo;
+    _geo = {boxes:[], pts:[]};
+    state.elements.structures.forEach(function(s){
+      if(s.kind === "photo") return;
+      var pts = structPoly(s).map(function(q){ return P(q.x, q.y); });
+      var bb = {x0:Infinity, y0:Infinity, x1:-Infinity, y1:-Infinity};
+      pts.forEach(function(q){ bb.x0 = Math.min(bb.x0,q.x); bb.y0 = Math.min(bb.y0,q.y); bb.x1 = Math.max(bb.x1,q.x); bb.y1 = Math.max(bb.y1,q.y); });
+      _geo.boxes.push(bb);
+    });
+    state.elements.segments.forEach(function(s){
+      var a = P(s.x1, s.y1), b = P(s.x2, s.y2);
+      var n = Math.max(2, Math.ceil(dist(a.x, a.y, b.x, b.y) / (8*k)));
+      for(var i=0;i<=n;i++) _geo.pts.push({x:a.x + (b.x-a.x)*i/n, y:a.y + (b.y-a.y)*i/n});
+    });
+    return _geo;
+  }
+  function overlapArea(a, b){
+    var w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0), h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+    return (w > 0 && h > 0) ? w*h : 0;
+  }
+
   /* A post's label: beside the marker, on whichever side is clear. */
   function postTag(text, cen, half, color){
     var fs = LBL_FS*0.92;
@@ -3239,8 +3258,8 @@ function renderPlan(c, pal, ppf, k, opts){
 
   var crewSheet = pal.print && PRINT_MODE === "install";
 
-  /* --- line-item halos: a soft colour wash under every member object --- */
-  (crewSheet ? [] : state.elements.tags).forEach(function(t){
+  /* --- highlight washes: a soft colour under every object in it --- */
+  state.elements.tags.forEach(function(t){
     var active = opts.selection && state.activeTag === t.id;
     var halo = mix(t.color, pal.surface, active ? 0.45 : (pal.print ? 0.2 : 0.26));
     c.strokeStyle = halo;
@@ -3274,24 +3293,6 @@ function renderPlan(c, pal, ppf, k, opts){
     });
     c.lineCap = "butt";
   });
-
-  /* --- fence types: each typed run carries its type's colour beneath it
-         (over any line-item wash, under the line itself).
-         A narrow band on screen; on the crew sheet, the highlight its
-         materials list is keyed to. The proposal leaves it off. --- */
-  if(!pal.print || crewSheet){
-    c.lineCap = "round"; c.lineJoin = "round";
-    state.elements.segments.forEach(function(s){
-      if(!segCounts(s)) return;
-      var ft = segFtype(s);
-      if(!ft) return;
-      c.strokeStyle = mix(ft.color, pal.surface, crewSheet ? 0.42 : 0.55);
-      c.lineWidth = (crewSheet ? 7.5 : 6)*k;
-      runPath(s);
-      c.stroke();
-    });
-    c.lineCap = "butt";
-  }
 
   /* --- structures (drawn beneath everything) --- */
   // detail frames go down first so whatever is drawn in them sits on top
@@ -3352,8 +3353,7 @@ function renderPlan(c, pal, ppf, k, opts){
       c.strokeStyle = c.fillStyle; c.lineWidth = 0.8*k*LW; c.stroke();
       setFont(tfs*0.8, 400);
       c.fillStyle = mix(pal.ink, pal.surface, 0.55);
-      c.fillText(s.nts ? "NOT TO SCALE \u00b7 NOT IN QUANTITIES" : "NOT IN QUANTITIES",
-                 5*k, 9*k + tfs*1.95);
+      if(s.nts) c.fillText("NOT TO SCALE", 5*k, 9*k + tfs*1.95);
       c.restore();
     } else if(s.kind === "photo"){
       var img = photoImage(s);
@@ -3945,81 +3945,114 @@ function renderPlan(c, pal, ppf, k, opts){
     });
   }
 
-  /* --- line-item badges, above everything else --- */
-  (crewSheet ? [] : state.elements.tags).forEach(function(t, ti){
-    var anchor = tagAnchor(t);
-    if(!anchor) return;
-    var ap = P(anchor.x, anchor.y);
+  /* --- highlight text boxes, above everything else ---
+     Each sits beside its objects (or where you dragged it, which then
+     travels with them), keeps clear of the figures already on the sheet,
+     and on the install sheet leaves out any line with a price in it. */
+  state.elements.tags.forEach(function(t){
+    var wb = tagBounds(t);
+    if(!wb) return;
     var active = opts.selection && state.activeTag === t.id;
+    var lines = String(t.text || "").split("\n").map(function(x){ return x.replace(/\s+$/, ""); });
+    while(lines.length && !lines[lines.length-1].trim()) lines.pop();
+    if(crewSheet) lines = lines.filter(function(x){ return !isPriceLine(x); });
+    var lenLine = tagLenText(t);
+    if(!lines.length && !lenLine){
+      if(pal.print) return;                       // nothing to say on paper
+      lines = ["Tap to type"];
+    }
+    var fs = (pal.print ? 7.2 : 10)*k, lh = fs*1.26, padX = (pal.print ? 4 : 5)*k, padY = (pal.print ? 3 : 4)*k;
+    var maxW = (pal.print ? 150 : 180)*k;
+    setFont(fs, 500);
+    var wrapped = [];
+    lines.forEach(function(x){ wrapText(x, maxW - padX*2).forEach(function(w){ wrapped.push(w); }); });
+    var rows = wrapped.map(function(x){ return {t:x, b:false}; });
+    if(lenLine){ setFont(fs, 700); wrapText(lenLine, maxW - padX*2).forEach(function(w){ rows.push({t:w, b:true}); }); }
+    var tw = 0;
+    rows.forEach(function(r){ setFont(fs, r.b ? 700 : 500); tw = Math.max(tw, mw(r.t)); });
+    var bw = tw + padX*2 + 3*k, bh = rows.length*lh + padY*2;
 
-    // leaders to each member, only while the item is being worked on
-    if(active){
-      c.setLineDash([3*k,3*k]);
-      c.strokeStyle = mix(t.color, pal.surface, 0.6);
-      c.lineWidth = 1*k*LW;
-      c.beginPath();
+    var A = P(wb.x0, wb.y0), B = P(wb.x1, wb.y1);
+    var cx = (A.x+B.x)/2, cy = (A.y+B.y)/2;
+    var bx, by;
+    if(t.off){
+      // the stored point is the box's edge nearest its objects, so a box
+      // that grows (zoomed out, more text) grows away from them
+      var o = P((wb.x0+wb.x1)/2 + t.off.x, (wb.y0+wb.y1)/2 + t.off.y);
+      var oax = t.off.ax == null ? 0 : t.off.ax, oay = t.off.ay == null ? 0 : t.off.ay;
+      bx = o.x - oax*bw; by = o.y - oay*bh;
+    } else {
+      /* Beside its objects, in the spot that covers the least: other
+         lettering counts most, then shapes, then lines. Once placed on
+         screen it stays put (relative to its objects), so zooming or
+         printing never moves it. */
+      var g = 9*k, cands = [];
+      [1, 3, 6].forEach(function(m){
+        var gg = g*m;
+        cands.push([B.x + gg, cy - bh/2], [A.x - gg - bw, cy - bh/2], [cx - bw/2, A.y - gg - bh], [cx - bw/2, B.y + gg],
+                   [B.x + gg, A.y - gg - bh], [A.x - gg - bw, A.y - gg - bh], [B.x + gg, B.y + gg], [A.x - gg - bw, B.y + gg],
+                   [B.x - bw, A.y - gg - bh], [A.x, A.y - gg - bh], [B.x - bw, B.y + gg], [A.x, B.y + gg]);
+      });
+      var geo = boxObstacles();
+      var best = null;
+      // the paper: a box hanging off it is the last resort
+      var sh0 = P(0, 0), sh1 = P(state.areaFeetW, state.areaFeetH);
+      var sheet = B ? {x0:OX, y0:OY, x1:OX + (bx1-bx0)*ppf, y1:OY + (by1-by0)*ppf}
+                    : {x0:sh0.x, y0:sh0.y, x1:sh1.x, y1:sh1.y};
+      cands.forEach(function(cd, ci2){
+        var cb = {x0:cd[0], y0:cd[1], x1:cd[0]+bw, y1:cd[1]+bh};
+        var sc = (bw*bh - overlapArea(cb, sheet)) * 40;
+        placed.forEach(function(q){ sc += 1e5 * overlapArea(cb, q); });
+        geo.boxes.forEach(function(q){ sc += overlapArea(cb, q); });
+        geo.pts.forEach(function(q){ if(q.x > cb.x0 && q.x < cb.x1 && q.y > cb.y0 && q.y < cb.y1) sc += 600*k*k; });
+        sc += ci2 * 2*k*k;                         // nearer and earlier is better, all else equal
+        if(!best || sc < best.sc) best = {sc:sc, x:cd[0], y:cd[1]};
+      });
+      bx = best.x; by = best.y;
+      if(opts.selection && !opts.noPin){
+        // pin it where it landed, relative to its objects
+        var wr = {x0: bx0 + (bx - OX)/ppf, y0: by0 + (by - OY)/ppf, x1: bx0 + (bx + bw - OX)/ppf, y1: by0 + (by + bh - OY)/ppf};
+        t.off = tagOffFor(wr, wb);
+        tagsPinned = true;
+      }
+    }
+    placed.push({x0:bx, y0:by, x1:bx+bw, y1:by+bh});
+    if(opts.selection){
+      // where it landed, in feet, for taps and drags
+      TAG_BOX[t.id] = {x0: bx0 + (bx - OX)/ppf, y0: by0 + (by - OY)/ppf, x1: bx0 + (bx + bw - OX)/ppf, y1: by0 + (by + bh - OY)/ppf};
+    }
+
+    // a leader to the nearest of its objects when the box sits away from them
+    var apart = bx > B.x + 2*k || bx + bw < A.x - 2*k || by > B.y + 2*k || by + bh < A.y - 2*k;
+    if(apart){
+      var bc = {x:bx + bw/2, y:by + bh/2}, near = null;
       t.members.forEach(function(m){
         var ctr = elCenter(m.kind, m.id);
         if(!ctr) return;
-        var q = P(ctr.x, ctr.y);
-        c.moveTo(ap.x, ap.y); c.lineTo(q.x, q.y);
+        var q = P(ctr.x, ctr.y), d = dist(q.x, q.y, bc.x, bc.y);
+        if(!near || d < near.d) near = {d:d, q:q};
       });
-      c.stroke();
-      c.setLineDash([]);
-    }
-
-    var num = String(ti+1);
-    var label = t.label || "";
-    if(state.showPrices && tagTotal(t) > 0) label += (label ? "  " : "") + money(tagTotal(t));
-
-    var bfs = (pal.print ? 7 : 8.5)*k;
-    setFont(bfs, pal.print ? 600 : 700);
-    var tw = label ? mw(label) : 0;
-    var rBadge = (pal.print ? 4.6 : 7)*k;
-    var boxW = rBadge*2 + (label ? tw + (pal.print ? 5 : 8)*k : 0);
-    var boxH = rBadge*2;
-    var bx = ap.x - rBadge, by = ap.y - rBadge;
-    /* A badge left where the app put it steps off any figure or name it
-       would sit on; one you've dragged stays exactly where you put it. */
-    if(!t.anchor){
-      var step = boxH + 3*k, tries = [[0,0],[0,-1],[0,1],[0,-2],[0,2],[-0.5,-1],[-0.5,1],[0,-3],[0,3]];
-      for(var bi=0; bi<tries.length; bi++){
-        var ox = tries[bi][0]*boxW, oy = tries[bi][1]*step;
-        var cand = {x0:bx+ox-1*k, y0:by+oy-1*k, x1:bx+ox+boxW+1*k, y1:by+oy+boxH+1*k};
-        if(!clashes(cand)){ ap = {x:ap.x+ox, y:ap.y+oy}; bx += ox; by += oy; break; }
+      if(near){
+        var ex = Math.max(bx, Math.min(bx + bw, near.q.x)), ey = Math.max(by, Math.min(by + bh, near.q.y));
+        c.beginPath(); c.moveTo(ex, ey); c.lineTo(near.q.x, near.q.y);
+        c.strokeStyle = mix(t.color, pal.surface, 0.7); c.lineWidth = 0.9*k*LW*1.6;
+        c.setLineDash([3*k, 2*k]); c.stroke(); c.setLineDash([]);
+        c.beginPath(); c.arc(near.q.x, near.q.y, 1.8*k, 0, Math.PI*2); c.fillStyle = t.color; c.fill();
       }
     }
-    placed.push({x0:bx, y0:by, x1:bx+boxW, y1:by+boxH});
-    if(opts.selection) t._at = {x: bx0 + (ap.x - OX)/ppf, y: by0 + (ap.y - OY)/ppf};
 
-    if(label){
-      // a clear patch to letter on; on paper no frame, just the number disc
-      c.fillStyle = pal.surface;
-      c.fillRect(bx, by, boxW, boxH);
-      if(!pal.print){
-        c.strokeStyle = t.color; c.lineWidth = 1.2*k*LW;
-        c.strokeRect(bx, by, boxW, boxH);
-      }
-    }
-    c.beginPath();
-    c.arc(ap.x, ap.y, rBadge, 0, Math.PI*2);
-    c.fillStyle = t.color; c.fill();
-    if(active){
-      c.strokeStyle = pal.accent; c.lineWidth = 2*k*LW;
-      c.beginPath(); c.arc(ap.x, ap.y, rBadge+3*k, 0, Math.PI*2); c.stroke();
-    }
-
-    c.fillStyle = "#ffffff";
-    c.textAlign = "center"; c.textBaseline = "middle";
-    setFont((pal.print ? 6.2 : 8.5)*k, 700);
-    c.fillText(num, ap.x, ap.y + 0.5*k);
-    c.textAlign = "left";
-    if(label){
-      c.fillStyle = pal.ink;
-      setFont(bfs, pal.print ? 600 : 700);
-      c.fillText(label, ap.x + rBadge + (pal.print ? 3 : 4)*k, ap.y + 0.5*k);
-    }
+    c.fillStyle = pal.surface;
+    c.fillRect(bx, by, bw, bh);
+    c.strokeStyle = t.color; c.lineWidth = (active ? 2.2 : 1.1)*k;
+    c.strokeRect(bx, by, bw, bh);
+    c.fillStyle = t.color;
+    c.fillRect(bx, by, 3*k, bh);                     // the colour key down its edge
     c.textBaseline = "alphabetic";
+    rows.forEach(function(r, i){
+      setFont(fs, r.b ? 700 : 500);
+      c.fillStyle = r.b ? mix(t.color, pal.ink, 0.35) : (lines[0] === "Tap to type" && !t.text ? pal.inkDim : pal.ink);
+      c.fillText(r.t, bx + padX + 3*k, by + padY + lh*(i+1) - lh*0.28);
+    });
   });
 
   /* --- the Rotate tool's pivot and angle --- */
@@ -4225,6 +4258,8 @@ function draw(){
     originX: state.pan.x, originY: state.pan.y,
     viewW: viewW, viewH: viewH
   });
+  // a highlight box placed for the first time keeps that spot
+  if(tagsPinned){ tagsPinned = false; saveLocal(); }
 }
 
 /**
@@ -4442,8 +4477,6 @@ function addSegment(type,p1,p2){
   if(type==="wall"){ seg.thickness = state.wallThickIn; }
   if(type==="arrow"){ seg.dims = false; }
   // a plain line, drawn for some other reason than fence
-  if(type==="line" && state.lineCounts === false){ seg.count = false; }
-  else if((type==="line" || type==="curve") && findFtype(state.lineFt)){ seg.ft = state.lineFt; }
   state.elements.segments.push(seg);
   return seg;
 }
@@ -4478,235 +4511,32 @@ function shapeDefaults(tool){
   return STRUCT_DEFAULTS[tool] || STRUCT_DEFAULTS.house;
 }
 
-/* ===================== Fence types =====================
-   What a run is built as: height, design, material, posts. Set up once
-   per job ("6' Horizontal wood"), then picked for each line. The install
-   sheet lists the materials by type, with each type's runs highlighted and
-   its footage totalled. A run with no type is just "Fence". */
-var FT_COLORS = ["#16A34A","#EA580C","#2563EB","#9333EA","#CA8A04","#0891B2","#DB2777","#65A30D"];
-var FT_DESIGNS = ["Privacy", "Horizontal", "Shadowbox", "Board on board", "Picket", "Good neighbor", "Slat"];
-var FT_POSTS = ["4x4", "4x6", "6x6", "2 3/8\" steel", "5\" vinyl"];
-function ftypes(){ return state.elements.ftypes || (state.elements.ftypes = []); }
-function findFtype(id){
-  if(!id) return null;
-  var l = ftypes();
-  for(var i=0;i<l.length;i++) if(l[i].id === id) return l[i];
-  return null;
-}
-/** "6' Horizontal wood" — height, then design and material. */
-function ftName(t){
-  if(!t) return "Fence";
-  var words = [t.design, t.material].map(function(w){ return String(w || "").trim(); }).filter(Boolean);
-  words = words.map(function(w, i){ return i ? w.charAt(0).toLowerCase() + w.slice(1) : w; });
-  var n = [String(t.height || "").trim()].concat(words).filter(Boolean).join(" ");
-  return n || "Unnamed fence type";
-}
-function ftSub(t){
-  if(!t) return "";
-  return [t.posts ? "Posts: " + t.posts : "", t.note || ""].filter(Boolean).join(" \u00b7 ");
-}
-/** The first highlight colour no type on the job is using yet. */
-function nextFtColor(){
-  var used = ftypes().map(function(t){ return String(t.color).toLowerCase(); });
-  for(var i=0;i<FT_COLORS.length;i++) if(used.indexOf(FT_COLORS[i].toLowerCase()) === -1) return FT_COLORS[i];
-  return FT_COLORS[ftypes().length % FT_COLORS.length];
-}
-function addFtype(spec){
-  var t = Object.assign({id:uid(), height:"", design:"", material:"", posts:"", note:"",
-                         color:nextFtColor()}, spec || {});
-  t.id = t.id || uid();
-  ftypes().push(t);
-  return t;
-}
-/** Runs that can carry a type: fence lines, walls and gates (not arrows or plain lines). */
-function typable(s){
-  return !!s && (s.type === "line" || s.type === "curve" || s.type === "wall" || s.type === "gate") && s.count !== false;
-}
-/** The run a gate is set in: the one it lies along, or failing that one
-    its posts touch. */
-function gateHost(g){
-  var along = null, touch = null;
-  state.elements.segments.forEach(function(s){
-    if(s === g || !typable(s) || s.type === "gate") return;
-    var d1 = distToRun(g.x1, g.y1, s), d2 = distToRun(g.x2, g.y2, s);
-    if(Math.max(d1, d2) < 0.35){ if(!along || Math.max(d1,d2) < along.d) along = {d:Math.max(d1,d2), s:s}; }
-    else if(Math.min(d1, d2) < 0.35 && s.ft){ if(!touch || Math.min(d1,d2) < touch.d) touch = {d:Math.min(d1,d2), s:s}; }
-  });
-  return along ? along.s : (touch ? touch.s : null);
-}
-/** A run's fence type; a gate without one of its own is the fence it's in. */
-function segFtype(s){
-  if(!s) return null;
-  var t = findFtype(s.ft);
-  if(t || s.type !== "gate") return t;
-  var host = gateHost(s);
-  return host ? findFtype(host.ft) : null;
-}
-/** Footage and gates by fence type, for the install sheet and the panel. */
-function materialGroups(includeEmpty){
-  var groups = {}, order = [];
-  function grp(key, t, name){
-    if(!groups[key]){ groups[key] = {key:key, t:t, name:name, color:t ? t.color : null, len:0, runs:0, gates:[]}; order.push(key); }
-    return groups[key];
-  }
-  ftypes().forEach(function(t){ grp(t.id, t, ftName(t)); });
-  state.elements.segments.forEach(function(s){
-    if(!segCounts(s)) return;
-    var t = segFtype(s);
-    var g = t ? grp(t.id, t, ftName(t))
-              : (s.type === "wall" ? grp("_wall", null, "Block wall") : grp("_fence", null, "Fence"));
-    if(s.type === "gate") g.gates.push(s);
-    else { var L = segLenOf(s); g.len += L; g.runs++; if(s.type === "wall") g.wallLen = (g.wallLen || 0) + L; }
-  });
-  return order.map(function(k){ return groups[k]; })
-              .filter(function(g){ return includeEmpty && g.t ? true : (g.runs || g.gates.length); });
-}
-/** Give the selected runs a type ("" for none). */
-function applyFtype(segs, id){
-  segs = segs.filter(typable);
-  if(!segs.length) return;
-  snapshot();
-  segs.forEach(function(s){ if(id) s.ft = id; else delete s.ft; });
-  if(id && segs.some(function(s){ return s.type !== "gate"; })) state.lineFt = id;
-  // an item still called "Item 3" takes the name of what it's built as
-  state.elements.tags.forEach(function(tg){
-    if(tg.label && !/^Item \d+$/.test(tg.label)) return;
-    var sp = tagSpecText(tg);
-    if(sp) tg.label = sp;
-  });
-  refresh();
-}
-function selTypableSegs(){
-  return state.sel.filter(function(s){ return s.kind === "segment"; })
-    .map(function(s){ return findEl("segment", s.id); }).filter(typable);
-}
-
-/** The fence type editor: height, design, material, posts, a note, a colour. */
-function openTypeEditor(t, onDone){
-  var isNew = !t;
-  var draft = Object.assign({height:"", design:"", material:"", posts:"", note:"",
-                             color:nextFtColor()}, t || {});
-  var back = document.createElement("div");
-  back.className = "modal-backdrop";
-  var box = document.createElement("div");
-  box.className = "modal type-editor";
-  box.setAttribute("role", "dialog");
-  box.setAttribute("aria-modal", "true");
-  var h = document.createElement("h3");
-  h.textContent = isNew ? "New fence type" : "Fence type";
-  box.appendChild(h);
-  var preview = document.createElement("div");
-  preview.className = "ft-preview";
-  box.appendChild(preview);
-  function paint(){
-    preview.innerHTML = "<span class='ft-sw' style='background:" + draft.color + "'></span><b>" +
-      escapeHtml(ftName(draft)) + "</b>";
-  }
-  var body = document.createElement("div");
-  body.className = "ft-body";
-  box.appendChild(body);
-  specRow(body, "Height", HEIGHTS, draft.height, "e.g. 6'", function(v){ draft.height = v; paint(); });
-  specRow(body, "Design", FT_DESIGNS, draft.design, "e.g. Horizontal", function(v){ draft.design = v; paint(); });
-  specRow(body, "Material", MATERIALS, draft.material, "e.g. Wood", function(v){ draft.material = v; paint(); });
-  specRow(body, "Posts", FT_POSTS, draft.posts, "e.g. 2 3/8\" steel", function(v){ draft.posts = v; paint(); });
-  textRow(body, "Note for the crew (optional)", draft.note, function(v){ draft.note = v; });
-  var cw = document.createElement("div");
-  cw.className = "form-field";
-  var cl = document.createElement("label"); cl.textContent = "Highlight colour";
-  var sw = document.createElement("div"); sw.className = "swatches";
-  FT_COLORS.forEach(function(c){
-    var b = document.createElement("button");
-    b.type = "button"; b.className = "sw" + (c === draft.color ? " on" : "");
-    b.style.background = c; b.setAttribute("aria-label", "Colour " + c);
-    b.addEventListener("click", function(){
-      draft.color = c;
-      Array.prototype.forEach.call(sw.children, function(x){ x.classList.toggle("on", x === b); });
-      paint();
-    });
-    sw.appendChild(b);
-  });
-  cw.appendChild(cl); cw.appendChild(sw); body.appendChild(cw);
-  // live preview while typing, not only on leaving a field
-  body.addEventListener("input", function(e){
-    var lab = e.target.closest(".form-field") && e.target.closest(".form-field").querySelector("label");
-    if(!lab) return;
-    var key = {Height:"height", Design:"design", Material:"material", Posts:"posts"}[lab.textContent];
-    if(key){ draft[key] = e.target.value.trim(); paint(); }
-  });
-
-  var acts = document.createElement("div");
-  acts.className = "modal-actions";
-  function close(){ back.remove(); document.removeEventListener("keydown", onKey, true); }
-  function onKey(e){ if(e.key === "Escape"){ e.preventDefault(); close(); } }
-  if(!isNew){
-    var del = document.createElement("button");
-    del.className = "btn danger"; del.textContent = "Delete";
-    del.style.marginRight = "auto";
-    del.addEventListener("click", function(){
-      snapshot();
-      state.elements.segments.forEach(function(s){ if(s.ft === t.id) delete s.ft; });
-      state.elements.ftypes = ftypes().filter(function(x){ return x !== t; });
-      if(state.lineFt === t.id) state.lineFt = "";
-      close(); refresh(); buildPresets();
-      toast("Fence type deleted \u2014 its lines are plain Fence now");
-    });
-    acts.appendChild(del);
-  }
-  var cancel = document.createElement("button");
-  cancel.className = "btn"; cancel.textContent = "Cancel";
-  cancel.addEventListener("click", close);
-  var save = document.createElement("button");
-  save.className = "btn primary"; save.textContent = isNew ? "Add" : "Save";
-  save.addEventListener("click", function(){
-    // pick up a field still being typed in
-    Array.prototype.forEach.call(body.querySelectorAll("input"), function(i){ i.dispatchEvent(new Event("change")); });
-    snapshot();
-    var out;
-    if(isNew) out = addFtype(draft);
-    else { Object.assign(t, draft); out = t; }
-    close();
-    if(onDone) onDone(out);
-    refresh(); buildPresets();
-  });
-  acts.appendChild(cancel); acts.appendChild(save);
-  box.appendChild(acts);
-  back.appendChild(box);
-  back.addEventListener("click", function(e){ if(e.target === back) close(); });
-  document.addEventListener("keydown", onKey, true);
-  document.body.appendChild(back);
-  paint();
-  var first = body.querySelector("input");
-  if(first && !COARSE_POINTER) first.focus();
-}
-
-/** Chips to pick a type: none, each type, or a new one. */
-function typeChoices(firstLabel){
-  return [{v:"", label:firstLabel || "Fence"}].concat(ftypes().map(function(t){
-    return {v:t.id, label:ftName(t), color:t.color};
-  })).concat([{v:"__new", label:"+ New type"}]);
-}
-function pickType(segs, v){
-  if(v === "__new"){
-    openTypeEditor(null, function(t){ applyFtype(segs, t.id); });
-    return;
-  }
-  applyFtype(segs, v);
-}
-
-/* ===================== Line items (priced object groups) ===================== */
+/* ===================== Highlights =====================
+   Select anything, tap Highlight, and type what it is: the material, the
+   details, a price -- whatever the job needs. The objects get a colour
+   wash and a text box in the same colour sits beside them. Where the
+   highlight takes in lines, the box adds their total length; type your own
+   figure and it keeps yours instead. On the install sheet any line of the
+   text with a $ amount in it is left off. */
 
 var TAG_COLORS = ["#B91C1C","#1D4ED8","#15803D","#C2410C","#7E22CE","#0E7490","#A16207","#9D174D"];
+var TAG_BOX = {};            // where each highlight's box was last drawn on screen, in feet
+var tagsPinned = false;      // a box was just placed for the first time: save it
+var FT_POSTS = ["4x4", "4x6", "6x6", "2 3/8\" steel", "5\" vinyl"];      // post label presets
 
+function nextTagColor(){
+  var used = state.elements.tags.map(function(t){ return String(t.color).toLowerCase(); });
+  for(var i=0;i<TAG_COLORS.length;i++) if(used.indexOf(TAG_COLORS[i].toLowerCase()) === -1) return TAG_COLORS[i];
+  return TAG_COLORS[state.elements.tags.length % TAG_COLORS.length];
+}
 function addTag(members){
   var t = {
     id: uid(),
-    label: "Item "+(state.elements.tags.length+1),
-    note: "",
-    color: TAG_COLORS[state.elements.tags.length % TAG_COLORS.length],
-    price: 0,
-    rateMode: "lump",          // "lump" | "perft"
-    option: true,              // an alternate the client picks from, not a sum
-    anchor: null,              // null = sit at the centroid of its members
+    color: nextTagColor(),
+    text: "",
+    showLen: true,             // add the total length of its lines
+    len: "",                   // a length typed over the measured one
+    off: null,                 // box position relative to its objects; null = placed automatically
     members: (members||[]).map(function(m){ return {kind:m.kind, id:m.id}; })
   };
   state.elements.tags.push(t);
@@ -4722,87 +4552,45 @@ function tagOf(kind,id){
   }) || null;
 }
 
-/** Drop members that no longer exist. */
+/** Drop members that no longer exist; a highlight with nothing left goes too. */
 function pruneTags(){
   state.elements.tags.forEach(function(t){
     t.members = t.members.filter(function(m){ return !!findEl(m.kind, m.id); });
   });
+  state.elements.tags = state.elements.tags.filter(function(t){ return t.members.length; });
+  if(state.activeTag && !findTag(state.activeTag)) state.activeTag = null;
 }
 
-function tagQty(t){
-  var q = {fenceFt:0, wallFt:0, gateFt:0, gates:0, posts:0, trees:0, structures:0, shapes:0, notes:0, areaSqft:0};
+/** Lines and gates a highlight takes in, measured. */
+function tagLengths(t){
+  var q = {lineFt:0, lines:0, gates:[]};
   t.members.forEach(function(m){
-    var el = findEl(m.kind, m.id);
-    if(!el) return;
-    if(detailOf(m.kind, el)) return;       // drawn in a detail: illustration only
-    if(m.kind === "segment" && !segCounts(el)) return;
-    if(m.kind === "structure" && !structCounts(el)) return;
-    if(m.kind === "structure" && isDetail(el)) return;
-    if(m.kind==="segment"){
-      var L = segLenOf(el);
-      if(el.type==="gate"){ q.gateFt += L; q.gates++; }
-      else if(el.type==="wall") q.wallFt += L;
-      else q.fenceFt += L;
-    }
-    else if(m.kind==="post") q.posts++;
-    else if(m.kind==="tree") q.trees++;
-    else if(m.kind==="note") q.notes++;
-    else if(m.kind==="structure" && el.kind!=="photo"){
-      if(el.hatch === false) q.shapes++; else q.structures++;
-      q.areaSqft += el.w * el.h;
-    }
+    if(m.kind !== "segment") return;
+    var el = findEl("segment", m.id);
+    if(!el || el.type === "arrow") return;
+    if(el.type === "gate") q.gates.push(segLenOf(el));
+    else { q.lineFt += segLenOf(el); q.lines++; }
   });
-  q.linearFt = q.fenceFt + q.wallFt + q.gateFt;
   return q;
 }
-
-/** What an item covers, in the terms it's built and priced by: linear
-    footage and gates. Shapes, notes and trees ride along on the plan but
-    aren't quantities anyone orders. */
-function tagQtyText(t){
-  var q = tagQty(t), parts = [];
-  if(q.fenceFt) parts.push(feetInches(q.fenceFt)+" fence");
-  if(q.wallFt)  parts.push(feetInches(q.wallFt)+" wall");
-  if(q.gates)   parts.push(q.gates+" gate"+(q.gates>1?"s":"")+" ("+feetInches(q.gateFt)+")");
-  return parts.join(" \u00b7 ");
+/** The length line under the text: yours if you typed one, else measured. */
+function tagLenText(t){
+  if(t.showLen === false) return "";
+  var typed = String(t.len || "").trim();
+  if(typed) return "Total " + typed;
+  var q = tagLengths(t), parts = [];
+  if(q.lines) parts.push("Total " + feetInches(q.lineFt));
+  if(q.gates.length) parts.push(q.gates.length + " gate" + (q.gates.length > 1 ? "s" : "") + " " +
+    q.gates.map(function(g){ return feetInches(g); }).join(", "));
+  return parts.join(" · ");
 }
-/** Height and material: "6' high \u00b7 Vinyl privacy". */
-function tagSpecText(t){
-  var names = [], seen = {};
-  (t.members || []).forEach(function(m){
-    if(m.kind !== "segment") return;
-    var s = findEl("segment", m.id);
-    if(!s || !segCounts(s)) return;
-    var ft = segFtype(s);
-    if(ft && !seen[ft.id]){ seen[ft.id] = 1; names.push(ftName(ft)); }
-  });
-  return names.join(" + ");
+/** First line of the text, for lists and menus. */
+function tagTitle(t){
+  var first = String(t.text || "").split("\n").map(function(x){ return x.trim(); }).filter(Boolean)[0];
+  return first || "Highlight " + tagIndex(t);
 }
-/** One line for lists: what it's built as (unless the name already says),
-    then footage. */
-function tagLineText(t){
-  var sp = tagSpecText(t);
-  if(sp && t.label && String(t.label).toLowerCase().indexOf(sp.toLowerCase()) !== -1) sp = "";
-  return [sp, tagQtyText(t)].filter(Boolean).join(" \u00b7 ") || "Nothing measured yet";
-}
-var MATERIALS = ["Vinyl", "Wood", "Chain link", "Wrought iron", "Aluminum", "Block"];
-var HEIGHTS = ["3'", "4'", "5'", "6'", "7'", "8'"];
-
-function tagTotal(t){
-  var p = Number(t.price)||0;
-  return t.rateMode === "perft" ? p * tagQty(t).linearFt : p;
-}
-
-/** Options are alternates the client chooses between, so they never add up. */
-function tagIsOption(t){ return t.option !== false; }
-function includedTags(){ return state.elements.tags.filter(function(t){ return !tagIsOption(t); }); }
-function optionTags(){ return state.elements.tags.filter(tagIsOption); }
-
-/** Only the items marked as included in the job are summed. */
-function tagsTotal(){
-  return includedTags().reduce(function(sum,t){ return sum + tagTotal(t); }, 0);
-}
-function hasTotal(){ return includedTags().length > 0; }
+/** A line the crew shouldn't see: anything with a dollar amount in it. */
+function isPriceLine(line){ return /\$\s*\d|\d\s*\$/.test(line); }
 
 function elCenter(kind,id){
   var el = findEl(kind,id);
@@ -4811,27 +4599,185 @@ function elCenter(kind,id){
   if(kind==="structure") return {x:el.x+el.w/2, y:el.y+el.h/2};
   return {x:el.x, y:el.y};
 }
-
-/**
- * Where the numbered badge sits. By default it floats just above the
- * members' bounding box so it reads as a callout and never swallows
- * clicks meant for the objects underneath it.
- */
-function tagAnchor(t){
-  if(t.anchor) return t.anchor;
-  var pts = t.members.map(function(m){ return elCenter(m.kind,m.id); }).filter(Boolean);
-  if(!pts.length) return null;
-  var minX=Infinity, maxX=-Infinity, minY=Infinity;
-  pts.forEach(function(p){
-    if(p.x<minX) minX=p.x;
-    if(p.x>maxX) maxX=p.x;
-    if(p.y<minY) minY=p.y;
+/** The world box around a highlight's objects. */
+function tagBounds(t){
+  var b = null;
+  t.members.forEach(function(m){
+    var el = findEl(m.kind, m.id);
+    if(!el) return;
+    var pts;
+    if(m.kind === "segment" || m.kind === "dim") pts = [{x:el.x1,y:el.y1},{x:el.x2,y:el.y2}];
+    else if(m.kind === "structure") pts = structPoly(el);
+    else pts = [elCenter(m.kind, m.id)];
+    pts.forEach(function(q){
+      if(!q) return;
+      if(!b) b = {x0:q.x, y0:q.y, x1:q.x, y1:q.y};
+      else { b.x0 = Math.min(b.x0,q.x); b.y0 = Math.min(b.y0,q.y); b.x1 = Math.max(b.x1,q.x); b.y1 = Math.max(b.y1,q.y); }
+    });
   });
-  // sit clear of the dimension lines, and stagger successive items so
-  // auto-placed badges are less likely to collide with each other
-  var clearance = Math.max(5, Math.min(11, state.areaFeetH * 0.09));
-  var stagger = (state.elements.tags.indexOf(t) % 3) * (clearance * 0.55);
-  return {x:(minX+maxX)/2, y: minY - clearance - stagger};
+  return b;
+}
+/** Where a box sits relative to its objects: the point on its edge nearest
+    them (ax, ay say which: 0 left/top, 0.5 middle, 1 right/bottom), as an
+    offset from the middle of the objects. All in feet. */
+function tagOffFor(r, wb){
+  var ax = r.x1 <= wb.x0 ? 1 : (r.x0 >= wb.x1 ? 0 : 0.5);
+  var ay = r.y1 <= wb.y0 ? 1 : (r.y0 >= wb.y1 ? 0 : 0.5);
+  if(ax === 0.5 && ay === 0.5){ ax = 0; ay = 0; }          // on top of them: plain top-left
+  return {x: r.x0 + ax*(r.x1-r.x0) - (wb.x0+wb.x1)/2, y: r.y0 + ay*(r.y1-r.y0) - (wb.y0+wb.y1)/2, ax:ax, ay:ay};
+}
+/** Kept for older callers: a point near the highlight. */
+function tagAnchor(t){
+  var b = tagBounds(t);
+  return b ? {x:(b.x0+b.x1)/2, y:b.y0} : null;
+}
+
+/* ---- the highlight's text box editor ---- */
+function openTagEditor(t, isNew){
+  if(!t) return;
+  var before = JSON.stringify(state.elements);
+  var back = document.createElement("div");
+  back.className = "modal-backdrop";
+  var box = document.createElement("div");
+  box.className = "modal tag-editor";
+  box.setAttribute("role", "dialog");
+  box.setAttribute("aria-modal", "true");
+  var h = document.createElement("h3");
+  h.innerHTML = "<span class='ft-sw' style='background:" + t.color + "'></span> " + (isNew ? "New highlight" : "Highlight");
+  box.appendChild(h);
+
+  var ta = document.createElement("textarea");
+  ta.value = t.text || "";
+  ta.placeholder = "What it is — e.g.\n6' horizontal cedar, 2 3/8\" steel posts\n$9,850";
+  ta.rows = 5;
+  ta.addEventListener("input", function(){ t.text = ta.value; draw(); });
+  box.appendChild(ta);
+
+  var hint = document.createElement("div");
+  hint.className = "mini-note";
+  hint.textContent = "Lines with a $ amount print on the proposal only, not the install sheet.";
+  box.appendChild(hint);
+
+  // length: measured unless you type your own
+  var q = tagLengths(t);
+  var auto = q.lines ? feetInches(q.lineFt) : "";
+  var lenWrap = document.createElement("div");
+  lenWrap.className = "tag-len";
+  var chk = document.createElement("label");
+  chk.className = "check";
+  var ci = document.createElement("input"); ci.type = "checkbox"; ci.checked = t.showLen !== false;
+  chk.appendChild(ci); chk.appendChild(document.createTextNode(" Show total length"));
+  var li = document.createElement("input");
+  li.type = "text"; li.value = t.len || ""; li.placeholder = auto ? auto + " (measured)" : "Type a length";
+  li.setAttribute("aria-label", "Total length");
+  function syncLen(){ li.disabled = !ci.checked; }
+  ci.addEventListener("change", function(){ t.showLen = ci.checked; syncLen(); draw(); });
+  li.addEventListener("input", function(){ t.len = li.value.trim(); draw(); });
+  lenWrap.appendChild(chk); lenWrap.appendChild(li);
+  box.appendChild(lenWrap);
+  syncLen();
+
+  var sw = document.createElement("div"); sw.className = "swatches";
+  TAG_COLORS.forEach(function(c){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "sw" + (c.toLowerCase() === String(t.color).toLowerCase() ? " on" : "");
+    b.style.background = c; b.setAttribute("aria-label", "Colour " + c);
+    b.addEventListener("click", function(){
+      t.color = c;
+      Array.prototype.forEach.call(sw.children, function(x){ x.classList.toggle("on", x === b); });
+      h.querySelector(".ft-sw").style.background = c;
+      draw(); renderTagList();
+    });
+    sw.appendChild(b);
+  });
+  box.appendChild(sw);
+
+  var acts = document.createElement("div");
+  acts.className = "modal-actions";
+  function close(){
+    back.remove();
+    document.removeEventListener("keydown", onKey, true);
+    // one undo step for the whole edit, none if nothing changed
+    if(JSON.stringify(state.elements) !== before){
+      var now = state.elements;
+      state.elements = JSON.parse(before);
+      snapshot();
+      state.elements = now;
+    }
+    refresh();
+  }
+  function onKey(e){ if(e.key === "Escape"){ e.preventDefault(); close(); } }
+  var del = document.createElement("button");
+  del.className = "btn danger"; del.textContent = "Remove highlight";
+  del.style.marginRight = "auto";
+  del.addEventListener("click", function(){
+    state.elements.tags = state.elements.tags.filter(function(x){ return x !== t; });
+    if(state.activeTag === t.id) state.activeTag = null;
+    close();
+    toast("Highlight removed — the drawing is untouched");
+  });
+  var done = document.createElement("button");
+  done.className = "btn primary"; done.textContent = "Done";
+  done.addEventListener("click", close);
+  acts.appendChild(del); acts.appendChild(done);
+  box.appendChild(acts);
+  back.appendChild(box);
+  back.addEventListener("click", function(e){ if(e.target === back) close(); });
+  document.addEventListener("keydown", onKey, true);
+  document.body.appendChild(back);
+  setTimeout(function(){ ta.focus(); }, 30);
+}
+
+/** Highlight the selection: a new one, or add to / edit / leave one it has. */
+function highlightNew(items){
+  if(!items.length) return;
+  snapshot();
+  var t = addTag(items.map(function(s){ return {kind:s.kind, id:s.id}; }));
+  // something already highlighted moves over to the new one
+  state.elements.tags.forEach(function(o){
+    if(o === t) return;
+    o.members = o.members.filter(function(m){ return !items.some(function(s){ return s.kind===m.kind && s.id===m.id; }); });
+  });
+  pruneTags();
+  state.activeTag = t.id;
+  refresh();
+  openTagEditor(t, true);
+}
+function highlightAdd(t, items){
+  snapshot();
+  state.elements.tags.forEach(function(o){
+    if(o === t) return;
+    o.members = o.members.filter(function(m){ return !items.some(function(s){ return s.kind===m.kind && s.id===m.id; }); });
+  });
+  items.forEach(function(s){
+    if(!t.members.some(function(m){ return m.kind===s.kind && m.id===s.id; })) t.members.push({kind:s.kind, id:s.id});
+  });
+  t.off = null;                        // find it a spot beside its new shape
+  pruneTags();
+  refresh();
+  toast("Added to " + tagTitle(t));
+}
+function highlightRemove(items){
+  snapshot();
+  state.elements.tags.forEach(function(o){
+    o.members = o.members.filter(function(m){ return !items.some(function(s){ return s.kind===m.kind && s.id===m.id; }); });
+  });
+  pruneTags();
+  refresh();
+}
+/** What can be done from here, as menu entries. */
+function highlightChoices(items){
+  var owners = [];
+  items.forEach(function(s){ var o = tagOf(s.kind, s.id); if(o && owners.indexOf(o) === -1) owners.push(o); });
+  var out = [];
+  owners.forEach(function(o){ out.push({label:"Edit text", sub:tagTitle(o), color:o.color, fn:function(){ openTagEditor(o); }}); });
+  out.push({label:"New highlight", color:null, fn:function(){ highlightNew(items); }});
+  state.elements.tags.forEach(function(o){
+    var all = items.every(function(s){ return o.members.some(function(m){ return m.kind===s.kind && m.id===s.id; }); });
+    if(!all) out.push({label:"Add to", sub:tagTitle(o), color:o.color, fn:function(){ highlightAdd(o, items); }});
+  });
+  if(owners.length) out.push({label:"Remove highlight", color:null, fn:function(){ highlightRemove(items); }, danger:true});
+  return out;
 }
 
 function findEl(kind,id){
@@ -4950,11 +4896,11 @@ function hitTest(fx,fy){
   var COARSE = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
   var hr = (COARSE ? 22 : 12)/ppf;   // fingertips need more room than a cursor
 
-  // line-item badges sit above everything and can be repositioned
+  // highlight text boxes sit above everything: tap to type, drag to move
   for(var bi=state.elements.tags.length-1; bi>=0; bi--){
-    var tg = state.elements.tags[bi];
-    var an = (!tg.anchor && tg._at) ? tg._at : tagAnchor(tg);
-    if(an && dist(fx,fy,an.x,an.y) < (COARSE?18:11)/ppf) return {kind:"tag-badge", id:tg.id};
+    var tg = state.elements.tags[bi], tbx = TAG_BOX[tg.id], tpad = (COARSE ? 5 : 2)/ppf;
+    if(tbx && fx >= tbx.x0 - tpad && fx <= tbx.x1 + tpad && fy >= tbx.y0 - tpad && fy <= tbx.y1 + tpad)
+      return {kind:"tag-badge", id:tg.id};
   }
 
   var only = soleSel();
@@ -5223,6 +5169,11 @@ var MEASURE_MODES = [
 ];
 function measureMode(v){
   return MEASURE_MODES.find(function(x){ return x.v === v; }) || MEASURE_MODES[0];
+}
+/** The footer's word on measuring: nothing when everything is end to end. */
+function measureFine(){
+  var n = measureNote();
+  return n === measureMode("center").short ? "" : "   \u00b7   lengths measured " + n;
 }
 function measureLabel(){ return measureMode(state.measureFrom).short; }
 
@@ -5571,19 +5522,6 @@ function moreBox(label){
   return d;
 }
 
-/** Fence type chips, each with its colour. */
-function typeRow(container, current, firstLabel, onPick){
-  chipRow(container, "Fence type", typeChoices(firstLabel), current, onPick);
-  var chips = container.lastChild.querySelectorAll(".chip");
-  typeChoices(firstLabel).forEach(function(o, i){
-    if(o.color && chips[i]){
-      var dot = document.createElement("span");
-      dot.className = "ft-dot"; dot.style.background = o.color;
-      chips[i].insertBefore(dot, chips[i].firstChild);
-    }
-  });
-}
-
 function chipRow(container, labelText, options, current, onPick){
   var wrap = document.createElement("div");
   wrap.className = "form-field";
@@ -5714,18 +5652,15 @@ function renderSelectionPanel(){
   function recolor(v){ snapshot(); el.color = v; refresh(); }
   function del(){ snapshot(); removeElement(kind, el.id); clearSel(); refresh(); }
 
-  // if this object belongs to a line item, say so and offer a way in
+  // if this object is highlighted, say so and offer a way in
   var owner = tagOf(kind, el.id);
   if(owner){
     var banner = document.createElement("button");
     banner.type = "button";
     banner.className = "owner-chip";
-    banner.innerHTML = "<span class='item-num' style='background:"+owner.color+"'>"+tagIndex(owner)+"</span>"+
-      "<span>"+escapeHtml(owner.label||"Untitled")+"</span>";
-    banner.addEventListener("click", function(){
-      state.activeTag = owner.id;
-      renderTagPanel(); renderTagList(); draw();
-    });
+    banner.innerHTML = "<span class='ft-sw' style='background:"+owner.color+"'></span>"+
+      "<span>"+escapeHtml(tagTitle(owner))+"</span>";
+    banner.addEventListener("click", function(){ openTagEditor(owner); });
     bodyEl.appendChild(banner);
   }
 
@@ -5788,7 +5723,7 @@ function renderSelectionPanel(){
   } else if(kind==="segment"){
     titleEl.textContent = el.type==="gate"
       ? gateTypeLabel(el.gateType||"single")+" gate"
-      : (el.type==="wall" ? "Block wall" : (el.count === false ? "Line" : "Fence"));
+      : (el.type==="wall" ? "Wall" : "Line");
     lenEl.textContent = feetInches(segLenOf(el)) + (segIsNTS(el) ? " *" : "");
     var more = moreBox();
     if(el.type==="gate"){
@@ -5796,25 +5731,17 @@ function renderSelectionPanel(){
         snapshot(); el.gateType = v; refresh();
       });
     }
-    if(typable(el)){
-      var firstLabel = el.type === "gate" ? "Same as its fence" : (el.type === "wall" ? "Block wall" : "Fence");
-      typeRow(bodyEl, el.ft || "", firstLabel, function(v){ pickType([el], v); });
-    }
     lenRow(bodyEl, "Length", segMeasuredLen(el), 0.02, 800, function(v){
       snapshot(); setSegMeasuredLen(el, v); refresh();
     });
-    chipRow(bodyEl, "Measure", [{v:"", label:"Sheet"}, {v:"center", label:"Centres"}, {v:"inside", label:"Inside"}, {v:"outside", label:"Outside"}],
-      el.measureFrom || "", function(v){
+    colorRow(bodyEl, el.color, recolor);
+
+    chipRow(more.body, "Measured to", [{v:"", label:"Ends"}, {v:"inside", label:"Inside of posts"}, {v:"outside", label:"Outside of posts"}],
+      el.measureFrom === "center" ? "" : (el.measureFrom || ""), function(v){
         snapshot();
         if(v) el.measureFrom = v; else delete el.measureFrom;
         refresh();
       });
-    if(el.type === "line"){
-      checkRow(bodyEl, "Counts as fence", el.count !== false, function(v){
-        snapshot(); if(v) delete el.count; else el.count = false; refresh();
-      });
-    }
-    colorRow(bodyEl, el.color, recolor);
 
     // the rest, folded away until wanted
     lenRow(more.body, "Label it as (not to scale)", segLenOf(el), 0.02, 800, function(v){
@@ -6263,45 +6190,14 @@ function postLabel(key){
  */
 function addTagActions(actionsEl, items){
   if(!items.length) return;
-
-  var existing = state.elements.tags.filter(function(t){
-    return items.some(function(s){ return t.members.some(function(m){ return m.kind===s.kind && m.id===s.id; }); });
+  var owner = items.length === 1 ? tagOf(items[0].kind, items[0].id) : null;
+  if(owner) addAction(actionsEl, "Edit highlight text", function(){ openTagEditor(owner); });
+  addAction(actionsEl, owner ? "Highlight…" : "Highlight", function(ev){
+    var ch = highlightChoices(items);
+    // nothing to choose between: straight to a new one
+    if(ch.length === 1) ch[0].fn();
+    else openChoiceMenu(ev.currentTarget, ch);
   });
-
-  addAction(actionsEl, "Create line item", function(){
-    snapshot();
-    var t = addTag(items.map(function(s){ return {kind:s.kind, id:s.id}; }));
-    state.activeTag = t.id;
-    refresh();
-    toast("Line item "+tagIndex(t)+" created from "+items.length+" object"+(items.length>1?"s":""));
-  });
-
-  var active = state.activeTag ? findTag(state.activeTag) : null;
-  if(active){
-    var missing = items.filter(function(s){
-      return !active.members.some(function(m){ return m.kind===s.kind && m.id===s.id; });
-    });
-    if(missing.length){
-      addAction(actionsEl, "Add to item "+tagIndex(active), function(){
-        snapshot();
-        missing.forEach(function(s){ active.members.push({kind:s.kind, id:s.id}); });
-        refresh();
-        toast("Added to line item "+tagIndex(active));
-      });
-    }
-  }
-
-  if(existing.length){
-    addAction(actionsEl, "Remove from line item", function(){
-      snapshot();
-      existing.forEach(function(t){
-        t.members = t.members.filter(function(m){
-          return !items.some(function(s){ return s.kind===m.kind && s.id===m.id; });
-        });
-      });
-      refresh();
-    });
-  }
 }
 
 /** Panel shown when more than one object is selected. */
@@ -6311,14 +6207,14 @@ function renderMultiSelection(titleEl, lenEl, bodyEl, actionsEl){
   var linear = 0;
   items.forEach(function(s){
     var label = s.kind==="segment"
-      ? (s.el.type==="gate" ? "gate" : s.el.type==="wall" ? "block wall" : "fence line")
-      : (s.kind==="structure" ? (s.el.hatch===false ? "shape" : "structure")
-      : (s.kind==="dim" ? "tape measure" : s.kind));
+      ? (s.el.type==="gate" ? "gate" : s.el.type==="arrow" ? "arrow" : "line")
+      : (s.kind==="structure" ? (isPostShape(s.el) ? "post" : "shape")
+      : (s.kind==="dim" ? "tape measure" : s.kind==="note" ? "text" : s.kind));
     counts[label] = (counts[label]||0)+1;
-    if(s.kind==="segment") linear += segLenOf(s.el);
+    if(s.kind==="segment" && s.el.type !== "arrow") linear += segLenOf(s.el);
   });
 
-  titleEl.textContent = items.length + " objects selected";
+  titleEl.textContent = items.length + " selected";
   lenEl.textContent = linear > 0 ? feetInches(linear)+" total" : "";
 
   var summary = document.createElement("div");
@@ -6327,12 +6223,6 @@ function renderMultiSelection(titleEl, lenEl, bodyEl, actionsEl){
     return counts[k]+" "+k+(counts[k]>1 && k.slice(-1)!=="s" ? "s" : "");
   }).join(" · ");
   bodyEl.appendChild(summary);
-
-  var tsegs = selTypableSegs();
-  if(tsegs.length){
-    var cur = tsegs.every(function(s){ return (s.ft || "") === (tsegs[0].ft || ""); }) ? (tsegs[0].ft || "") : null;
-    typeRow(bodyEl, cur, "Fence", function(v){ pickType(tsegs, v); });
-  }
 
   colorRow(bodyEl, null, function(v){
     snapshot();
@@ -6352,179 +6242,42 @@ function renderMultiSelection(titleEl, lenEl, bodyEl, actionsEl){
   }, true);
 }
 
-/* ---------------- Line item list + editor ---------------- */
+/* ---------------- Highlights list ---------------- */
 
 function renderTagList(){
-  var card = document.getElementById("card-items");
   var list = document.getElementById("item-list");
-  var totalEl = document.getElementById("item-total");
+  if(!list) return;
   list.innerHTML = "";
-
   if(!state.elements.tags.length){
-    card.classList.add("empty");
     var hint = document.createElement("div");
-    hint.style.cssText = "font-size:11.5px;color:var(--ink-dim);line-height:1.5;";
-    hint.textContent = "Select the runs to price, then tap Line item.";
+    hint.className = "mini-note";
+    hint.style.lineHeight = "1.5";
+    hint.textContent = "Select anything on the sketch and tap Highlight to describe it — material, details, price. The text box sits on the sketch next to it.";
     list.appendChild(hint);
-    totalEl.textContent = money(0);
     return;
   }
-  card.classList.remove("empty");
-
-  function groupHead(text){
-    var h = document.createElement("div");
-    h.style.cssText = "font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);margin-top:4px;";
-    h.textContent = text;
-    list.appendChild(h);
-  }
-  function addRow(t){
-    var i = state.elements.tags.indexOf(t);
+  state.elements.tags.forEach(function(t){
     var row = document.createElement("button");
     row.type = "button";
-    row.className = "item-row" + (state.activeTag===t.id ? " on" : "");
-    row.innerHTML =
-      "<span class='item-num' style='background:"+t.color+"'>"+(i+1)+"</span>"+
-      "<span class='item-main'><span class='item-name'>"+escapeHtml(t.label||"Untitled")+"</span>"+
-      "<span class='item-qty'>"+escapeHtml(tagLineText(t))+"</span></span>"+
-      "<span class='item-price mono'>"+escapeHtml(money(tagTotal(t)))+"</span>";
+    row.className = "ft-row" + (state.activeTag === t.id ? " on" : "");
+    var sub = tagLenText(t);
+    var rest = String(t.text || "").split("\n").map(function(x){ return x.trim(); }).filter(Boolean).slice(1).join(" · ");
+    row.innerHTML = "<span class='ft-sw' style='background:" + t.color + "'></span>" +
+      "<span class='ft-main'><span class='ft-name'>" + escapeHtml(tagTitle(t)) + "</span>" +
+      ((rest || sub) ? "<span class='ft-sub'>" + escapeHtml([rest, sub].filter(Boolean).join(" · ")) + "</span>" : "") +
+      "</span>";
     row.addEventListener("click", function(){
-      state.activeTag = (state.activeTag===t.id) ? null : t.id;
-      if(state.activeTag) setSel(t.members.slice());
-      else clearSel();
-      renderSelection(); renderTagPanel(); renderTagList(); draw();
+      state.activeTag = t.id;
+      setSel(t.members.slice());
+      refresh();
+      openTagEditor(t);
     });
     list.appendChild(row);
-  }
-
-  var inc = includedTags(), opt = optionTags();
-  if(inc.length && opt.length) groupHead("In the job");
-  inc.forEach(addRow);
-  if(opt.length){
-    groupHead(opt.length > 1 ? "Options \u2014 choose one" : "Option");
-    opt.forEach(addRow);
-  }
-
-  // with nothing included there is no job total to show, only alternates
-  var foot = totalEl.closest(".total-row");
-  if(hasTotal()){
-    if(foot) foot.hidden = false;
-    totalEl.textContent = money(tagsTotal());
-  } else if(foot){
-    foot.hidden = true;
-  }
-}
-
-function renderTagPanel(){
-  var card = document.getElementById("card-item-edit");
-  var body = document.getElementById("item-edit-body");
-  var titleEl = document.getElementById("item-edit-title");
-  body.innerHTML = "";
-
-  var t = state.activeTag ? findTag(state.activeTag) : null;
-  if(!t){ card.hidden = true; return; }
-  card.hidden = false;
-  titleEl.textContent = "Line item " + tagIndex(t);
-
-  textRow(body, "Name", t.label, function(v){ t.label = v; saveLocal(); draw(); renderTagList(); });
-  // what it's built as comes from the fence type on its runs
-  var specNote = document.createElement("div");
-  specNote.className = "mini-note";
-  var sp = tagSpecText(t), q = tagQtyText(t);
-  specNote.textContent = (sp ? sp : "Fence type not set on its lines") + (q ? " \u00b7 " + q : "");
-  body.appendChild(specNote);
-
-  chipRow(body, "", [{v:"option", label:"Option"}, {v:"included", label:"In the total"}],
-    tagIsOption(t) ? "option" : "included", function(v){ snapshot(); t.option = (v === "option"); refresh(); });
-  chipRow(body, "", [{v:"lump",label:"Lump sum"},{v:"perft",label:"Per foot"}], t.rateMode, function(v){
-    snapshot(); t.rateMode = v; refresh();
   });
-
-  var priceWrap = document.createElement("div");
-  priceWrap.className = "form-field";
-  var priceLab = document.createElement("label");
-  priceLab.textContent = t.rateMode==="perft" ? "Rate ($ per linear foot)" : "Price ($)";
-  var pIn = document.createElement("input");
-  pIn.type = "text";
-  pIn.value = t.price ? String(t.price) : "";
-  pIn.placeholder = "0.00";
-  pIn.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 9px;width:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;";
-  pIn.addEventListener("input", function(){
-    t.price = parseFloat(String(pIn.value).replace(/[^0-9.\-]/g,"")) || 0;
-    saveLocal(); draw(); renderTagList();
-    computed.textContent = computedText();
-  });
-  priceWrap.appendChild(priceLab); priceWrap.appendChild(pIn);
-  body.appendChild(priceWrap);
-
-  function computedText(){
-    var q = tagQty(t);
-    if(t.rateMode==="perft"){
-      return feetInches(q.linearFt)+" × "+money(t.price)+"/ft  =  "+money(tagTotal(t));
-    }
-    return "Item total " + money(tagTotal(t));
-  }
-  var computed = document.createElement("div");
-  computed.style.cssText = "font-size:11.5px;color:var(--ink-dim);font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;";
-  computed.textContent = computedText();
-  body.appendChild(computed);
-
-  var qty = document.createElement("div");
-  qty.style.cssText = "font-size:11.5px;color:var(--ink-dim);";
-  qty.textContent = tagQtyText(t) || "No fence or gates in this item yet";
-  body.appendChild(qty);
-
-  var noteWrap = document.createElement("div");
-  noteWrap.className = "form-field";
-  var noteLab = document.createElement("label");
-  noteLab.textContent = "Note";
-  var ta = document.createElement("textarea");
-  ta.value = t.note || "";
-  ta.placeholder = "Cap style, colour, exclusions\u2026";
-  ta.style.cssText = "border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 9px;width:100%;min-height:44px;resize:vertical;";
-  ta.addEventListener("input", function(){ t.note = ta.value; saveLocal(); });
-  noteWrap.appendChild(noteLab); noteWrap.appendChild(ta);
-  body.appendChild(noteWrap);
-
-  colorRow(body, t.color, function(v){
-    snapshot(); t.color = v || TAG_COLORS[0]; refresh();
-  }, true);
-
-  var acts = document.createElement("div");
-  acts.className = "sel-actions";
-  addAction(acts, "Select its objects", function(){
-    setSel(t.members.slice());
-    renderSelection(); draw();
-  });
-  addAction(acts, "Reset badge position", function(){
-    snapshot(); t.anchor = null; refresh();
-  });
-  addAction(acts, "Delete item", function(){
-    snapshot();
-    state.elements.tags = state.elements.tags.filter(function(x){ return x.id!==t.id; });
-    state.activeTag = null;
-    refresh();
-  }, true);
-  body.appendChild(acts);
 }
 
 function renderSummary(){
   if(state.project.sign && (state.project.sign.client || state.project.sign.contractor)) renderSigns();
-  var t = totals();
-  document.getElementById("stat-fence").textContent = feetInches(t.fence);
-  document.getElementById("stat-wall").textContent = feetInches(t.wall);
-  document.getElementById("stat-gates").textContent = t.gates.length;
-
-  var gl = document.getElementById("gate-list");
-  gl.innerHTML = "";
-  function addRow(left, right){
-    var row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = "<span>"+escapeHtml(left)+"</span><span class='mono'>"+escapeHtml(right)+"</span>";
-    gl.appendChild(row);
-  }
-  t.gates.forEach(function(g,i){
-    addRow("Gate "+(i+1)+" · "+gateTypeLabel(g.type).toLowerCase(), feetInches(g.len));
-  });
 }
 
 function escapeHtml(s){
@@ -6542,98 +6295,56 @@ function refresh(){
   pruneTags();
   markSelection();
   renderSelection();
-  renderTypeList();
   renderTagList();
-  renderTagPanel();
   renderSummary();
   saveLocal();
   draw();
 }
 
-/* ---------------- Fence types card ---------------- */
-function renderTypeList(){
-  var list = document.getElementById("type-list");
-  if(!list) return;
-  list.innerHTML = "";
-  var groups = materialGroups(true);
-  if(!ftypes().length){
-    var hint = document.createElement("div");
-    hint.className = "mini-note";
-    hint.style.lineHeight = "1.5";
-    hint.textContent = "Add each fence on the job \u2014 6' Horizontal wood, 4' Wrought iron \u2014 then pick one for its lines. Lines without one print as \u201cFence\u201d.";
-    list.appendChild(hint);
-  }
-  groups.forEach(function(g){
-    if(!g.t && !ftypes().length) return;
-    var row = document.createElement(g.t ? "button" : "div");
-    if(g.t) row.type = "button";
-    row.className = "ft-row";
-    var sub = g.t ? ftSub(g.t) : (g.key === "_wall" ? "" : "No fence type set");
-    if(g.gates.length) sub = [sub, g.gates.length + " gate" + (g.gates.length > 1 ? "s" : "")].filter(Boolean).join(" \u00b7 ");
-    row.innerHTML = "<span class='ft-sw' style='" + (g.color ? "background:" + g.color : "border:1.5px dashed var(--line-strong)") + "'></span>" +
-      "<span class='ft-main'><span class='ft-name'>" + escapeHtml(g.name) + "</span>" +
-      (sub ? "<span class='ft-sub'>" + escapeHtml(sub) + "</span>" : "") + "</span>" +
-      "<span class='ft-len mono'>" + escapeHtml(feetInches(g.len)) + "</span>";
-    if(g.t) row.addEventListener("click", function(){ openTypeEditor(g.t); });
-    list.appendChild(row);
-  });
-}
-document.getElementById("btn-add-type").addEventListener("click", function(){
-  var segs = selTypableSegs();
-  openTypeEditor(null, function(t){
-    if(segs.length) applyFtype(segs, t.id);
-    else { state.lineFt = t.id; saveLocal(); }
-  });
-});
-
 /* ========================= Quick bar =========================
    The few things you do to a selection over and over — fix its size,
-   copy it, turn it, put it on a line item, bin it — sit in one strip over
-   the drawing, so a phone never has to open the panel for them. */
+   copy it, turn it, highlight it, bin it — sit in one strip over the
+   drawing, so a phone never has to open the panel for them. */
 var QB_ICONS = {
   dup:'<path d="M9 9h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1Z"/><path d="M16 9V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
   rot:'<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v5h-5"/>',
   flip:'<path d="M12 3v18"/><path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/>',
-  item:'<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9Z"/><circle cx="7.5" cy="7.5" r="1.4"/>',
+  hl:'<path d="m9 15 6.5-6.5a2.1 2.1 0 0 0-3-3L6 12l-1 4Z"/><path d="M4 20h16"/>',
   del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
-  edit:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
-  type:'<rect x="4.5" y="4.5" width="15" height="15" rx="4"/>'
+  edit:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'
 };
-function closeTypeMenu(){
+function closeChoiceMenu(){
   var m = document.getElementById("qb-menu");
   if(m) m.remove();
-  document.removeEventListener("pointerdown", typeMenuOutside, true);
+  document.removeEventListener("pointerdown", choiceMenuOutside, true);
 }
-function typeMenuOutside(e){
+function choiceMenuOutside(e){
   var m = document.getElementById("qb-menu");
-  if(m && !m.contains(e.target) && !(e.target.closest && e.target.closest(".qb-type"))) closeTypeMenu();
+  if(m && !m.contains(e.target) && !(e.target.closest && e.target.closest(".qb-opens"))) closeChoiceMenu();
 }
-/** The quick bar's fence type list: none, each type, or a new one. */
-function openTypeMenu(anchor, segs){
-  if(document.getElementById("qb-menu")){ closeTypeMenu(); return; }
+/** A short list of choices under (or over) the button that asked. */
+function openChoiceMenu(anchor, choices){
+  if(document.getElementById("qb-menu")){ closeChoiceMenu(); return; }
   var m = document.createElement("div");
   m.className = "qb-menu"; m.id = "qb-menu";
-  var same = segs.every(function(s){ return (s.ft || "") === (segs[0].ft || ""); });
-  var curId = same ? (segs[0].ft || "") : null;
-  var first = segs.every(function(s){ return s.type === "gate"; }) ? "Same as its fence"
-            : (segs.every(function(s){ return s.type === "wall"; }) ? "Block wall" : "Fence (no type)");
-  typeChoices(first).forEach(function(o){
+  choices.forEach(function(o){
     var b = document.createElement("button");
     b.type = "button";
-    b.className = "qb-mi" + (o.v === curId ? " on" : "");
-    var swStyle = o.color ? "background:" + o.color : (o.v === "__new" ? "visibility:hidden" : "border:1.5px dashed var(--line-strong)");
-    b.innerHTML = "<span class='ft-sw' style='" + swStyle + "'></span><span>" + escapeHtml(o.label) + "</span>";
-    b.addEventListener("click", function(ev){ ev.stopPropagation(); closeTypeMenu(); pickType(segs, o.v); });
+    b.className = "qb-mi" + (o.danger ? " danger" : "");
+    var swStyle = o.color ? "background:" + o.color : "visibility:hidden";
+    b.innerHTML = "<span class='ft-sw' style='" + swStyle + "'></span><span class='qb-mt'><span>" + escapeHtml(o.label) + "</span>" +
+      (o.sub ? "<small>" + escapeHtml(o.sub) + "</small>" : "") + "</span>";
+    b.addEventListener("click", function(ev){ ev.stopPropagation(); closeChoiceMenu(); o.fn(); });
     m.appendChild(b);
   });
-  var wrap = document.querySelector(".canvas-wrap");
-  wrap.appendChild(m);
-  var wr = wrap.getBoundingClientRect(), ar = anchor.getBoundingClientRect(), bar = document.getElementById("quickbar").getBoundingClientRect();
-  var left = ar.left + ar.width/2 - wr.left - m.offsetWidth/2;
-  left = Math.max(6, Math.min(wr.width - m.offsetWidth - 6, left));
-  m.style.left = left + "px";
-  m.style.top = (bar.bottom - wr.top + 6) + "px";
-  setTimeout(function(){ document.addEventListener("pointerdown", typeMenuOutside, true); }, 0);
+  document.body.appendChild(m);
+  anchor.classList.add("qb-opens");
+  var ar = anchor.getBoundingClientRect();
+  var left = Math.max(6, Math.min(innerWidth - m.offsetWidth - 6, ar.left + ar.width/2 - m.offsetWidth/2));
+  var top = ar.bottom + 6;
+  if(top + m.offsetHeight > innerHeight - 6) top = Math.max(6, ar.top - 6 - m.offsetHeight);
+  m.style.left = left + "px"; m.style.top = top + "px";
+  setTimeout(function(){ document.addEventListener("pointerdown", choiceMenuOutside, true); }, 0);
 }
 function qbButton(bar, icon, label, fn, cls){
   var b = document.createElement("button");
@@ -6707,22 +6418,10 @@ function quickValue(){
   }
   return null;
 }
-/** Bring up a line item's own card — price, height, material. */
-function openItem(t){
-  state.activeTag = t.id;
-  renderTagPanel(); renderTagList(); markSelection(); draw();
-  var card = document.getElementById("card-item-edit");
-  if(isCompact()){
-    openSheet(false);
-    setTimeout(function(){ if(card && !card.hidden) panelEl.scrollTop = Math.max(0, card.offsetTop - 52); }, 30);
-  } else if(card && card.scrollIntoView){
-    card.scrollIntoView({block:"nearest", behavior:"smooth"});
-  }
-}
 function renderQuickBar(){
   var bar = document.getElementById("quickbar");
   if(!bar) return;
-  closeTypeMenu();
+  closeChoiceMenu();
   bar.innerHTML = "";
   var show = state.sel.length && state.tool === "select";
   bar.hidden = !show;
@@ -6757,7 +6456,7 @@ function renderQuickBar(){
         if(done) return; done = true;
         if(save && (qv.allowEmpty || inp.value.trim()) && inp.value.trim() !== qv.edit){
           if(qv.apply(inp.value)) { refresh(); return; }
-          toast("Couldn't read that size \u2014 try 24' 6\" or 12 x 10");
+          toast("Couldn't read that size — try 24' 6\" or 12 x 10");
         }
         renderQuickBar();
       }
@@ -6773,16 +6472,15 @@ function renderQuickBar(){
     bar.appendChild(val);
   }
 
-  // fence type for the selected runs
-  var tsegs = selTypableSegs();
-  if(tsegs.length){
-    var tsame = tsegs.every(function(x){ return segFtype(x) === segFtype(tsegs[0]); });
-    var tcur = tsame ? segFtype(tsegs[0]) : null;
-    var tb = qbButton(bar, "type", "Type", function(){ openTypeMenu(tb, tsegs); }, "qb-type");
-    var tsvg = tb.querySelector("svg");
-    if(tcur){ tsvg.style.fill = tcur.color; tsvg.style.stroke = tcur.color; tb.title = ftName(tcur); }
-    else { tsvg.style.strokeDasharray = "3 2.5"; tb.title = "Fence type"; }
-  }
+  // highlight: straight to a new one when that's the only choice
+  var items = state.sel.slice();
+  var hb = qbButton(bar, "hl", "Highlight", function(){
+    var ch = highlightChoices(items);
+    if(ch.length === 1) ch[0].fn();
+    else openChoiceMenu(hb, ch);
+  }, "qb-hl");
+  var own = items.length === 1 ? tagOf(items[0].kind, items[0].id) : null;
+  if(own){ hb.querySelector("svg").style.color = own.color; hb.title = tagTitle(own); }
 
   var dup = qbAct("Duplicate");
   if(dup) qbButton(bar, "dup", "Copy", dup.fn);
@@ -6790,13 +6488,6 @@ function renderQuickBar(){
   if(turn) qbButton(bar, "rot", "Rotate", turn.fn);
   var flip = qbAct(function(l){ return /^Flip (swing|slide|side|direction)/.test(l); });
   if(flip) qbButton(bar, "flip", "Flip", flip.fn);
-  // line item: add to the one being built, open the one it's already on,
-  // or start a new one
-  var add = qbAct(function(l){ return /^Add to item/.test(l); });
-  var owner = state.sel.length === 1 ? tagOf(state.sel[0].kind, state.sel[0].id) : null;
-  if(add) qbButton(bar, "item", "+ " + add.label.replace("Add to item", "Item"), add.fn);
-  else if(owner) qbButton(bar, "item", "Item " + tagIndex(owner), function(){ openItem(owner); });
-  else { var mk = qbAct("Create line item"); if(mk) qbButton(bar, "item", "New item", mk.fn); }
   var del = qbAct(function(l){ return /^Delete/.test(l); });
   if(del) qbButton(bar, "del", "Delete", del.fn, "danger");
   qbButton(bar, "edit", "Edit", function(){ openSheet(true); }, "qb-edit");
@@ -6841,7 +6532,7 @@ function setTool(tool){
 /* Only show the settings that belong to the tool in hand. */
 var OPT_FOR = {
   select:["always"],
-  line:  ["ltype","color","line","always"],
+  line:  ["color","line","always"],
   arrow: ["color","always"],
   wall:  ["color","wall","always"],
   gate:  ["color","gate","always"],
@@ -6853,7 +6544,7 @@ var OPT_FOR = {
   rotate:["always"],
   shape: ["color","shape","always"],
   tape:  ["color","always"],
-  curve: ["ltype","color","line","always"]
+  curve: ["color","line","always"]
 };
 function updateOptBar(){
   var want = OPT_FOR[state.tool] || ["always"];
@@ -6953,7 +6644,7 @@ function placePhoto(img, file){
   }
 })();
 
-var KEYMAP = {v:"select", l:"line", f:"line", g:"gate", a:"arrow", t:"tree", d:"detail", r:"rotate", n:"note", x:"note", e:"eraser", s:"shape", m:"tape", u:"curve"};
+var KEYMAP = {v:"select", l:"line", g:"gate", a:"arrow", t:"note", n:"note", x:"note", s:"shape", m:"tape", u:"curve"};
 
 window.addEventListener("keydown", function(e){
   if(!modal.hidden) return;
@@ -7152,9 +6843,10 @@ canvas.addEventListener("pointerdown", function(e){
     snapshot();
     var tagHit = findTag(hit.id);
     state.activeTag = hit.id;
-    if(tagHit) setSel(tagHit.members.slice());   // clicking a badge grabs its objects
-    dragging = {kind:"tag-badge", id:hit.id};
-    renderTagPanel(); renderTagList();
+    var tbb = tagHit && TAG_BOX[tagHit.id];
+    dragging = {kind:"tag-badge", id:hit.id, sx:f.x, sy:f.y, moved:false,
+                gx: tbb ? f.x - tbb.x0 : 0, gy: tbb ? f.y - tbb.y0 : 0};
+    renderTagList();
   } else {
     // a real element: shift toggles, a plain click on an unselected item
     // replaces the selection, and a click inside an existing selection
@@ -7439,7 +7131,15 @@ canvas.addEventListener("pointermove", function(e){
       break;
     case "tag-badge":
       var tg = findTag(dragging.id);
-      if(tg) tg.anchor = {x:snapVal(f.x), y:snapVal(f.y)};
+      if(tg){
+        if(Math.hypot(f.x - dragging.sx, f.y - dragging.sy)*state.pxPerFoot > 5) dragging.moved = true;
+        var twb = dragging.moved && tagBounds(tg), tcur = TAG_BOX[tg.id];
+        // stored relative to its objects, so it travels with them
+        if(twb && tcur){
+          var nx0 = f.x - dragging.gx, ny0 = f.y - dragging.gy;
+          tg.off = tagOffFor({x0:nx0, y0:ny0, x1:nx0 + (tcur.x1-tcur.x0), y1:ny0 + (tcur.y1-tcur.y0)}, twb);
+        }
+      }
       break;
     case "dim-move":
       el = findEl("dim", dragging.id);
@@ -7727,6 +7427,15 @@ function resizePostEdge(p, which, px, py){
 
 function endDrag(e){
   if(!dragging) return;
+  // a tap on a highlight's box opens it to type in
+  if(dragging.kind === "tag-badge" && !dragging.moved){
+    var tgE = findTag(dragging.id);
+    dragging = null;
+    forgetIfUnchanged();
+    refresh();
+    if(tgE) openTagEditor(tgE);
+    return;
+  }
   var wasTap = dragging.kind === "group" && dragging.items && dragging.items.length
             && !dragging.moved;
   if(wasTap && dragging.cycle){
@@ -7978,7 +7687,6 @@ function buildPresets(){
       b.addEventListener("click", function(){ state.lineStyle = o.v; setTool(o.v); });
       ls.appendChild(b);
     });
-    document.getElementById("chk-linecount").checked = state.lineCounts !== false;
   }
   var tp = document.getElementById("tree-presets");
   tp.innerHTML = "";
@@ -8033,29 +7741,6 @@ function buildPresets(){
   plEl.hidden = !isPostKind;
   if(document.activeElement !== plEl) plEl.value = state.postLabel || "";
 
-  // fence type for new lines
-  var lt = document.getElementById("line-types");
-  if(lt){
-    lt.innerHTML = "";
-    if(state.lineFt && !findFtype(state.lineFt)) state.lineFt = "";
-    typeChoices("Fence").forEach(function(o){
-      var b = document.createElement("button");
-      b.className = "chip" + ((state.lineFt || "") === o.v ? " on" : "");
-      if(o.color){
-        var dot = document.createElement("span"); dot.className = "ft-dot"; dot.style.background = o.color;
-        b.appendChild(dot);
-      }
-      b.appendChild(document.createTextNode(o.label));
-      b.addEventListener("click", function(){
-        if(o.v === "__new"){
-          openTypeEditor(null, function(t){ state.lineFt = t.id; saveLocal(); buildPresets(); });
-          return;
-        }
-        state.lineFt = o.v; saveLocal(); buildPresets();
-      });
-      lt.appendChild(b);
-    });
-  }
 }
 document.getElementById("in-postlabel").addEventListener("input", function(e){
   state.postLabel = e.target.value.trim(); saveLocal();
@@ -8077,10 +7762,6 @@ document.getElementById("in-shapeh").addEventListener("change", function(e){
   e.target.value = lenText(state.shapeHFt);
   saveLocal();
 });
-document.getElementById("chk-linecount").addEventListener("change", function(e){
-  state.lineCounts = e.target.checked; saveLocal();
-  toast(e.target.checked ? "New lines count as fence" : "New lines are plain lines \u2014 not in the footage");
-});
 /* round toggles in the canvas corner */
 function bindToggle(id, get, set){
   var b = document.getElementById(id);
@@ -8101,9 +7782,6 @@ document.getElementById("in-wallthick").addEventListener("change", function(e){
   state.wallThickIn = Math.max(1, Math.min(48, v));
   e.target.value = inchText(state.wallThickIn, false);
   saveLocal();
-});
-document.getElementById("chk-prices").addEventListener("change", function(e){
-  state.showPrices = e.target.checked; saveLocal(); draw();
 });
 document.getElementById("sel-measure").addEventListener("change", function(e){
   state.measureFrom = e.target.value;
@@ -8272,9 +7950,9 @@ var FOLD_KEY = "fence-layout-board.folds";
 function initFolds(){
   var saved = null;
   try{ saved = JSON.parse(localStorage.getItem(FOLD_KEY) || "null"); }catch(e){}
-  var compactDefault = { "card-pay":1, "card-sign":1, "card-summary":1 };
+  var compactDefault = { "card-sign":1 };
   var compactNow = window.matchMedia("(max-width:800px), (pointer:coarse) and (max-width:1200px)").matches;
-  ["card-types","card-items","card-pay","card-sign","card-summary","card-sheet"].forEach(function(id){
+  ["card-items","card-pay","card-sign","card-sheet"].forEach(function(id){
     var card = document.getElementById(id);
     if(!card) return;
     var h = card.querySelector(":scope > h2");
@@ -8424,8 +8102,7 @@ document.getElementById("btn-new").addEventListener("click", function(){
   }).then(function(ok){
     if(!ok) return;
     history = [];
-    state.elements = {segments:[],posts:[],trees:[],notes:[],structures:[],dims:[],tags:[],ftypes:[]};
-    state.lineFt = "";
+    state.elements = {segments:[],posts:[],trees:[],notes:[],structures:[],dims:[],tags:[]};
     clearSel(); state.activeTag = null;
     var keep = state.project;
     state.project = {client:"",address:"",date:todayISO(),fenceType:"",notes:"",
@@ -8625,7 +8302,11 @@ window.__fenceSketch = {
   setTool: function(t){ setTool(t); },
   // read-only views for the test scripts
   snapshot: function(){ return JSON.parse(JSON.stringify(stateSnapshot())); },
-  segTypeName: function(id){ var t = segFtype(findEl("segment", id)); return t ? ftName(t) : ""; }
+  // a highlight box's spot on the canvas, in canvas pixels
+  tagBox: function(id){
+    var b = TAG_BOX[id], f = state.pxPerFoot;
+    return b ? {x0: state.pan.x + b.x0*f, y0: state.pan.y + b.y0*f, x1: state.pan.x + b.x1*f, y1: state.pan.y + b.y1*f} : null;
+  }
 };
 
 /* ---------- payment ---------- */
@@ -8924,12 +8605,25 @@ function contentBounds(ppf, k){
     add(n.x, n.y - ft(lines.length*7 + 6));
     add(n.x + ft(12) + longest*ftPerChar, n.y + ft(lines.length*7 + 6));
   });
-  (PRINT_MODE === "install" ? [] : state.elements.tags).forEach(function(t){
-    var a = tagAnchor(t);
-    if(!a) return;
-    var label = (t.label||"") + (state.showPrices ? "  "+money(tagTotal(t)) : "");
-    add(a.x - ft(11), a.y - ft(11));
-    add(a.x + ft(24) + label.length*ftPerChar*0.8, a.y + ft(11));
+  // highlight text boxes: they sit to the right of their objects unless moved
+  state.elements.tags.forEach(function(t){
+    var tb = tagBounds(t);
+    if(!tb) return;
+    var lines = String(t.text || "").split("\n").filter(function(x){ return x.trim(); });
+    if(PRINT_MODE === "install") lines = lines.filter(function(x){ return !isPriceLine(x); });
+    var ll = tagLenText(t);
+    if(ll) lines.push(ll);
+    if(!lines.length) return;
+    var perLine = 40, n = 0, longest = 0;
+    lines.forEach(function(x){ n += Math.max(1, Math.ceil(x.length/perLine)); longest = Math.max(longest, Math.min(perLine, x.length)); });
+    var bw = ft(Math.min(150, longest*7.2*0.52 + 14)), bh = ft(n*7.2*1.28 + 8);
+    var cx = (tb.x0+tb.x1)/2, cy = (tb.y0+tb.y1)/2;
+    if(t.off){
+      var ax = t.off.ax == null ? 0 : t.off.ax, ay = t.off.ay == null ? 0 : t.off.ay;
+      var ox = cx + t.off.x, oy = cy + t.off.y;
+      add(ox - ax*bw*1.1, oy - ay*bh*1.1); add(ox + (1-ax)*bw*1.1, oy + (1-ay)*bh*1.1);
+    }
+    else { add(tb.x1 + ft(10) + bw, cy - bh/2); add(tb.x1, cy + bh/2); }
   });
 
   if(!any) return {x0:0, y0:0, x1:state.areaFeetW, y1:state.areaFeetH};
@@ -8970,94 +8664,6 @@ function buildPrintCanvas(bounds, ppf){
   document.getElementById("btn-export-install").addEventListener("click", function(){ exportPDF("install"); });
 })();
 
-/** Height the line-item table will occupy, used to lay out the page. */
-function measureItemTable(rows){
-  var h = 15;
-  rows.forEach(function(t){
-    var a = 14;
-    if(t.note) a += 16;
-    else if(state.showPrices && t.rateMode === "perft") a += 6;
-    h += a;
-  });
-  if(state.showPrices) h += 12;
-  return h;
-}
-
-/**
- * Draw the priced line-item schedule. Returns the y of the last row so the
- * caller can lay out whatever follows.
- */
-function drawItemTable(doc, x, y, w, rows, startIndex){
-  var colNum = x + 2;
-  var colName = x + 26;
-  var colQty = x + 210;
-  var colPrice = x + w - 4;
-
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(8.5);
-  doc.setTextColor(90);
-  doc.text("#", colNum, y);
-  doc.text("LINE ITEM", colName, y);
-  doc.text("QUANTITY", colQty, y);
-  if(state.showPrices) doc.text("AMOUNT", colPrice, y, {align:"right"});
-  doc.setTextColor(0);
-  doc.setDrawColor(200); doc.setLineWidth(0.5);
-  doc.line(x, y+3, x+w, y+3);
-
-  var ry = y + 15;
-  rows.forEach(function(t, i){
-    var idx = startIndex + i + 1;
-    doc.setFont("helvetica","bold"); doc.setFontSize(9);
-    doc.text(String(idx), colNum, ry);
-    doc.text(String(t.label||"Untitled"), colName, ry, {maxWidth:175});
-
-    if(tagIsOption(t)){
-      doc.setFont("helvetica","italic"); doc.setFontSize(7.5);
-      doc.setTextColor(120);
-      doc.text("OPTION", colName + 178, ry);
-      doc.setTextColor(0);
-    }
-    doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
-    doc.text(tagLineText(t), colQty, ry, {maxWidth: (colPrice-colQty) - (state.showPrices?70:0)});
-
-    if(state.showPrices){
-      doc.setFont("helvetica","bold"); doc.setFontSize(9);
-      doc.text(money(tagTotal(t)), colPrice, ry, {align:"right"});
-      if(t.rateMode === "perft"){
-        doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
-        doc.setTextColor(120);
-        doc.text(money(t.price)+"/ft", colPrice, ry+8, {align:"right"});
-        doc.setTextColor(0);
-      }
-    }
-
-    var advance = 14;
-    if(t.note){
-      doc.setFont("helvetica","italic"); doc.setFontSize(7.5);
-      doc.setTextColor(105);
-      var noteLines = doc.splitTextToSize(t.note, 300);
-      doc.text(noteLines.slice(0,2), colName, ry+8);
-      doc.setTextColor(0);
-      advance += Math.min(noteLines.length,2) * 8;
-    } else if(state.showPrices && t.rateMode === "perft"){
-      advance += 6;
-    }
-
-    ry += advance;
-    doc.setDrawColor(232);
-    doc.line(x, ry-7, x+w, ry-7);
-  });
-
-  if(state.showPrices && includedTags().length){
-    doc.setDrawColor(140); doc.setLineWidth(0.7);
-    doc.line(x+w-190, ry-4, x+w, ry-4);
-    doc.setFont("helvetica","bold"); doc.setFontSize(10);
-    doc.text("TOTAL", x+w-190, ry+9);
-    doc.text(money(tagsTotal()), colPrice, ry+9, {align:"right"});
-    ry += 12;
-  }
-  return ry;
-}
 
 /* The terms carried over from the paper proposal, kept on their own page
    so the sketch stays a sketch. Wording follows the printed contract. */
@@ -9204,7 +8810,7 @@ function buildInstallPDF(){
   var FOOT = 11;                                 // fine print under the strip
   // whichever way up lets the sketch print larger
   function layout(land){
-    var L = {land:land, PW: land ? 792 : 612, PH: land ? 612 : 792, STRIP: land ? 158 : 228};
+    var L = {land:land, PW: land ? 792 : 612, PH: land ? 612 : 792, STRIP: land ? 118 : 140};
     L.stripTop = L.PH - M - FOOT - L.STRIP;
     L.boxX = M; L.boxY = M + HB + 6; L.boxW = L.PW - M*2; L.boxH = L.stripTop - 6 - L.boxY;
     L.fit = planFit(L.boxW, L.boxH);
@@ -9274,15 +8880,14 @@ function buildInstallPDF(){
 
   /* ---------------- the crew's strip ---------------- */
   var IR = installRuns();
-  var cols = [
-    {head:"MATERIALS",  w: landscape ? 0.46 : 1},
-    {head:"GATES",      w: landscape ? 0.24 : 0.45},
-    {head:"CREW NOTES", w: landscape ? 0.30 : 0.55}
-  ];
-  var rows = landscape ? [[0,1,2]] : [[0],[1,2]];
+  // what's being built is in the highlight boxes on the sketch; the strip
+  // carries the gates, the crew's notes and the sign-off
+  var cols = IR.gates.length
+    ? [{head:"GATES", w:0.36}, {head:"CREW NOTES", w:0.64}]
+    : [{head:"CREW NOTES", w:1}];
+  var rows = [cols.map(function(c0, i){ return i; })];
+  var rowFr = [1];
   var SW = PW - M*2, PAD = 8, HEADH = 14;
-  // portrait: the materials list gets the larger share
-  var rowFr = landscape ? [1] : [0.56, 0.44];
 
   // the strip's own frame
   doc.setDrawColor.apply(doc, NAVY); doc.setLineWidth(1.1);
@@ -9335,76 +8940,24 @@ function buildInstallPDF(){
     col.fill(api);
   }
 
-  function rgb(hex){ var c = parseColor(hex) || [150,150,150]; return [c[0], c[1], c[2]]; }
-
-  // 1. materials: each fence type, keyed to its highlight, with its footage
-  cols[0].fill = function(b){
-    var groups = materialGroups(false);
-    if(!groups.length){ b.line("Nothing drawn yet", null, {dim:true}); return; }
-    // fence and block wall are different trades: the total is fence only
-    var total = 0, shown = 0, fenceGroups = 0;
-    groups.forEach(function(g){
-      var fl = g.len - (g.wallLen || 0);
-      total += fl;
-      if(fl > 0.01) fenceGroups++;
-      if(!b.room(1)) return;
-      shown++;
-      var y = b.y();
-      if(g.color){
-        doc.setFillColor.apply(doc, rgb(mix(g.color, "#ffffff", 0.42)));
-        doc.rect(b.x, y - 7.2, 11, 9, "F");
-        doc.setDrawColor.apply(doc, rgb(g.color)); doc.setLineWidth(0.6);
-        doc.rect(b.x, y - 7.2, 11, 9);
-      } else {
-        doc.setDrawColor(150); doc.setLineWidth(0.6);
-        doc.setLineDashPattern([1.4, 1.2], 0);
-        doc.rect(b.x, y - 7.2, 11, 9);
-        doc.setLineDashPattern([], 0);
-      }
-      b.line(g.name, g.len ? feetInches(g.len) : "", {bold:true, indent:17, size:8.6, lh:10.2});
-      var sub = [];
-      if(g.t && g.t.posts) sub.push("Posts: " + g.t.posts);
-      if(g.t && g.t.note) sub.push(g.t.note);
-      if(g.gates.length){
-        sub.push(g.gates.length + " gate" + (g.gates.length > 1 ? "s" : "") + " (" +
-          g.gates.map(function(gs){ return IR.byId[gs.id] ? IR.byId[gs.id].tag : ""; }).filter(Boolean).join(", ") + ")");
-      }
-      if(!g.t && g.runs && g.key === "_fence") sub.push(p.fenceType ? p.fenceType : "fence type not specified");
-      if(sub.length && b.room(1)) b.wrap(sub.join("  \u00b7  "), 2, {dim:true, indent:17, size:7});
-      b.gap(3);
-    });
-    if(shown < groups.length){
-      b.line("+ " + (groups.length - shown) + " more \u2014 see the drawing", null, {dim:true, size:7});
-    }
-    if(fenceGroups > 1 && b.room(1)){
-      doc.setDrawColor.apply(doc, RULE); doc.setLineWidth(0.5);
-      doc.line(b.x, b.y() - 7.5, b.x + b.w, b.y() - 7.5);
-      b.gap(1.5);
-      b.line("Total fence", feetInches(total), {bold:true, size:8.4});
-    }
-  };
-
-  // 2. gates
-  cols[1].fill = function(b){
-    var DATUM = {center:"post centres", inside:"clear opening", outside:"overall"};
-    if(!IR.gates.length){ b.line("No gates", null, {dim:true}); return; }
+  function fillGates(b){
+    var DATUM = {inside:"clear opening", outside:"overall"};
     IR.gates.forEach(function(r){
       if(!b.room(1)) return;
-      var g = r.seg, ft = segFtype(g);
+      var g = r.seg;
       b.line(r.tag + "   " + gateTypeLabel(g.gateType || "single") + " gate",
              feetInches(segLenOf(g)) + (segIsNTS(g) ? " *" : ""), {bold:true});
-      var sub = [ft ? ftName(ft) : "", DATUM[segMeasureFrom(g)] || ""].filter(Boolean).join("  \u00b7  ");
+      var sub = DATUM[segMeasureFrom(g)] || "";
       if(sub && b.room(1)) b.line(sub, null, {dim:true, indent:17, size:6.8, lh:8.8});
     });
-  };
+  }
+  if(IR.gates.length) cols[0].fill = fillGates;
 
-  // 3. crew notes (the job's, then any on the line items), then the sign-off
-  cols[2].fill = function(b){
+  // crew notes, then the sign-off
+  cols[cols.length-1].fill = function(b){
     var signH = 34;
     var notesBottom = b.bottom - signH;
-    var text = [p.notes || ""].concat(state.elements.tags.filter(function(tg){ return tg.note; }).map(function(tg){
-      return (tg.label || "Item") + ": " + tg.note;
-    })).filter(Boolean).join("\n");
+    var text = p.notes || "";
     if(text){
       font(7.8, "normal", INK);
       var ls = doc.splitTextToSize(text, b.w);
@@ -9441,7 +8994,7 @@ function buildInstallPDF(){
 
   /* ---------------- fine print ---------------- */
   font(6.3, "normal", DIM);
-  var fine = "Grid: 1 square = " + gridStepFor(fit.ppf, PRINT_K) + " ft   \u00b7   lengths measured " + measureNote();
+  var fine = "Grid: 1 square = " + gridStepFor(fit.ppf, PRINT_K) + " ft" + measureFine();
   if(state.elements.segments.some(segIsNTS)) fine += "   \u00b7   * labelled size, not to scale";
   doc.text(fine, M + 2, PH - M - 2);
   doc.text(COMPANY.name + "  \u00b7  " + COMPANY.phones, PW - M - 2, PH - M - 2, {align:"right"});
@@ -9609,24 +9162,17 @@ function buildPDF(INSTALL){
   if(state.project.phone) field("PHONE", state.project.phone);
   field("JOB SITE", state.project.address);
   field("DATE", state.project.date);
-  field("FENCE", state.project.fenceType || ftypes().map(ftName).join(", "));
   if(state.project.rep) field("REP", state.project.rep);
   y += 2;
 
-  sectionHead("QUANTITIES");
-  stat("Fence run", feetInches(t.fence));
-  if(t.wall) stat("Block wall", feetInches(t.wall));
-  stat("Gates", t.gates.length + (t.gates.length ? " ("+feetInches(t.gate)+")" : ""));
-  y += 4;
-
-
-  /* ---- line items: what's in the job, then the alternates ---- */
+  /* ---- what's being done is on the sketch itself (the highlight boxes);
+         the column carries the job, the payment and the signatures ---- */
   var sigBlock = 80;                    // room for all three rules and their labels
-  // notes take the lines they need (up to three), not a fixed slab
+  // notes take the lines they need (up to ten), not a fixed slab
   var notesLines = 0;
   if(state.project.notes){
     doc.setFont("helvetica","italic"); doc.setFontSize(7.3);
-    notesLines = Math.min(3, doc.splitTextToSize(state.project.notes, COL - 18).length);
+    notesLines = Math.min(10, doc.splitTextToSize(state.project.notes, COL - 18).length);
   }
   var notesBlock = notesLines ? 16 + notesLines*8.7 : 0;
   var pay = payState();
@@ -9639,84 +9185,6 @@ function buildPDF(INSTALL){
     if(!payMethods[pl0].note && payMethods[pl0+1] && !payMethods[pl0+1].note) pl0++;
   }
   var payBlock = pay.print !== false ? 8 + 7 + 4*10.2 + (payMethods.length ? 10 + payLines*9 : 0) + 6 : 0;
-  // the one-line "alternates" footnote under the options needs its room too
-  var optNote = (state.showPrices && optionTags().length && !includedTags().length) ? 12 : 0;
-  var overflow = 0;
-  var included = includedTags(), options = optionTags();
-  var printed = 0;
-
-  function printGroup(rows, heading){
-    if(!rows.length || overflow) return;
-    sectionHead(heading);
-    doc.setFontSize(8);
-    for(var i=0;i<rows.length;i++){
-      var tg = rows[i];
-      // a note wraps to a couple of lines, so reserve room for it too before
-      // deciding whether this row still fits
-      var noteLines = tg.note ? doc.splitTextToSize(tg.note, tw-9) : [];
-      var rowH = 18 + Math.min(noteLines.length, 3) * 7;
-      var room = (PH - M - sigBlock - notesBlock - payBlock - optNote) - y;
-      if(room < rowH){ overflow = (included.length + options.length) - printed; return; }
-      var num = tags.indexOf(tg) + 1;
-      printed++;
-      y += 10;
-      doc.setFont("helvetica","normal"); doc.setFontSize(8);
-      var nm = doc.splitTextToSize(num+".  "+(tg.label||"Untitled"), state.showPrices ? tw-50 : tw);
-      doc.text(nm[0], tx, y);
-      if(state.showPrices){
-        doc.text(money(tagTotal(tg)), R - PADX, y, {align:"right"});
-      }
-      y += 8;
-      doc.setFont("helvetica","normal"); doc.setFontSize(6.7);
-      doc.setTextColor(115);
-      var q = doc.splitTextToSize(tagLineText(tg), tw);
-      doc.text(q.slice(0,2), tx+9, y);
-      y += (Math.min(q.length,2)-1)*7;
-      doc.setTextColor(0);
-      if(noteLines.length){
-        y += 8;
-        doc.setFont("helvetica","italic"); doc.setFontSize(6.7);
-        doc.setTextColor(105);
-        doc.text(noteLines.slice(0,3), tx+9, y);
-        y += (Math.min(noteLines.length,3)-1)*7;
-        doc.setTextColor(0);
-      }
-      y += 5;
-      doc.setDrawColor(232); doc.setLineWidth(0.4);
-      doc.line(tx, y-2, R-PADX, y-2);
-    }
-  }
-
-  if(tags.length){
-    printGroup(included, included.length && options.length ? "IN THE JOB" : "LINE ITEMS");
-    printGroup(options, options.length > 1 ? "OPTIONS \u2014 CHOOSE ONE" : "OPTION");
-
-    if(overflow){
-      y += 10;
-      doc.setFont("helvetica","italic"); doc.setFontSize(7.5);
-      doc.text("+"+overflow+" more on page 2", tx, y);
-    }
-    if(state.showPrices && included.length){
-      y += 15;
-      rule(y-9, "strong");
-      doc.setFont("helvetica","bold"); doc.setFontSize(10.5);
-      doc.text("TOTAL", tx, y);
-      doc.text(money(tagsTotal()), R - PADX, y, {align:"right"});
-      if(options.length){
-        y += 10;
-        doc.setFont("helvetica","italic"); doc.setFontSize(7.1);
-        doc.setTextColor(120);
-        doc.text("Options are priced separately and are not in the total.", tx, y, {maxWidth:tw});
-        doc.setTextColor(0);
-      }
-    } else if(state.showPrices && options.length){
-      y += 9;
-      doc.setFont("helvetica","italic"); doc.setFontSize(6.5);
-      doc.setTextColor(120);
-      doc.text("Options are alternates, each priced on its own.", tx, y, {maxWidth:tw});
-      doc.setTextColor(0);
-    }
-  }
 
   /* ---- payment, notes and signatures, pinned to the bottom of the column ---- */
   var by = PH - M - sigBlock;
@@ -9774,13 +9242,13 @@ function buildPDF(INSTALL){
     doc.setTextColor(120); doc.text("NOTES", tx, ny); doc.setTextColor(0);
     doc.setFont("helvetica","italic"); doc.setFontSize(7.3);
     var nl = doc.splitTextToSize(state.project.notes, tw);
-    doc.text(nl.slice(0,3), tx, ny+9);
+    doc.text(nl.slice(0, Math.max(1, notesLines)), tx, ny+9);
   }
 
   var ntsCount = state.elements.segments.filter(segIsNTS).length + state.elements.posts.filter(postIsNTS).length;
   doc.setFont("helvetica","normal"); doc.setFontSize(6.9);
   doc.setTextColor(130);
-  doc.text("Grid 1 square = "+gridStepFor(printPpf,PRINT_K)+" ft   ·   measured "+measureNote()
+  doc.text("Grid 1 square = "+gridStepFor(printPpf,PRINT_K)+" ft" + measureFine()
     + (ntsCount ? "   ·   * stated, not to scale" : ""), tx, by + 6, {maxWidth: tw});
   doc.setTextColor(0);
 
@@ -9799,25 +9267,6 @@ function buildPDF(INSTALL){
       doc.setFontSize(8); doc.text(sigWhen(sigs.client.at), tx + 2, sy - 3);
     }
   });
-
-  /* ---------------- overflow schedule ---------------- */
-  if(overflow){
-    doc.addPage();
-    doc.setFont("helvetica","bold"); doc.setFontSize(15);
-    doc.text("LINE ITEM SCHEDULE", M, M+6);
-    doc.setDrawColor(180); doc.setLineWidth(0.75);
-    doc.line(M, M+14, PW-M, M+14);
-    doc.setFont("helvetica","normal"); doc.setFontSize(9.5);
-    doc.text([state.project.client, state.project.address, state.project.date]
-      .filter(Boolean).join("   ·   ") || "—", M, M+30);
-
-    var py = M + 56;
-    var perPage = landscape ? 16 : 22;
-    for(var j=0; j<tags.length; j += perPage){
-      if(j > 0){ doc.addPage(); py = M + 20; }
-      py = drawItemTable(doc, M, py, PW-2*M, tags.slice(j, j+perPage), j);
-    }
-  }
 
   /* ---------------- terms and conditions ---------------- */
   if(state.project.terms !== false) drawTermsPage(doc, landscape);
@@ -9946,11 +9395,8 @@ loadLocal();
 syncProjectFields();
 buildSnapOptions();
 buildMeasureOptions();
-document.getElementById("chk-prices").checked = state.showPrices;
 document.getElementById("in-wallthick").value = inchText(state.wallThickIn, false);
-renderTypeList();
 renderTagList();
-renderTagPanel();
 document.getElementById("in-treesize").value = state.treeDiaFt;
 document.getElementById("in-w").value = state.areaFeetW;
 document.getElementById("in-h").value = state.areaFeetH;

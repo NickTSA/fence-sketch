@@ -1,6 +1,6 @@
 # LA Fence Craft Sketch
 
-The fence sketch app, ready for GitHub Pages. Build 2026-10-08.2.
+The fence sketch app, ready for GitHub Pages. Build 2026-10-08.3.
 
 | File | What it is |
 |---|---|

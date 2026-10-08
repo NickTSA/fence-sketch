@@ -1,5 +1,5 @@
-/* LA Fence Craft Sketch - offline copy. Build 2026-10-08-6adff683fe */
-var CACHE = "fence-sketch-2026-10-08-6adff683fe";
+/* LA Fence Craft Sketch - offline copy. Build 2026-10-08.2-003ff312f2 */
+var CACHE = "fence-sketch-2026-10-08.2-003ff312f2";
 var ASSETS = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", function(e){

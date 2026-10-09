@@ -873,7 +873,7 @@ details.more[open] summary::before{transform:rotate(90deg);}
       <div class="form-field"><label for="f-notes">Notes for crew</label><textarea id="f-notes" placeholder="Grade slopes 3ft over the north run. Call 811 first."></textarea></div>
     </div>
 
-    <div class="buildstamp" id="buildstamp">Build 2026-10-08.3</div>
+    <div class="buildstamp" id="buildstamp">Build 2026-10-09</div>
   </aside>
 </div>
 
@@ -1938,7 +1938,16 @@ var SNAP_OPTIONS = [
   {in:60,   label:"5 ft"}
 ];
 function snapFt(){ return state.snapIn/12; }
-function snapVal(v){ return Math.round(v*12/state.snapIn) * state.snapIn / 12; }
+/* The grid you snap to gets finer as you zoom in: a foot of snap is
+   fine at yard scale, but zoomed in on a post it would make every move a
+   jump. Halve it until one step is no more than about 40px on screen,
+   down to 1/16". */
+function snapStepFt(){
+  var s = state.snapIn/12, px = s*state.pxPerFoot;
+  while(px > 40 && s > 1/192 + 1e-9){ s /= 2; px /= 2; }
+  return Math.max(s, 1/192);
+}
+function snapVal(v){ var s = snapStepFt(); return Math.round(v/s) * s; }
 
 /* Alt inverts whatever the free-placement toggle is set to, so you can
    always drop something exactly where the cursor is. */
@@ -2475,10 +2484,15 @@ function drawAlign(raw, anchor, evt, hard){
  */
 function handlePoint(raw, kind, id, evt){
   var skip = [{kind:kind, id:id}];
-  var snapped = snapToObjects(raw, skip, evt);
-  if(state.snapPoint || state.snapEdge) return snapped;
+  // a post's corners don't snap to things -- the runs that end in its
+  // middle would pull it shut
+  var isPostish = kind === "post" || (kind === "structure" && isPostShape(findEl("structure", id)));
+  if(!isPostish){
+    var snapped = snapToObjects(raw, skip, evt);
+    if(state.snapPoint || state.snapEdge) return snapped;
+  } else { state.snapPoint = null; state.snapEdge = null; }
   var aligned = drawAlign(raw, null, evt, null);
-  if(kind !== "post") return aligned;
+  if(!isPostish) return aligned;
   // a post is an inches-scale object, so a foot of grid would be useless:
   // keep any alignment the guides found, otherwise work to the nearest 1/16"
   var g = state.guides || [];
@@ -3306,16 +3320,11 @@ function renderPlan(c, pal, ppf, k, opts){
     var cor = structCorners(s).map(function(pt){ return P(pt.x,pt.y); });
     /* A post is a marker, not a measurement: the same size on screen and
        paper whatever was drawn, labelled with what you typed. */
+    // a post prints its label, never its size, but is drawn to scale
     var isPost = isPostShape(s) && !isDetail(s);
-    if(isPost){
-      var pw0 = Math.max(1e-6, Math.max(s.w, s.h))*ppf;
-      var ptarget = (pal.print ? 4.8 : (COARSE_POINTER ? 10 : 8))*k;
-      var pg = ptarget / pw0, pcn = P(s.x + s.w/2, s.y + s.h/2);
-      var pgrow = function(pt){ return {x:pcn.x + (pt.x-pcn.x)*pg, y:pcn.y + (pt.y-pcn.y)*pg}; };
-      poly = poly.map(pgrow); cor = cor.map(pgrow);
-    } else
     /* A small shape is a pixel wide when zoomed out. On screen only, hold
-       it at a size you can see and tap; paper always gets the true size. */
+       it at a size you can see and tap; zoom in and it's its true size,
+       with handles to resize it. Paper always gets the true size. */
     if(!pal.print && s.kind !== "photo"){
       var spx = Math.max(s.w, s.h)*ppf, sfloor = (COARSE_POINTER ? 9 : 7)*k;
       if(spx > 0 && spx < sfloor){
@@ -3432,7 +3441,11 @@ function renderPlan(c, pal, ppf, k, opts){
     // label at the centre; a post's sits beside it
     var cen = P(s.x + s.w/2, s.y + s.h/2);
     if(isPost){
-      if(s.label) postTag(String(s.label), cen, ptarget/2, col);
+      if(s.label){
+        var phalf = 0;
+        poly.forEach(function(q){ phalf = Math.max(phalf, Math.abs(q.x - cen.x), Math.abs(q.y - cen.y)); });
+        postTag(String(s.label), cen, phalf, col);
+      }
     } else if(s.label) shapeLabel(s, cen, String(s.label).toUpperCase(), col);
 
     // dimension callouts along the top and left of the bounding box
@@ -3451,7 +3464,7 @@ function renderPlan(c, pal, ppf, k, opts){
     }
     }
 
-    var smallSel = sel && (isPost || Math.max(s.w, s.h)*ppf < 30);
+    var smallSel = sel && Math.max(s.w, s.h)*ppf < 30;
     if(smallSel){
       // handles would bury it: ring it instead
       var rc = P(s.x + s.w/2, s.y + s.h/2);
@@ -5012,6 +5025,12 @@ function hitTest(fx,fy){
     if(sdist < sreach && (!smallBest || sdist < smallBest.d)) smallBest = {d:sdist, s:ss};
   }
   if(smallBest) return {kind:"structure", id:smallBest.s.id};
+  /* Zoomed in, a post is big enough to aim at -- and the runs that end in
+     it would otherwise win every click on it. Inside a post, it's the post. */
+  for(i=state.elements.structures.length-1;i>=0;i--){
+    var pst = state.elements.structures[i];
+    if(isPostShape(pst) && pointInPoly(fx, fy, structPoly(pst))) return {kind:"structure", id:pst.id};
+  }
 
   /* A gate lives inside the run it interrupts, so picking purely by
      distance hands you the fence every time. Gather everything in reach
@@ -5960,18 +5979,25 @@ function renderSelectionPanel(){
       ppre.appendChild(b);
     });
     bodyEl.appendChild(ppre);
-    colorRow(bodyEl, el.color, recolor);
-    var pmore = moreBox();
-    var pnote = document.createElement("div");
-    pnote.className = "mini-note";
-    pnote.textContent = "Size used only when a run is measured to inside or outside faces. It never prints.";
-    pmore.body.appendChild(pnote);
-    inchRow(pmore.body, "Width (inches)", el.w*12, 0.5, 12, function(v){
+    // drawn to scale: zoom in to see it and drag its corners, or type it here
+    var psz = document.createElement("div");
+    psz.className = "inline";
+    bodyEl.appendChild(psz);
+    var pw = document.createElement("div"); pw.style.flex = "1";
+    var ph = document.createElement("div"); ph.style.flex = "1";
+    psz.appendChild(pw); psz.appendChild(ph);
+    inchRow(pw, "Width (in)", el.w*12, 0.5, 48, function(v){
       snapshot(); var cx = el.x + el.w/2; el.w = v/12; el.x = cx - el.w/2; refresh();
     });
-    inchRow(pmore.body, "Depth (inches)", el.h*12, 0.5, 12, function(v){
+    inchRow(ph, "Depth (in)", el.h*12, 0.5, 48, function(v){
       snapshot(); var cy = el.y + el.h/2; el.h = v/12; el.y = cy - el.h/2; refresh();
     });
+    var pnote = document.createElement("div");
+    pnote.className = "mini-note";
+    pnote.textContent = "Drawn to scale on the sketch. Only the label prints as text.";
+    bodyEl.appendChild(pnote);
+    colorRow(bodyEl, el.color, recolor);
+    var pmore = moreBox();
     numberRow(pmore.body, "Rotation", Math.round(el.rot||0), -180, 180, 1, "deg", function(v){ snapshot(); el.rot = v; refresh(); });
     bodyEl.appendChild(pmore);
     addAction(actionsEl,"Delete",del,true);
